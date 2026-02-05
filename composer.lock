@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "76d28717f567c2fb78356e8ff179ba63",
+    "content-hash": "8067456a6e78c6b3987a6cd3a9c33c7d",
     "packages": [
         {
             "name": "composer/semver",
@@ -1534,6 +1534,80 @@
                 }
             ],
             "time": "2026-01-02T08:56:05+00:00"
+        },
+        {
+            "name": "overtrue/pinyin",
+            "version": "6.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/overtrue/pinyin.git",
+                "reference": "729422bec2c9d3aa1e54e8d65afdab954f52014f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/overtrue/pinyin/zipball/729422bec2c9d3aa1e54e8d65afdab954f52014f",
+                "reference": "729422bec2c9d3aa1e54e8d65afdab954f52014f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "brainmaestro/composer-git-hooks": "^3.0",
+                "laravel/pint": "^1.10",
+                "nunomaduro/termwind": "^2.0",
+                "phpunit/phpunit": "^12.0.21"
+            },
+            "bin": [
+                "bin/pinyin"
+            ],
+            "type": "library",
+            "extra": {
+                "hooks": {
+                    "pre-push": [
+                        "composer pint",
+                        "composer test"
+                    ],
+                    "pre-commit": [
+                        "composer pint",
+                        "composer test"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Overtrue\\Pinyin\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "overtrue",
+                    "email": "anzhengchao@gmail.com",
+                    "homepage": "http://github.com/overtrue"
+                }
+            ],
+            "description": "Chinese to pinyin translator.",
+            "homepage": "https://github.com/overtrue/pinyin",
+            "keywords": [
+                "Chinese",
+                "Pinyin",
+                "cn2pinyin"
+            ],
+            "support": {
+                "issues": "https://github.com/overtrue/pinyin/issues",
+                "source": "https://github.com/overtrue/pinyin/tree/6.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/overtrue",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-09-08T10:34:18+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
