@@ -1,2 +1,25 @@
 ProjectBase: 项目基础信息
 'Project submitted successfully': 项目提交成功
+
+# ProjectType enum
+construction: 施工类
+integration: 集成类
+
+# ProjectNature enum
+government: 政府投资
+enterprise: 企业投资
+
+# FundingSource enum
+government_fiscal: 政府财政拨款
+bank_loan: 银行贷款
+social_capital: 社会资本
+enterprise_owned: 企业自有资金
+
+# ProjectStatus enum
+draft: 草稿
+registered: 基础信息已登记
+in_preliminary: 前期决策中
+preliminary_approved: 前期决策已通过
+in_progress: 进行中
+completed: 已完成
+cancelled: 已取消
