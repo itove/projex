@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\File;
 use App\Entity\Image;
+use App\Entity\PlanningDesign;
 use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
 use App\Entity\ProjectApproval;
@@ -68,6 +69,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('项目生命周期');
         yield MenuItem::linkToCrud('前期决策流程', 'fa fa-clipboard-check', PreliminaryDecision::class);
         yield MenuItem::linkToCrud('立项流程', 'fa fa-file-signature', ProjectApproval::class);
+        yield MenuItem::linkToCrud('规划设计流程', 'fa fa-drafting-compass', PlanningDesign::class);
         yield MenuItem::section('基础数据');
         yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
         yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);

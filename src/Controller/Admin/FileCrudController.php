@@ -57,6 +57,11 @@ class FileCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(6);
 
+        yield AssociationField::new('planningDesign', '所属规划设计')
+            ->autocomplete()
+            ->setRequired(false)
+            ->setColumns(6);
+
         yield TextField::new('originalName', '原始文件名')
             ->hideOnForm()
             ->setColumns(6);

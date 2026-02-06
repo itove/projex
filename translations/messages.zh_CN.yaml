@@ -3,6 +3,7 @@ ProjectType: 项目类型
 ProjectSubtype: 项目子类型
 PreliminaryDecision: 前期决策流程
 ProjectApproval: 立项流程
+PlanningDesign: 规划设计流程
 File: 文件
 Image: 图片
 'Project submitted successfully': 项目提交成功

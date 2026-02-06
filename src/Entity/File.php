@@ -17,6 +17,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['mime_type'], name: 'idx_file_mime_type')]
 #[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_file_preliminary_decision')]
 #[ORM\Index(columns: ['project_approval_id'], name: 'idx_file_project_approval')]
+#[ORM\Index(columns: ['planning_design_id'], name: 'idx_file_planning_design')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class File
@@ -33,6 +34,10 @@ class File
     #[ORM\ManyToOne(targetEntity: ProjectApproval::class, inversedBy: 'files')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?ProjectApproval $projectApproval = null;
+
+    #[ORM\ManyToOne(targetEntity: PlanningDesign::class, inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?PlanningDesign $planningDesign = null;
 
     #[Vich\UploadableField(mapping: 'project_files', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName')]
     private ?SymfonyFile $file = null;
@@ -205,6 +210,17 @@ class File
     public function setProjectApproval(?ProjectApproval $projectApproval): self
     {
         $this->projectApproval = $projectApproval;
+        return $this;
+    }
+
+    public function getPlanningDesign(): ?PlanningDesign
+    {
+        return $this->planningDesign;
+    }
+
+    public function setPlanningDesign(?PlanningDesign $planningDesign): self
+    {
+        $this->planningDesign = $planningDesign;
         return $this;
     }
 

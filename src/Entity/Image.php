@@ -16,6 +16,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['created_at'], name: 'idx_image_created_at')]
 #[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_image_preliminary_decision')]
 #[ORM\Index(columns: ['project_approval_id'], name: 'idx_image_project_approval')]
+#[ORM\Index(columns: ['planning_design_id'], name: 'idx_image_planning_design')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class Image
@@ -32,6 +33,10 @@ class Image
     #[ORM\ManyToOne(targetEntity: ProjectApproval::class, inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?ProjectApproval $projectApproval = null;
+
+    #[ORM\ManyToOne(targetEntity: PlanningDesign::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?PlanningDesign $planningDesign = null;
 
     #[Vich\UploadableField(mapping: 'project_images', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName', dimensions: 'dimensions')]
     #[Assert\Image(
@@ -270,6 +275,17 @@ class Image
     public function setProjectApproval(?ProjectApproval $projectApproval): self
     {
         $this->projectApproval = $projectApproval;
+        return $this;
+    }
+
+    public function getPlanningDesign(): ?PlanningDesign
+    {
+        return $this->planningDesign;
+    }
+
+    public function setPlanningDesign(?PlanningDesign $planningDesign): self
+    {
+        $this->planningDesign = $planningDesign;
         return $this;
     }
 
