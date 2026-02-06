@@ -116,7 +116,8 @@ class ProjectCrudController extends AbstractCrudController
             ))
             ->setRequired(true)
             ->setColumns(6)
-            ->setFormTypeOption('disabled', $lockCoreFields);
+            ->setFormTypeOption('disabled', $lockCoreFields)
+            ->formatValue(fn($value) => $value?->label());
 
         // Project Leader Section
         yield TextField::new('leaderName', '负责人姓名')
@@ -146,7 +147,8 @@ class ProjectCrudController extends AbstractCrudController
             ))
             ->setRequired(true)
             ->setColumns(6)
-            ->setFormTypeOption('disabled', $lockCoreFields);
+            ->setFormTypeOption('disabled', $lockCoreFields)
+            ->formatValue(fn($value) => $value?->label());
 
         yield DateField::new('plannedStartDate', '计划开始日期')
             ->setRequired(true)
@@ -199,7 +201,8 @@ class ProjectCrudController extends AbstractCrudController
                 ProjectStatus::cases()
             ))
             ->hideOnForm()
-            ->setColumns(3);
+            ->setColumns(3)
+            ->formatValue(fn($value) => $value?->label());
 
         yield DateField::new('createdAt', '创建时间')
             ->hideOnForm()
