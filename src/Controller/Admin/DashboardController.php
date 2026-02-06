@@ -2,6 +2,8 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\File;
+use App\Entity\Image;
 use App\Entity\Project;
 use App\Entity\ProjectType;
 use App\Entity\ProjectSubtype;
@@ -64,6 +66,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('基础数据');
         yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
         yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);
+        yield MenuItem::section('文件管理');
+        yield MenuItem::linkToCrud('文件', 'fa fa-file', File::class);
+        yield MenuItem::linkToCrud('图片', 'fa fa-image', Image::class);
     }
 
     public function configureCrud(): Crud
