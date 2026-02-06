@@ -94,6 +94,7 @@ class DashboardController extends AbstractDashboardController
             ->setDateTimeFormat("yyyy/MM/dd HH:mm")
             ->setDefaultSort(["id" => "DESC"])
             ->renderContentMaximized()
+            ->setDefaultRowAction(Action::DETAIL)
         ;
     }
 
