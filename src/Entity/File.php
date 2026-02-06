@@ -16,6 +16,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['created_at'], name: 'idx_file_created_at')]
 #[ORM\Index(columns: ['mime_type'], name: 'idx_file_mime_type')]
 #[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_file_preliminary_decision')]
+#[ORM\Index(columns: ['project_approval_id'], name: 'idx_file_project_approval')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class File
@@ -28,6 +29,10 @@ class File
     #[ORM\ManyToOne(targetEntity: PreliminaryDecision::class, inversedBy: 'files')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?PreliminaryDecision $preliminaryDecision = null;
+
+    #[ORM\ManyToOne(targetEntity: ProjectApproval::class, inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?ProjectApproval $projectApproval = null;
 
     #[Vich\UploadableField(mapping: 'project_files', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName')]
     private ?SymfonyFile $file = null;
@@ -189,6 +194,17 @@ class File
     public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
     {
         $this->preliminaryDecision = $preliminaryDecision;
+        return $this;
+    }
+
+    public function getProjectApproval(): ?ProjectApproval
+    {
+        return $this->projectApproval;
+    }
+
+    public function setProjectApproval(?ProjectApproval $projectApproval): self
+    {
+        $this->projectApproval = $projectApproval;
         return $this;
     }
 

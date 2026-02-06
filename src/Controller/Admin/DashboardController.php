@@ -6,6 +6,7 @@ use App\Entity\File;
 use App\Entity\Image;
 use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
+use App\Entity\ProjectApproval;
 use App\Entity\ProjectType;
 use App\Entity\ProjectSubtype;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -66,6 +67,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
         yield MenuItem::section('项目生命周期');
         yield MenuItem::linkToCrud('前期决策流程', 'fa fa-clipboard-check', PreliminaryDecision::class);
+        yield MenuItem::linkToCrud('立项流程', 'fa fa-file-signature', ProjectApproval::class);
         yield MenuItem::section('基础数据');
         yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
         yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);

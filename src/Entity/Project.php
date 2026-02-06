@@ -139,6 +139,9 @@ class Project
     #[ORM\OneToOne(targetEntity: PreliminaryDecision::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
     private ?PreliminaryDecision $preliminaryDecision = null;
 
+    #[ORM\OneToOne(targetEntity: ProjectApproval::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
+    private ?ProjectApproval $projectApproval = null;
+
     // System Fields
     #[ORM\Column(type: Types::STRING, enumType: ProjectStatus::class)]
     private ProjectStatus $status = ProjectStatus::DRAFT;
@@ -465,6 +468,22 @@ class Project
         }
 
         $this->preliminaryDecision = $preliminaryDecision;
+        return $this;
+    }
+
+    public function getProjectApproval(): ?ProjectApproval
+    {
+        return $this->projectApproval;
+    }
+
+    public function setProjectApproval(?ProjectApproval $projectApproval): self
+    {
+        // Set the owning side of the relation if necessary
+        if ($projectApproval !== null && $projectApproval->getProject() !== $this) {
+            $projectApproval->setProject($this);
+        }
+
+        $this->projectApproval = $projectApproval;
         return $this;
     }
 

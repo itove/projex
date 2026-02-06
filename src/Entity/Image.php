@@ -15,6 +15,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Table(name: 'image')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_image_created_at')]
 #[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_image_preliminary_decision')]
+#[ORM\Index(columns: ['project_approval_id'], name: 'idx_image_project_approval')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class Image
@@ -27,6 +28,10 @@ class Image
     #[ORM\ManyToOne(targetEntity: PreliminaryDecision::class, inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?PreliminaryDecision $preliminaryDecision = null;
+
+    #[ORM\ManyToOne(targetEntity: ProjectApproval::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?ProjectApproval $projectApproval = null;
 
     #[Vich\UploadableField(mapping: 'project_images', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName', dimensions: 'dimensions')]
     #[Assert\Image(
@@ -254,6 +259,17 @@ class Image
     public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
     {
         $this->preliminaryDecision = $preliminaryDecision;
+        return $this;
+    }
+
+    public function getProjectApproval(): ?ProjectApproval
+    {
+        return $this->projectApproval;
+    }
+
+    public function setProjectApproval(?ProjectApproval $projectApproval): self
+    {
+        $this->projectApproval = $projectApproval;
         return $this;
     }
 
