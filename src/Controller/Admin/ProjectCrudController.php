@@ -49,6 +49,7 @@ class ProjectCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
+            ->setDefaultRowAction(Action::DETAIL)
             ->setEntityLabelInSingular('项目基础信息')
             ->setEntityLabelInPlural('项目基础信息')
             ->setPageTitle(Crud::PAGE_INDEX, '项目基础信息列表')
