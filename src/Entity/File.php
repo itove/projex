@@ -18,6 +18,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_file_preliminary_decision')]
 #[ORM\Index(columns: ['project_approval_id'], name: 'idx_file_project_approval')]
 #[ORM\Index(columns: ['planning_design_id'], name: 'idx_file_planning_design')]
+#[ORM\Index(columns: ['construction_preparation_id'], name: 'idx_file_construction_preparation')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class File
@@ -38,6 +39,10 @@ class File
     #[ORM\ManyToOne(targetEntity: PlanningDesign::class, inversedBy: 'files')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?PlanningDesign $planningDesign = null;
+
+    #[ORM\ManyToOne(targetEntity: ConstructionPreparation::class, inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?ConstructionPreparation $constructionPreparation = null;
 
     #[Vich\UploadableField(mapping: 'project_files', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName')]
     private ?SymfonyFile $file = null;
@@ -221,6 +226,17 @@ class File
     public function setPlanningDesign(?PlanningDesign $planningDesign): self
     {
         $this->planningDesign = $planningDesign;
+        return $this;
+    }
+
+    public function getConstructionPreparation(): ?ConstructionPreparation
+    {
+        return $this->constructionPreparation;
+    }
+
+    public function setConstructionPreparation(?ConstructionPreparation $constructionPreparation): self
+    {
+        $this->constructionPreparation = $constructionPreparation;
         return $this;
     }
 

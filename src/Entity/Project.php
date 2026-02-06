@@ -145,6 +145,9 @@ class Project
     #[ORM\OneToOne(targetEntity: PlanningDesign::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
     private ?PlanningDesign $planningDesign = null;
 
+    #[ORM\OneToOne(targetEntity: ConstructionPreparation::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
+    private ?ConstructionPreparation $constructionPreparation = null;
+
     // System Fields
     #[ORM\Column(type: Types::STRING, enumType: ProjectStatus::class)]
     private ProjectStatus $status = ProjectStatus::DRAFT;
@@ -503,6 +506,22 @@ class Project
         }
 
         $this->planningDesign = $planningDesign;
+        return $this;
+    }
+
+    public function getConstructionPreparation(): ?ConstructionPreparation
+    {
+        return $this->constructionPreparation;
+    }
+
+    public function setConstructionPreparation(?ConstructionPreparation $constructionPreparation): self
+    {
+        // Set the owning side of the relation if necessary
+        if ($constructionPreparation !== null && $constructionPreparation->getProject() !== $this) {
+            $constructionPreparation->setProject($this);
+        }
+
+        $this->constructionPreparation = $constructionPreparation;
         return $this;
     }
 
