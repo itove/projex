@@ -100,11 +100,13 @@ class ProjectCrudController extends AbstractCrudController
                     ->orderBy('entity.sortOrder', 'ASC')
                     ->addOrderBy('entity.name', 'ASC');
             })
-            ->setHelp('先选择项目类型，然后选择对应的子类型');
+            ->setHelp('先选择项目类型，然后选择对应的子类型')
+            ->hideOnIndex();
 
         yield TextField::new('projectIndustry', '项目行业')
             ->setRequired(true)
-            ->setColumns(6);
+            ->setColumns(6)
+            ->hideOnIndex();
 
         yield TextField::new('projectLocation', '项目地点')
             ->setRequired(true)
@@ -118,20 +120,24 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields)
-            ->formatValue(fn($value) => $value?->label());
+            ->formatValue(fn($value) => $value?->label())
+            ->hideOnIndex();
 
         // Project Leader Section
         yield TextField::new('leaderName', '负责人姓名')
             ->setRequired(true)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         yield TextField::new('leaderPhone', '负责人电话')
             ->setRequired(true)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         yield EmailField::new('leaderEmail', '负责人邮箱')
             ->setRequired(false)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         // Project Parameters Section
         yield MoneyField::new('budget', '项目预算')
@@ -139,7 +145,8 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields)
-            ->setHelp('单位：元');
+            ->setHelp('单位：元')
+            ->hideOnIndex();
 
         yield ChoiceField::new('fundingSource', '资金来源')
             ->setChoices(array_combine(
@@ -149,51 +156,62 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields)
-            ->formatValue(fn($value) => $value?->label());
+            ->formatValue(fn($value) => $value?->label())
+            ->hideOnIndex();
 
         yield DateField::new('plannedStartDate', '计划开始日期')
             ->setRequired(true)
             ->setColumns(6)
-            ->setFormTypeOption('disabled', $lockCoreFields);
+            ->setFormTypeOption('disabled', $lockCoreFields)
+            ->hideOnIndex();
 
         yield DateField::new('plannedEndDate', '计划结束日期')
             ->setRequired(true)
             ->setColumns(6)
-            ->setFormTypeOption('disabled', $lockCoreFields);
+            ->setFormTypeOption('disabled', $lockCoreFields)
+            ->hideOnIndex();
 
         yield TextareaField::new('purpose', '项目目的')
             ->setRequired(true)
-            ->setColumns(12);
+            ->setColumns(12)
+            ->hideOnIndex();
 
         yield TextareaField::new('scale', '项目规模')
             ->setRequired(true)
-            ->setColumns(12);
+            ->setColumns(12)
+            ->hideOnIndex();
 
         // Registrant Info Section
         yield TextField::new('registrantName', '登记人姓名')
             ->setRequired(true)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         yield TextField::new('registrantOrganization', '登记人单位')
             ->setRequired(true)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         yield TextField::new('registrantPhone', '登记人电话')
             ->setRequired(true)
-            ->setColumns(4);
+            ->setColumns(4)
+            ->hideOnIndex();
 
         // Optional Fields Section
         yield TextareaField::new('remarks', '备注')
             ->setRequired(false)
-            ->setColumns(12);
+            ->setColumns(12)
+            ->hideOnIndex();
 
         yield TextareaField::new('specialNotes', '特殊说明')
             ->setRequired(false)
-            ->setColumns(12);
+            ->setColumns(12)
+            ->hideOnIndex();
 
         yield TextareaField::new('prerequisiteNotes', '前置条件说明')
             ->setRequired(false)
-            ->setColumns(12);
+            ->setColumns(12)
+            ->hideOnIndex();
 
         // System Fields (display only)
         yield ChoiceField::new('status', '状态')
@@ -211,6 +229,7 @@ class ProjectCrudController extends AbstractCrudController
 
         yield DateField::new('updatedAt', '更新时间')
             ->hideOnForm()
+            ->hideOnIndex()
             ->setColumns(3);
     }
 
