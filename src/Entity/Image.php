@@ -14,6 +14,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
 #[ORM\Table(name: 'image')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_image_created_at')]
+#[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_image_preliminary_decision')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class Image
@@ -22,6 +23,10 @@ class Image
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: PreliminaryDecision::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?PreliminaryDecision $preliminaryDecision = null;
 
     #[Vich\UploadableField(mapping: 'project_images', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName', dimensions: 'dimensions')]
     #[Assert\Image(
@@ -238,6 +243,17 @@ class Image
     public function setCategory(?string $category): self
     {
         $this->category = $category;
+        return $this;
+    }
+
+    public function getPreliminaryDecision(): ?PreliminaryDecision
+    {
+        return $this->preliminaryDecision;
+    }
+
+    public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
+    {
+        $this->preliminaryDecision = $preliminaryDecision;
         return $this;
     }
 

@@ -135,6 +135,10 @@ class Project
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisiteNotes = null;
 
+    // Lifecycle Stage Relationships
+    #[ORM\OneToOne(targetEntity: PreliminaryDecision::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
+    private ?PreliminaryDecision $preliminaryDecision = null;
+
     // System Fields
     #[ORM\Column(type: Types::STRING, enumType: ProjectStatus::class)]
     private ProjectStatus $status = ProjectStatus::DRAFT;
@@ -445,6 +449,22 @@ class Project
     public function setIsCoreLocked(bool $isCoreLocked): self
     {
         $this->isCoreLocked = $isCoreLocked;
+        return $this;
+    }
+
+    public function getPreliminaryDecision(): ?PreliminaryDecision
+    {
+        return $this->preliminaryDecision;
+    }
+
+    public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
+    {
+        // Set the owning side of the relation if necessary
+        if ($preliminaryDecision !== null && $preliminaryDecision->getProject() !== $this) {
+            $preliminaryDecision->setProject($this);
+        }
+
+        $this->preliminaryDecision = $preliminaryDecision;
         return $this;
     }
 

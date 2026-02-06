@@ -47,6 +47,11 @@ class FileCrudController extends AbstractCrudController
             ->setRequired($pageName === Crud::PAGE_NEW)
             ->setHelp('最大文件大小: 50MB');
 
+        yield AssociationField::new('preliminaryDecision', '所属前期决策')
+            ->autocomplete()
+            ->setRequired(false)
+            ->setColumns(6);
+
         yield TextField::new('originalName', '原始文件名')
             ->hideOnForm()
             ->setColumns(6);

@@ -15,6 +15,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Table(name: 'file')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_file_created_at')]
 #[ORM\Index(columns: ['mime_type'], name: 'idx_file_mime_type')]
+#[ORM\Index(columns: ['preliminary_decision_id'], name: 'idx_file_preliminary_decision')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class File
@@ -23,6 +24,10 @@ class File
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: PreliminaryDecision::class, inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?PreliminaryDecision $preliminaryDecision = null;
 
     #[Vich\UploadableField(mapping: 'project_files', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName')]
     private ?SymfonyFile $file = null;
@@ -173,6 +178,17 @@ class File
     public function setCategory(?string $category): self
     {
         $this->category = $category;
+        return $this;
+    }
+
+    public function getPreliminaryDecision(): ?PreliminaryDecision
+    {
+        return $this->preliminaryDecision;
+    }
+
+    public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
+    {
+        $this->preliminaryDecision = $preliminaryDecision;
         return $this;
     }
 
