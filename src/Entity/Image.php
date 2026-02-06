@@ -20,6 +20,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['construction_preparation_id'], name: 'idx_image_construction_preparation')]
 #[ORM\Index(columns: ['construction_implementation_id'], name: 'idx_image_construction_implementation')]
 #[ORM\Index(columns: ['completion_acceptance_id'], name: 'idx_image_completion_acceptance')]
+#[ORM\Index(columns: ['settlement_accounts_id'], name: 'idx_image_settlement_accounts')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class Image
@@ -52,6 +53,10 @@ class Image
     #[ORM\ManyToOne(targetEntity: CompletionAcceptance::class, inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?CompletionAcceptance $completionAcceptance = null;
+
+    #[ORM\ManyToOne(targetEntity: SettlementAccounts::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?SettlementAccounts $settlementAccounts = null;
 
     #[Vich\UploadableField(mapping: 'project_images', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName', dimensions: 'dimensions')]
     #[Assert\Image(
@@ -334,6 +339,17 @@ class Image
     public function setCompletionAcceptance(?CompletionAcceptance $completionAcceptance): self
     {
         $this->completionAcceptance = $completionAcceptance;
+        return $this;
+    }
+
+    public function getSettlementAccounts(): ?SettlementAccounts
+    {
+        return $this->settlementAccounts;
+    }
+
+    public function setSettlementAccounts(?SettlementAccounts $settlementAccounts): self
+    {
+        $this->settlementAccounts = $settlementAccounts;
         return $this;
     }
 
