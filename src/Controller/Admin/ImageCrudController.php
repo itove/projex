@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -64,6 +65,11 @@ class ImageCrudController extends AbstractCrudController
             ->setColumns(6);
 
         yield AssociationField::new('constructionPreparation', '所属施工准备')
+            ->autocomplete()
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield AssociationField::new('constructionImplementation', '所属施工实施')
             ->autocomplete()
             ->setRequired(false)
             ->setColumns(6);
