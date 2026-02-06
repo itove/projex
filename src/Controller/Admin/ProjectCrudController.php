@@ -101,7 +101,7 @@ class ProjectCrudController extends AbstractCrudController
                     ->addOrderBy('entity.name', 'ASC');
             })
             ->setHelp('先选择项目类型，然后选择对应的子类型')
-            ->hideOnIndex();
+        ;
 
         yield TextField::new('projectIndustry', '项目行业')
             ->setRequired(true)
@@ -121,13 +121,13 @@ class ProjectCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields)
             ->formatValue(fn($value) => $value?->label())
-            ->hideOnIndex();
+        ;
 
         // Project Leader Section
         yield TextField::new('leaderName', '负责人姓名')
             ->setRequired(true)
             ->setColumns(4)
-            ->hideOnIndex();
+        ;
 
         yield TextField::new('leaderPhone', '负责人电话')
             ->setRequired(true)

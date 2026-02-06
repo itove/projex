@@ -93,6 +93,7 @@ class DashboardController extends AbstractDashboardController
             ->setTimezone("Asia/Shanghai")
             ->setDateTimeFormat("yyyy/MM/dd HH:mm")
             ->setDefaultSort(["id" => "DESC"])
+            ->renderContentMaximized()
         ;
     }
 
