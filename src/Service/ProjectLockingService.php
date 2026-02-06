@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\ProjectBase;
+use App\Entity\Project;
 
 class ProjectLockingService
 {
-    public function shouldLockCoreFields(ProjectBase $project): bool
+    public function shouldLockCoreFields(Project $project): bool
     {
         return $project->getStatus()->isCoreFieldsLocked();
     }
@@ -25,7 +25,7 @@ class ProjectLockingService
         ];
     }
 
-    public function lockCoreFields(ProjectBase $project): void
+    public function lockCoreFields(Project $project): void
     {
         if ($this->shouldLockCoreFields($project)) {
             $project->setIsCoreLocked(true);

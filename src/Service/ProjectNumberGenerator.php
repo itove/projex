@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Repository\ProjectBaseRepository;
+use App\Repository\ProjectRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ProjectNumberGenerator
 {
     public function __construct(
-        private readonly ProjectBaseRepository $repository,
+        private readonly ProjectRepository $repository,
         #[Autowire(param: 'project_number.prefix')]
         private readonly string $prefix,
         #[Autowire(param: 'project_number.year_format')]

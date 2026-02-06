@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\ProjectBase;
+use App\Entity\Project;
 use App\Enum\ProjectStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ProjectBase>
+ * @extends ServiceEntityRepository<Project>
  */
-class ProjectBaseRepository extends ServiceEntityRepository
+class ProjectRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ProjectBase::class);
+        parent::__construct($registry, Project::class);
     }
 
-    public function save(ProjectBase $entity, bool $flush = false): void
+    public function save(Project $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -61,7 +61,7 @@ class ProjectBaseRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return ProjectBase[]
+     * @return Project[]
      */
     public function findByStatus(ProjectStatus $status): array
     {

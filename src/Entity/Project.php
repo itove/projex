@@ -8,18 +8,18 @@ use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
 use App\Enum\ProjectType;
-use App\Repository\ProjectBaseRepository;
+use App\Repository\ProjectRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: ProjectBaseRepository::class)]
-#[ORM\Table(name: 'project_base')]
+#[ORM\Entity(repositoryClass: ProjectRepository::class)]
+#[ORM\Table(name: 'project')]
 #[ORM\Index(columns: ['project_number'], name: 'idx_project_number')]
 #[ORM\Index(columns: ['status'], name: 'idx_status')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_created_at')]
 #[ORM\HasLifecycleCallbacks]
-class ProjectBase
+class Project
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

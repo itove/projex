@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
-use App\Entity\ProjectBase;
+use App\Entity\Project;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
@@ -12,7 +12,7 @@ use App\Enum\ProjectType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
-class ProjectBaseFixtures extends Fixture
+class ProjectFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
@@ -231,7 +231,7 @@ class ProjectBaseFixtures extends Fixture
         ];
 
         foreach ($projects as $index => $data) {
-            $project = new ProjectBase();
+            $project = new Project();
             $project->setProjectName($data['name']);
             $project->setProjectType($data['type']);
             $project->setProjectSubtype($data['subtype']);

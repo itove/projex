@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\ProjectBase;
+use App\Entity\Project;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
@@ -29,7 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class ProjectBaseCrudController extends AbstractCrudController
+class ProjectCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly ProjectNumberGenerator $numberGenerator,
@@ -41,7 +41,7 @@ class ProjectBaseCrudController extends AbstractCrudController
 
     public static function getEntityFqcn(): string
     {
-        return ProjectBase::class;
+        return Project::class;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -62,7 +62,7 @@ class ProjectBaseCrudController extends AbstractCrudController
     {
         $context = $this->getContext();
         $project = $context?->getEntity()?->getInstance();
-        $lockCoreFields = $project instanceof ProjectBase && $this->lockingService->shouldLockCoreFields($project);
+        $lockCoreFields = $project instanceof Project && $this->lockingService->shouldLockCoreFields($project);
 
         // Project Basic Info Section
         yield TextField::new('projectName', '项目名称')
@@ -200,7 +200,7 @@ class ProjectBaseCrudController extends AbstractCrudController
     {
         $submitAction = Action::new('submitForReview', '提交审核', 'fa fa-check')
             ->linkToCrudAction('submitForReview')
-            ->displayIf(fn(ProjectBase $project) => $project->getStatus() === ProjectStatus::DRAFT);
+            ->displayIf(fn(Project $project) => $project->getStatus() === ProjectStatus::DRAFT);
 
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -228,7 +228,7 @@ class ProjectBaseCrudController extends AbstractCrudController
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if ($entityInstance instanceof ProjectBase) {
+        if ($entityInstance instanceof Project) {
             $entityInstance->setStatus(ProjectStatus::DRAFT);
         }
 
@@ -239,7 +239,7 @@ class ProjectBaseCrudController extends AbstractCrudController
     {
         $project = $context->getEntity()->getInstance();
 
-        if (!$project instanceof ProjectBase) {
+        if (!$project instanceof Project) {
             $this->addFlash('error', '无效的项目实例');
             return $this->redirect($this->adminUrlGenerator->setAction(Action::INDEX)->generateUrl());
         }
