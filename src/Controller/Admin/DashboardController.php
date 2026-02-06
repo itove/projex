@@ -10,6 +10,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use App\Service\DashboardData;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
@@ -62,4 +65,25 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
         yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);
     }
+
+    public function configureCrud(): Crud
+    {
+        return Crud::new()
+            // ->showEntityActionsInlined()
+            ->setTimezone("Asia/Shanghai")
+            ->setDateTimeFormat("yyyy/MM/dd HH:mm")
+            ->setDefaultSort(["id" => "DESC"])
+        ;
+    }
+
+    // public function configureActions(): Actions
+    // {
+    //     return Actions::new()
+    //         // ->disable('delete')
+    //         // ->add(Crud::PAGE_NEW, Action::SAVE_AND_RETURN)
+    //         // ->add(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
+    //         // ->add(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN)
+    //         // ->add(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
+    //     ;
+    // }
 }
