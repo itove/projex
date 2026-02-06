@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\CompletionAcceptance;
 use App\Entity\ConstructionImplementation;
 use App\Entity\ConstructionPreparation;
 use App\Entity\File;
@@ -74,6 +75,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('规划设计流程', 'fa fa-drafting-compass', PlanningDesign::class);
         yield MenuItem::linkToCrud('施工准备流程', 'fa fa-hard-hat', ConstructionPreparation::class);
         yield MenuItem::linkToCrud('施工实施流程', 'fa fa-cogs', ConstructionImplementation::class);
+        yield MenuItem::linkToCrud('竣工验收流程', 'fa fa-check-circle', CompletionAcceptance::class);
         yield MenuItem::section('基础数据');
         yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
         yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);

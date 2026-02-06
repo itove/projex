@@ -20,6 +20,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['planning_design_id'], name: 'idx_file_planning_design')]
 #[ORM\Index(columns: ['construction_preparation_id'], name: 'idx_file_construction_preparation')]
 #[ORM\Index(columns: ['construction_implementation_id'], name: 'idx_file_construction_implementation')]
+#[ORM\Index(columns: ['completion_acceptance_id'], name: 'idx_file_completion_acceptance')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class File
@@ -48,6 +49,10 @@ class File
     #[ORM\ManyToOne(targetEntity: ConstructionImplementation::class, inversedBy: 'files')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?ConstructionImplementation $constructionImplementation = null;
+
+    #[ORM\ManyToOne(targetEntity: CompletionAcceptance::class, inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?CompletionAcceptance $completionAcceptance = null;
 
     #[Vich\UploadableField(mapping: 'project_files', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName')]
     private ?SymfonyFile $file = null;
@@ -253,6 +258,17 @@ class File
     public function setConstructionImplementation(?ConstructionImplementation $constructionImplementation): self
     {
         $this->constructionImplementation = $constructionImplementation;
+        return $this;
+    }
+
+    public function getCompletionAcceptance(): ?CompletionAcceptance
+    {
+        return $this->completionAcceptance;
+    }
+
+    public function setCompletionAcceptance(?CompletionAcceptance $completionAcceptance): self
+    {
+        $this->completionAcceptance = $completionAcceptance;
         return $this;
     }
 

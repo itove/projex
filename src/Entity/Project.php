@@ -151,6 +151,9 @@ class Project
     #[ORM\OneToOne(targetEntity: ConstructionImplementation::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
     private ?ConstructionImplementation $constructionImplementation = null;
 
+    #[ORM\OneToOne(targetEntity: CompletionAcceptance::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
+    private ?CompletionAcceptance $completionAcceptance = null;
+
     // System Fields
     #[ORM\Column(type: Types::STRING, enumType: ProjectStatus::class)]
     private ProjectStatus $status = ProjectStatus::DRAFT;
@@ -541,6 +544,22 @@ class Project
         }
 
         $this->constructionImplementation = $constructionImplementation;
+        return $this;
+    }
+
+    public function getCompletionAcceptance(): ?CompletionAcceptance
+    {
+        return $this->completionAcceptance;
+    }
+
+    public function setCompletionAcceptance(?CompletionAcceptance $completionAcceptance): self
+    {
+        // Set the owning side of the relation if necessary
+        if ($completionAcceptance !== null && $completionAcceptance->getProject() !== $this) {
+            $completionAcceptance->setProject($this);
+        }
+
+        $this->completionAcceptance = $completionAcceptance;
         return $this;
     }
 

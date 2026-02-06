@@ -6,6 +6,7 @@ ProjectApproval: 立项流程
 PlanningDesign: 规划设计流程
 ConstructionPreparation: 施工准备流程
 ConstructionImplementation: 施工实施流程
+CompletionAcceptance: 竣工验收流程
 File: 文件
 Image: 图片
 'Project submitted successfully': 项目提交成功

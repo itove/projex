@@ -74,6 +74,11 @@ class ImageCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(6);
 
+        yield AssociationField::new('completionAcceptance', '所属竣工验收')
+            ->autocomplete()
+            ->setRequired(false)
+            ->setColumns(6);
+
         yield ImageField::new('fileName', '预览')
             ->setBasePath('/uploads/images')
             ->hideOnForm()
