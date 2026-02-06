@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Project;
+use App\Entity\ProjectType;
+use App\Entity\ProjectSubtype;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -56,5 +58,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::section('项目管理');
         yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
+        yield MenuItem::section('基础数据');
+        yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
+        yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);
     }
 }

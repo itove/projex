@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Project;
+use App\Entity\ProjectType;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
-use App\Enum\ProjectType;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNumberGenerator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,6 +18,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
@@ -26,6 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -74,18 +76,30 @@ class ProjectCrudController extends AbstractCrudController
             ->hideOnForm()
             ->setColumns(6);
 
-        yield ChoiceField::new('projectType', '项目类型')
-            ->setChoices(array_combine(
-                array_map(fn(ProjectType $type) => $type->label(), ProjectType::cases()),
-                ProjectType::cases()
-            ))
+        yield AssociationField::new('projectType', '项目类型')
             ->setRequired(true)
-            ->setColumns(6);
+            ->setColumns(6)
+            ->autocomplete()
+            ->setQueryBuilder(function ($queryBuilder) {
+                return $queryBuilder
+                    ->andWhere('entity.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('entity.sortOrder', 'ASC')
+                    ->addOrderBy('entity.name', 'ASC');
+            });
 
-        yield TextField::new('projectSubtype', '项目子类型')
+        yield AssociationField::new('projectSubtype', '项目子类型')
             ->setRequired(false)
             ->setColumns(6)
-            ->setHelp('例如：市政工程、建筑工程、智慧城市等');
+            ->autocomplete()
+            ->setQueryBuilder(function ($queryBuilder) {
+                return $queryBuilder
+                    ->andWhere('entity.isActive = :active')
+                    ->setParameter('active', true)
+                    ->orderBy('entity.sortOrder', 'ASC')
+                    ->addOrderBy('entity.name', 'ASC');
+            })
+            ->setHelp('先选择项目类型，然后选择对应的子类型');
 
         yield TextField::new('projectIndustry', '项目行业')
             ->setRequired(true)
@@ -217,12 +231,8 @@ class ProjectCrudController extends AbstractCrudController
                     array_map(fn(ProjectStatus $status) => $status->value, ProjectStatus::cases())
                 ))
             )
-            ->add(ChoiceFilter::new('projectType', '项目类型')
-                ->setChoices(array_combine(
-                    array_map(fn(ProjectType $type) => $type->label(), ProjectType::cases()),
-                    array_map(fn(ProjectType $type) => $type->value, ProjectType::cases())
-                ))
-            )
+            ->add(EntityFilter::new('projectType', '项目类型'))
+            ->add(EntityFilter::new('projectSubtype', '项目子类型'))
             ->add(DateTimeFilter::new('createdAt', '创建时间'));
     }
 

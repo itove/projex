@@ -5,23 +5,40 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Entity\Project;
+use App\Entity\ProjectType;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
-use App\Enum\ProjectType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class ProjectFixtures extends Fixture
+class ProjectFixtures extends Fixture implements DependentFixtureInterface
 {
+    public function getDependencies(): array
+    {
+        return [
+            ProjectTypeFixtures::class,
+        ];
+    }
+
     public function load(ObjectManager $manager): void
     {
+        // Get ProjectType entities
+        /** @var ProjectType $constructionType */
+        $constructionType = $this->getReference(ProjectTypeFixtures::CONSTRUCTION_REFERENCE, ProjectType::class);
+        /** @var ProjectType $integrationType */
+        $integrationType = $this->getReference(ProjectTypeFixtures::INTEGRATION_REFERENCE, ProjectType::class);
+
+        // Get repository for subtypes lookup
+        $subtypeRepo = $manager->getRepository(\App\Entity\ProjectSubtype::class);
+
         // Create 10 sample projects
         $projects = [
             [
                 'name' => '智慧城市数据平台建设项目',
-                'type' => ProjectType::INTEGRATION,
-                'subtype' => '智慧城市',
+                'type' => $integrationType,
+                'subtype_code' => 'smart_city',
                 'industry' => '信息技术',
                 'location' => '北京市海淀区',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -41,8 +58,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '东城区市政道路改造工程',
-                'type' => ProjectType::CONSTRUCTION,
-                'subtype' => '市政工程',
+                'type' => $constructionType,
+                'subtype_code' => 'municipal',
                 'industry' => '市政建设',
                 'location' => '北京市东城区',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -62,8 +79,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '企业园区智能安防系统',
-                'type' => ProjectType::INTEGRATION,
-                'subtype' => '安防系统',
+                'type' => $integrationType,
+                'subtype_code' => 'security',
                 'industry' => '安防科技',
                 'location' => '上海市浦东新区',
                 'nature' => ProjectNature::ENTERPRISE,
@@ -83,8 +100,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '水利枢纽工程建设',
-                'type' => ProjectType::CONSTRUCTION,
-                'subtype' => '水利工程',
+                'type' => $constructionType,
+                'subtype_code' => 'water',
                 'industry' => '水利建设',
                 'location' => '河北省保定市',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -104,8 +121,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '商业综合体建筑工程',
-                'type' => ProjectType::CONSTRUCTION,
-                'subtype' => '建筑工程',
+                'type' => $constructionType,
+                'subtype_code' => 'building',
                 'industry' => '房地产开发',
                 'location' => '深圳市福田区',
                 'nature' => ProjectNature::ENTERPRISE,
@@ -125,8 +142,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '环境治理信息化平台',
-                'type' => ProjectType::INTEGRATION,
-                'subtype' => '环境治理',
+                'type' => $integrationType,
+                'subtype_code' => 'environmental',
                 'industry' => '环境保护',
                 'location' => '杭州市西湖区',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -146,8 +163,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '高速公路交通工程',
-                'type' => ProjectType::CONSTRUCTION,
-                'subtype' => '交通工程',
+                'type' => $constructionType,
+                'subtype_code' => 'transportation',
                 'industry' => '交通运输',
                 'location' => '山东省济南市',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -167,8 +184,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '智慧医疗信息系统升级',
-                'type' => ProjectType::INTEGRATION,
-                'subtype' => '信息化建设',
+                'type' => $integrationType,
+                'subtype_code' => 'informatization',
                 'industry' => '医疗卫生',
                 'location' => '成都市武侯区',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -188,8 +205,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '产业园区基础设施建设',
-                'type' => ProjectType::CONSTRUCTION,
-                'subtype' => '其他施工类',
+                'type' => $constructionType,
+                'subtype_code' => 'other_construction',
                 'industry' => '园区开发',
                 'location' => '武汉市东湖高新区',
                 'nature' => ProjectNature::ENTERPRISE,
@@ -209,8 +226,8 @@ class ProjectFixtures extends Fixture
             ],
             [
                 'name' => '轨道交通信号系统改造',
-                'type' => ProjectType::INTEGRATION,
-                'subtype' => '其他集成类',
+                'type' => $integrationType,
+                'subtype_code' => 'other_integration',
                 'industry' => '轨道交通',
                 'location' => '广州市天河区',
                 'nature' => ProjectNature::GOVERNMENT,
@@ -234,7 +251,12 @@ class ProjectFixtures extends Fixture
             $project = new Project();
             $project->setProjectName($data['name']);
             $project->setProjectType($data['type']);
-            $project->setProjectSubtype($data['subtype']);
+
+            // Look up subtype entity by code
+            if (!empty($data['subtype_code'])) {
+                $subtype = $subtypeRepo->findOneByCode($data['subtype_code']);
+                $project->setProjectSubtype($subtype);
+            }
             $project->setProjectIndustry($data['industry']);
             $project->setProjectLocation($data['location']);
             $project->setProjectNature($data['nature']);

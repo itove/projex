@@ -7,7 +7,6 @@ namespace App\Entity;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
-use App\Enum\ProjectType;
 use App\Repository\ProjectRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -35,13 +34,14 @@ class Project
     #[ORM\Column(type: Types::STRING, length: 50, unique: true, nullable: true)]
     private ?string $projectNumber = null;
 
-    #[ORM\Column(type: Types::STRING, enumType: ProjectType::class)]
+    #[ORM\ManyToOne(targetEntity: ProjectType::class, inversedBy: 'projects')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     #[Assert\NotNull(message: '项目类型不能为空')]
     private ?ProjectType $projectType = null;
 
-    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
-    #[Assert\Length(max: 100, maxMessage: '项目子类型不能超过 {{ limit }} 个字符')]
-    private ?string $projectSubtype = null;
+    #[ORM\ManyToOne(targetEntity: ProjectSubtype::class, inversedBy: 'projects')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ProjectSubtype $projectSubtype = null;
 
     #[ORM\Column(type: Types::STRING, length: 100)]
     #[Assert\NotBlank(message: '项目行业不能为空')]
@@ -211,18 +211,18 @@ class Project
         return $this->projectType;
     }
 
-    public function setProjectType(ProjectType $projectType): self
+    public function setProjectType(?ProjectType $projectType): self
     {
         $this->projectType = $projectType;
         return $this;
     }
 
-    public function getProjectSubtype(): ?string
+    public function getProjectSubtype(): ?ProjectSubtype
     {
         return $this->projectSubtype;
     }
 
-    public function setProjectSubtype(?string $projectSubtype): self
+    public function setProjectSubtype(?ProjectSubtype $projectSubtype): self
     {
         $this->projectSubtype = $projectSubtype;
         return $this;

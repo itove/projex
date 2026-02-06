@@ -1,9 +1,7 @@
 Project: 项目基础信息
+ProjectType: 项目类型
+ProjectSubtype: 项目子类型
 'Project submitted successfully': 项目提交成功
-
-# ProjectType enum
-construction: 施工类
-integration: 集成类
 
 # ProjectNature enum
 government: 政府投资
