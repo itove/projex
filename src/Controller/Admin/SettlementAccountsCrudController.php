@@ -52,6 +52,16 @@ class SettlementAccountsCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('项目工程结算完成的日期');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->setColumns(12)
+            // ->onlyOnDetail()
+            ->setHelp('结算相关的文件：结算书、审核报告、支付凭证等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('结算相关的图片：结算资料照片等');
+
         // Detail Fields
         yield TextareaField::new('contractSettlementDetails', '合同结算明细')
             ->setRequired(false)
@@ -88,15 +98,6 @@ class SettlementAccountsCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('质保金的留存、管理和返还情况');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('结算相关的文件：结算书、审核报告、支付凭证等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('结算相关的图片：结算资料照片等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

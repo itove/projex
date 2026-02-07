@@ -48,6 +48,7 @@ class FileCrudController extends AbstractCrudController
             ->setRequired($pageName === Crud::PAGE_NEW)
             ->setHelp('最大文件大小: 50MB');
 
+        /**
         yield AssociationField::new('preliminaryDecision', '所属前期决策')
             ->autocomplete()
             ->setRequired(false)
@@ -82,6 +83,7 @@ class FileCrudController extends AbstractCrudController
             ->autocomplete()
             ->setRequired(false)
             ->setColumns(6);
+         */
 
         yield TextField::new('originalName', '原始文件名')
             ->hideOnForm()
@@ -105,14 +107,14 @@ class FileCrudController extends AbstractCrudController
             ->onlyOnDetail()
             ->setColumns(4);
 
-        yield TextField::new('category', '分类')
-            ->setRequired(false)
-            ->setColumns(6)
-            ->setHelp('例如: 合同文件、技术文档、财务报表等');
+        // yield TextField::new('category', '分类')
+        //     ->setRequired(false)
+        //     ->setColumns(6)
+        //     ->setHelp('例如: 合同文件、技术文档、财务报表等');
 
         yield TextareaField::new('description', '描述')
             ->setRequired(false)
-            ->setColumns(12)
+            // ->setColumns(12)
             ->hideOnIndex();
 
         yield DateTimeField::new('createdAt', '上传时间')

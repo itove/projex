@@ -69,6 +69,15 @@ class PlanningDesignCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('设计文件编号或图号');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->onlyOnDetail()
+            ->setHelp('设计相关的文件：初步设计、施工图、概算文件等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('设计相关的图片：设计图纸、效果图等');
+
         // Design Detail Fields
         yield TextareaField::new('preliminaryDesignDetails', '初步设计说明')
             ->setRequired(false)
@@ -105,15 +114,6 @@ class PlanningDesignCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('设计文件批复的主要内容和要求');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('设计相关的文件：初步设计、施工图、概算文件等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('设计相关的图片：设计图纸、效果图等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

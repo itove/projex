@@ -56,6 +56,16 @@ class ConstructionImplementationCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('完成日期必须晚于开始日期');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->setColumns(12)
+            // ->onlyOnDetail()
+            ->setHelp('施工实施相关的文件：施工日志、检验报告、监理报告等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('施工实施相关的图片：施工现场照片、质量问题照片等');
+
         // Detail Fields
         yield TextareaField::new('constructionProgressDetails', '施工进度说明')
             ->setRequired(false)
@@ -92,15 +102,6 @@ class ConstructionImplementationCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('监理单位的监理日志和工作记录');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('施工实施相关的文件：施工日志、检验报告、监理报告等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('施工实施相关的图片：施工现场照片、质量问题照片等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

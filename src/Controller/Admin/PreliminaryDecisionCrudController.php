@@ -67,6 +67,15 @@ class PreliminaryDecisionCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(6);
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->onlyOnDetail()
+            ->setHelp('前期决策相关的文件：项目建议书、可行性研究报告、审批文件等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('前期决策相关的图片：资质证明、审批文件扫描件等');
+
         // Detail Fields
         yield TextareaField::new('projectProposalDetails', '项目建议书说明')
             ->setRequired(false)
@@ -87,15 +96,6 @@ class PreliminaryDecisionCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(12)
             ->hideOnIndex();
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('前期决策相关的文件：项目建议书、可行性研究报告、审批文件等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('前期决策相关的图片：资质证明、审批文件扫描件等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

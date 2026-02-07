@@ -69,6 +69,15 @@ class ProjectApprovalCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('如：发改投资[2026]123号');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->onlyOnDetail()
+            ->setHelp('立项相关的文件：投资批复、用地批复、环评批复等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('立项相关的图片：批复文件扫描件等');
+
         // Detail Fields
         yield TextareaField::new('investmentApprovalDetails', '投资批复说明')
             ->setRequired(false)
@@ -99,15 +108,6 @@ class ProjectApprovalCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('审批机关的批复意见和要求');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('立项相关的文件：投资批复、用地批复、环评批复等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('立项相关的图片：批复文件扫描件等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

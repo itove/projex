@@ -52,6 +52,16 @@ class CompletionAcceptanceCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('项目通过竣工验收的日期');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->setColumns(12)
+            // ->onlyOnDetail()
+            ->setHelp('竣工验收相关的文件：竣工报告、验收证书、质量评定报告等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('竣工验收相关的图片：验收现场照片、工程照片等');
+
         // Detail Fields
         yield TextareaField::new('completionReportDetails', '竣工报告内容')
             ->setRequired(false)
@@ -88,15 +98,6 @@ class CompletionAcceptanceCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('竣工档案资料的整理移交情况');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('竣工验收相关的文件：竣工报告、验收证书、质量评定报告等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('竣工验收相关的图片：验收现场照片、工程照片等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')

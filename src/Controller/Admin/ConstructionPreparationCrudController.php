@@ -69,6 +69,16 @@ class ConstructionPreparationCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('建设工程施工许可证编号');
 
+        // Files and Images
+        yield CollectionField::new('files', '附件文件')
+            // ->setColumns(12)
+            // ->onlyOnDetail()
+            ->setHelp('施工准备相关的文件：施工许可证、施工合同、施工方案等');
+
+        yield CollectionField::new('images', '附件图片')
+            ->onlyOnDetail()
+            ->setHelp('施工准备相关的图片：施工现场照片、许可证扫描件等');
+
         // Detail Fields
         yield TextareaField::new('bidDetails', '招标投标说明')
             ->setRequired(false)
@@ -105,15 +115,6 @@ class ConstructionPreparationCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex()
             ->setHelp('施工期间环境保护和文明施工措施');
-
-        // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->onlyOnDetail()
-            ->setHelp('施工准备相关的文件：施工许可证、施工合同、施工方案等');
-
-        yield CollectionField::new('images', '附件图片')
-            ->onlyOnDetail()
-            ->setHelp('施工准备相关的图片：施工现场照片、许可证扫描件等');
 
         // System Fields
         yield DateTimeField::new('createdAt', '创建时间')
