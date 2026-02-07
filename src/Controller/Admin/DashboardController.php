@@ -62,7 +62,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Projex');
+            ->setTitle('项目全周期智能管理系统');
     }
 
     public function configureMenuItems(): iterable
