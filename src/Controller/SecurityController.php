@@ -22,6 +22,7 @@ class SecurityController extends AbstractController
             'last_username' => $lastUsername,
             'error' => $error,
             'csrf_token_intention' => 'authenticate',
+            'page_title' => '项目全周期智能管理系统'
             // 'target_path' => $this->generateUrl('admin'),
         ]);
     }
