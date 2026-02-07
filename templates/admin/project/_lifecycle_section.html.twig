@@ -1,11 +1,11 @@
 {# Project Lifecycle Section for Detail Page #}
 
 {# Summary Header #}
-<div class="card mb-4 border-primary">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="mb-0">
             <i class="fas fa-chart-line"></i> 项目生命周期概览
-        </h5>
+        </div>
     </div>
     <div class="card-body">
         <div class="row text-center">
@@ -14,6 +14,7 @@
                     <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.overallProgress }}%</h3>
                     <small class="text-muted">整体进度</small>
+                    {#
                     <div class="progress mt-2" style="height: 8px;">
                         <div class="progress-bar bg-primary"
                              role="progressbar"
@@ -23,6 +24,7 @@
                              aria-valuemax="100">
                         </div>
                     </div>
+                    #}
                 </div>
             </div>
             <div class="col-md-3 mb-3 mb-md-0">
@@ -69,9 +71,9 @@
 {# Horizontal Timeline #}
 <div class="card mb-4">
     <div class="card-header">
-        <h6 class="mb-0">
+        <div class="mb-0">
             <i class="fas fa-stream"></i> 生命周期进度
-        </h6>
+        </div>
     </div>
     <div class="card-body">
         {% include 'admin/project/_lifecycle_timeline.html.twig' with {stages: stages} %}

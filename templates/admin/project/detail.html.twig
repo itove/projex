@@ -42,8 +42,8 @@
                 ? ea.crud.defaultPageTitle(null, null, ea.i18n.translationParameters)|trans|raw
                 : custom_page_title|trans|raw -}}
         </div>
-        <div>
-            <span class="badge {{ entity.instance.status.name == 'COMPLETED' ? 'bg-success' : (entity.instance.status.name == 'CANCELLED' ? 'bg-danger' : 'bg-primary') }}">
+        <div class="d-flex">
+            <span class="badge text-light {{ entity.instance.status.name == 'COMPLETED' ? 'bg-success' : (entity.instance.status.name == 'CANCELLED' ? 'bg-danger' : 'bg-secondary') }}">
                 {{ entity.instance.status.label }}
             </span>
         </div>

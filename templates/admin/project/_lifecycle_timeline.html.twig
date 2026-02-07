@@ -22,7 +22,7 @@
                 <div class="stage-label">
                     <small>{{ stage.name|replace({'流程': ''}) }}</small>
                     {% if stage.status == 'completed' %}
-                        <span class="badge bg-success">✓</span>
+                        <span class="badge bg-success text-light">完成</span>
                     {% elseif stage.status == 'in_progress' %}
                         {% if stage.progress is defined and stage.progress is not null %}
                             <span class="badge bg-warning">{{ stage.progress }}%</span>
