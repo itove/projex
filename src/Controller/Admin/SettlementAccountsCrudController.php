@@ -9,7 +9,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -112,9 +115,32 @@ class SettlementAccountsCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $reviewAction = Action::new('review', '审核')
+            ->linkToCrudAction('reviewStage')
+            ->setCssClass('btn btn-primary')
+            ->displayAsButton();
+
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_DETAIL, $reviewAction)
             ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+    }
+
+    public function reviewStage(AdminContext $context): Response
+    {
+        // TODO: Implement review logic
+        $entity = $context->getEntity()->getInstance();
+
+        $this->addFlash('info', '审核功能开发中');
+
+        $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
+        $url = $adminUrlGenerator
+            ->setController(self::class)
+            ->setAction(Action::DETAIL)
+            ->setEntityId($entity->getId())
+            ->generateUrl();
+
+        return $this->redirect($url);
     }
 
     public function configureFilters(Filters $filters): Filters
