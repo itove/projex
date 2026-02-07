@@ -1,0 +1,8 @@
+/* Custom EasyAdmin styles */
+
+/* Login page title */
+#header-logo .logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
