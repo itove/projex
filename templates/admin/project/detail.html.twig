@@ -71,7 +71,7 @@
     {% endfor %}
 
     {# Project Lifecycle Section #}
-    <div class="lifecycle-wrapper mb-4">
+    <div class="lifecycle-wrapper my-4">
         {% include 'admin/project/_lifecycle_section.html.twig' with {
             stages: stages,
             summary: summary,
@@ -85,26 +85,29 @@
 {% endblock %}
 
 {% macro render_field_contents(entity, field) %}
-    <div class="field-group {{ field.cssClass }}" {% for name, value in field.htmlAttributes %}{{ name }}="{{ value|e('html') }}" {% endfor %}>
-        {% if field.label is same as (false) %}
-        {% else %}
-            <div class="field-label">
-                {%- set label_html_attributes -%}
-                    {%- if field.help is not empty -%}
-                        data-bs-toggle="tooltip" data-bs-placement="auto" data-bs-animation="false"
-                        data-bs-html="true" data-bs-custom-class="ea-detail-label-tooltip"
-                        data-bs-title="{{ field.help|trans|e('html') }}"
-                    {%- endif -%}
-                {%- endset -%}
+    {% set is_wide = 'textarea' in field.templatePath or 'collection' in field.templatePath %}
+    <div class="{{ is_wide ? 'col-12' : 'col-md-3' }} p-2 project-detail">
+        <div class="field-group {{ field.cssClass }}" {% for name, value in field.htmlAttributes %}{{ name }}="{{ value|e('html') }}" {% endfor %} style="margin: 0 !important;">
+            {% if field.label is same as (false) %}
+            {% else %}
+                <div class="field-label">
+                    {%- set label_html_attributes -%}
+                        {%- if field.help is not empty -%}
+                            data-bs-toggle="tooltip" data-bs-placement="auto" data-bs-animation="false"
+                            data-bs-html="true" data-bs-custom-class="ea-detail-label-tooltip"
+                            data-bs-title="{{ field.help|trans|e('html') }}"
+                        {%- endif -%}
+                    {%- endset -%}
 
-                <div {{ label_html_attributes }}>
-                    {{ field.label|trans|raw }}
+                    <div {{ label_html_attributes }} class="fw-bolder">
+                        {{ field.label|trans|raw }}
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
 
-        <div class="field-value">
-            {{ include(field.templatePath, {field: field, entity: entity}, with_context: false) }}
+            <div class="field-value">
+                {{ include(field.templatePath, {field: field, entity: entity}, with_context: false) }}
+            </div>
         </div>
     </div>
 {% endmacro %}
@@ -142,7 +145,7 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="form-fieldset-body">
+            <div class="form-fieldset-body row">
     {% elseif field.formType == 'EasyCorp\\Bundle\\EasyAdminBundle\\Form\\Type\\Layout\\EaFormFieldsetCloseType' %}
             </div></fieldset></div>
     {% endif %}

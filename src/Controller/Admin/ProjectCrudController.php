@@ -174,16 +174,6 @@ class ProjectCrudController extends AbstractCrudController
             ->setFormTypeOption('disabled', $lockCoreFields)
             ->hideOnIndex();
 
-        yield TextareaField::new('purpose', '项目目的')
-            ->setRequired(true)
-            ->setColumns(12)
-            ->hideOnIndex();
-
-        yield TextareaField::new('scale', '项目规模')
-            ->setRequired(true)
-            ->setColumns(12)
-            ->hideOnIndex();
-
         // Registrant Info Section
         yield TextField::new('registrantName', '登记人姓名')
             ->setRequired(true)
@@ -234,6 +224,16 @@ class ProjectCrudController extends AbstractCrudController
             ->hideOnForm()
             ->hideOnIndex()
             ->setColumns(3);
+
+        yield TextareaField::new('purpose', '项目目的')
+            ->setRequired(true)
+            ->setColumns(12)
+            ->hideOnIndex();
+
+        yield TextareaField::new('scale', '项目规模')
+            ->setRequired(true)
+            ->setColumns(12)
+            ->hideOnIndex();
     }
 
     public function configureActions(Actions $actions): Actions
