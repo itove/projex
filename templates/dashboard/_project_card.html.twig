@@ -1,6 +1,6 @@
 {# 4.3.2.1 Project Card Core Fields Display #}
 <div class="col">
-    <div class="card h-100 shadow-sm {% if card.isClosed %}border-success{% endif %}">
+    <div class="card h-100 shadow-sm project-card {% if card.isClosed %}border-success{% endif %}">
         {# Card Header with Status Badge #}
         <div class="card-header d-flex justify-content-between align-items-center">
             <small class="text-muted">{{ card.projectNumber }}</small>
@@ -10,11 +10,7 @@
         <div class="card-body">
             {# Project Name (Primary Field) #}
             <h5 class="card-title mb-3">
-                <a href="{{ path('admin', {
-                    crudAction: 'detail',
-                    crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
-                    entityId: card.id
-                }) }}" class="text-decoration-none">
+                <a href="{{ path('admin_project_detail', { entityId: card.id }) }}" class="text-decoration-none">
                     {{ card.projectName }}
                 </a>
             </h5>
@@ -113,7 +109,7 @@
                 </p>
                 {% if card.contractorName is not null %}
                     <p class="mb-1 small">
-                        <strong>中标单位：</strong>{{ card.contractorName }}
+                        <strong>施工单位：</strong>{{ card.contractorName }}
                     </p>
                 {% endif %}
                 {% if card.acceptanceResult is not null %}
@@ -140,20 +136,12 @@
         {# Quick Action Buttons (4.3.1 - Point 4) #}
         <div class="card-footer bg-transparent">
             <div class="d-flex justify-content-between">
-                <a href="{{ path('admin', {
-                    crudAction: 'detail',
-                    crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
-                    entityId: card.id
-                }) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ path('admin_project_detail', { entityId: card.id }) }}" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-eye"></i> 查看详情
                 </a>
 
                 {% if not card.isClosed %}
-                    <a href="{{ path('admin', {
-                        crudAction: 'edit',
-                        crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
-                        entityId: card.id
-                    }) }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ path('admin_project_edit', { entityId: card.id }) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-edit"></i> 编辑
                     </a>
                 {% else %}
