@@ -61,15 +61,6 @@
 {% endblock %}
 
 {% block main %}
-    {# Project Lifecycle Section #}
-    <div class="lifecycle-wrapper mb-4">
-        {% include 'admin/project/_lifecycle_section.html.twig' with {
-            stages: stages,
-            summary: summary,
-            project: project
-        } %}
-    </div>
-
     {# Standard EasyAdmin Detail Fields #}
     {% for field in entity.fields %}
         {% if field.isFormLayoutField %}
@@ -78,6 +69,15 @@
             {{ _self.render_field_contents(entity, field) }}
         {% endif %}
     {% endfor %}
+
+    {# Project Lifecycle Section #}
+    <div class="lifecycle-wrapper mb-4">
+        {% include 'admin/project/_lifecycle_section.html.twig' with {
+            stages: stages,
+            summary: summary,
+            project: project
+        } %}
+    </div>
 
     {% block delete_form %}
         {{ include('@EasyAdmin/crud/includes/_action_confirmation_modal.html.twig', with_context: false) }}
