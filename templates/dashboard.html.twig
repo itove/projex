@@ -8,10 +8,208 @@
 {% block head_stylesheets %}
 {{ parent() }}
 <style>
+    .project-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    }
+    .badge-secondary {
+        background-color: #6c757d;
+    }
+    .badge-info {
+        background-color: #0dcaf0;
+    }
+    .badge-success {
+        background-color: #198754;
+    }
+    .badge-warning {
+        background-color: #ffc107;
+        color: #000;
+    }
+    .badge-danger {
+        background-color: #dc3545;
+    }
+    .badge-primary {
+        background-color: #0d6efd;
+    }
+    .stat-card {
+        border-radius: 0.5rem;
+        color: white;
+    }
+    .stat-card .fa-3x {
+        opacity: 0.5;
+    }
+    .stage-icon {
+        font-size: 2rem;
+    }
 </style>
 {% endblock %}
 
-{% block page_title %}数据统计{% endblock %}
+{% block page_title %}项目展示主页{% endblock %}
 
 {% block content %}
+<div class="container-fluid">
+    {# 4.3.2.3 Data Overview Widgets #}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-white-50">项目总数</h6>
+                            <h2 class="card-title mb-0">{{ statistics.total }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-project-diagram fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-white-50">进行中</h6>
+                            <h2 class="card-title mb-0">{{ statistics.byStatus.in_progress }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-spinner fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-white-50">已闭环</h6>
+                            <h2 class="card-title mb-0">{{ statistics.closed }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-check-circle fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-white-50">已终止</h6>
+                            <h2 class="card-title mb-0">{{ statistics.byStatus.cancelled }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-times-circle fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Lifecycle Stage Distribution #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">各流程阶段项目分布</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-file-alt stage-icon text-primary"></i>
+                            </div>
+                            <h6>前期决策</h6>
+                            <p class="h4 text-primary">{{ statistics.byStage.preliminary }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-check-square stage-icon text-success"></i>
+                            </div>
+                            <h6>立项</h6>
+                            <p class="h4 text-success">{{ statistics.byStage.approval }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-pencil-ruler stage-icon text-info"></i>
+                            </div>
+                            <h6>规划设计</h6>
+                            <p class="h4 text-info">{{ statistics.byStage.planning }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-tools stage-icon text-warning"></i>
+                            </div>
+                            <h6>施工准备</h6>
+                            <p class="h4 text-warning">{{ statistics.byStage.preparation }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-hard-hat stage-icon text-danger"></i>
+                            </div>
+                            <h6>施工实施</h6>
+                            <p class="h4 text-danger">{{ statistics.byStage.implementation }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-clipboard-check stage-icon text-secondary"></i>
+                            </div>
+                            <h6>竣工验收</h6>
+                            <p class="h4 text-secondary">{{ statistics.byStage.acceptance }}</p>
+                        </div>
+                        <div class="col">
+                            <div class="mb-2">
+                                <i class="fas fa-calculator stage-icon text-dark"></i>
+                            </div>
+                            <h6>竣工结算</h6>
+                            <p class="h4 text-dark">{{ statistics.byStage.settlement }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# 4.3.2.2 Filter and Search Interface #}
+    {% include 'dashboard/_filters.html.twig' %}
+
+    {# Quick Action: New Project Registration (4.3.1 - Point 6) #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{{ path('admin', {crudAction: 'new', crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController'}) }}"
+               class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> 新增项目登记
+            </a>
+        </div>
+    </div>
+
+    {# 4.3.2.1 Project Cards Display #}
+    <div class="row">
+        <div class="col-12">
+            {% if projectCards|length > 0 %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for card in projectCards %}
+                        {% include 'dashboard/_project_card.html.twig' with {'card': card} %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle"></i> 暂无项目数据
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

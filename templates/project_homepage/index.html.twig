@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}项目展示主页{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-3">项目展示主页</h1>
+
+            {# 4.3.2.3 Data Overview Widgets #}
+            {% include 'project_homepage/_statistics.html.twig' %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {# 4.3.2.2 Filter and Search Interface #}
+            {% include 'project_homepage/_filters.html.twig' %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {# Quick Action: New Project Registration (4.3.1 - Point 6) #}
+            <a href="{{ path('admin', {crudAction: 'new', crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController'}) }}"
+               class="btn btn-primary btn-lg mb-3">
+                <i class="fas fa-plus-circle"></i> 新增项目登记
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% if projectCards|length > 0 %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for card in projectCards %}
+                        {# 4.3.2.1 Project Card Core Fields #}
+                        {% include 'project_homepage/_project_card.html.twig' with {'card': card} %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle"></i> 暂无项目数据
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

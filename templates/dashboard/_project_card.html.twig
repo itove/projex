@@ -1,0 +1,165 @@
+{# 4.3.2.1 Project Card Core Fields Display #}
+<div class="col">
+    <div class="card h-100 shadow-sm {% if card.isClosed %}border-success{% endif %}">
+        {# Card Header with Status Badge #}
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ card.projectNumber }}</small>
+            <span class="badge {{ card.statusBadgeClass }}">{{ card.statusLabel }}</span>
+        </div>
+
+        <div class="card-body">
+            {# Project Name (Primary Field) #}
+            <h5 class="card-title mb-3">
+                <a href="{{ path('admin', {
+                    crudAction: 'detail',
+                    crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
+                    entityId: card.id
+                }) }}" class="text-decoration-none">
+                    {{ card.projectName }}
+                </a>
+            </h5>
+
+            {# Basic Core Fields #}
+            <div class="mb-3">
+                <p class="mb-1">
+                    <strong>项目类型：</strong>
+                    <span class="text-muted">{{ card.projectType }}</span>
+                </p>
+                <p class="mb-1">
+                    <strong>项目性质：</strong>
+                    <span class="badge bg-secondary">{{ card.projectNature }}</span>
+                </p>
+            </div>
+
+            {# Progress Fields #}
+            <div class="mb-3">
+                <p class="mb-2">
+                    <strong>当前阶段：</strong>
+                    <span class="badge bg-info">{{ card.currentStage }}</span>
+                </p>
+
+                {# Overall Progress Bar #}
+                <div class="mb-2">
+                    <small class="text-muted">整体进度</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar
+                            {% if card.overallProgress < 30 %}bg-danger
+                            {% elseif card.overallProgress < 70 %}bg-warning
+                            {% else %}bg-success{% endif %}"
+                             role="progressbar"
+                             style="width: {{ card.overallProgress }}%"
+                             aria-valuenow="{{ card.overallProgress }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            {{ card.overallProgress }}%
+                        </div>
+                    </div>
+                </div>
+
+                {# Construction Implementation Progress (if available) #}
+                {% if card.progressPercentage is not null %}
+                    <div class="mb-2">
+                        <small class="text-muted">施工进度</small>
+                        <div class="progress" style="height: 15px;">
+                            <div class="progress-bar bg-primary"
+                                 role="progressbar"
+                                 style="width: {{ card.progressPercentage }}%"
+                                 aria-valuenow="{{ card.progressPercentage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ card.progressPercentage }}%
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Key Personnel Fields #}
+            <div class="mb-3 bg-light p-2 rounded">
+                <p class="mb-1 small">
+                    <i class="fas fa-user-tie"></i>
+                    <strong>负责人：</strong>{{ card.leaderName }}
+                    <span class="text-muted">{{ card.leaderPhone }}</span>
+                </p>
+                <p class="mb-0 small">
+                    <i class="fas fa-user-edit"></i>
+                    <strong>登记人：</strong>{{ card.registrantName }}
+                </p>
+            </div>
+
+            {# Core Parameters #}
+            <div class="mb-3">
+                <p class="mb-1">
+                    <i class="fas fa-dollar-sign"></i>
+                    <strong>预算：</strong>
+                    <span class="text-success fw-bold">{{ card.budget }}</span>
+                </p>
+                <p class="mb-1">
+                    <i class="fas fa-calendar-alt"></i>
+                    <strong>计划工期：</strong>
+                    <small class="text-muted">{{ card.plannedTimeline }}</small>
+                </p>
+                <p class="mb-1">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>地点：</strong>
+                    <small class="text-muted">{{ card.location }}</small>
+                </p>
+            </div>
+
+            {# Auxiliary Fields (Optional) #}
+            <div class="mb-3">
+                <p class="mb-1 small">
+                    <strong>资金来源：</strong>{{ card.fundingSource }}
+                </p>
+                {% if card.contractorName is not null %}
+                    <p class="mb-1 small">
+                        <strong>中标单位：</strong>{{ card.contractorName }}
+                    </p>
+                {% endif %}
+                {% if card.acceptanceResult is not null %}
+                    <p class="mb-1 small">
+                        <strong>验收结果：</strong>
+                        <span class="badge bg-success">{{ card.acceptanceResult }}</span>
+                    </p>
+                {% endif %}
+            </div>
+
+            {# System Fields (Timestamps) #}
+            <div class="border-top pt-2">
+                <p class="mb-1 small text-muted">
+                    <i class="far fa-clock"></i>
+                    创建：{{ card.createdAt|date('Y-m-d H:i') }}
+                </p>
+                <p class="mb-0 small text-muted">
+                    <i class="far fa-clock"></i>
+                    更新：{{ card.updatedAt|date('Y-m-d H:i') }}
+                </p>
+            </div>
+        </div>
+
+        {# Quick Action Buttons (4.3.1 - Point 4) #}
+        <div class="card-footer bg-transparent">
+            <div class="d-flex justify-content-between">
+                <a href="{{ path('admin', {
+                    crudAction: 'detail',
+                    crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
+                    entityId: card.id
+                }) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i> 查看详情
+                </a>
+
+                {% if not card.isClosed %}
+                    <a href="{{ path('admin', {
+                        crudAction: 'edit',
+                        crudControllerFqcn: 'App\\Controller\\Admin\\ProjectCrudController',
+                        entityId: card.id
+                    }) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-edit"></i> 编辑
+                    </a>
+                {% else %}
+                    <span class="badge bg-success">已闭环</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

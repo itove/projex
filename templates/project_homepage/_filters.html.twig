@@ -1,0 +1,89 @@
+{# 4.3.2.2 Filter and Search Fields #}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-filter"></i> 项目筛选与搜索
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{{ path('project_homepage') }}" class="row g-3">
+            {# Quick Filters #}
+            <div class="col-md-3">
+                <label for="stage" class="form-label">流程阶段</label>
+                <select name="stage" id="stage" class="form-select">
+                    <option value="">全部</option>
+                    <option value="preliminary_completed" {% if filters.stage == 'preliminary_completed' %}selected{% endif %}>前期决策完成</option>
+                    <option value="approval_completed" {% if filters.stage == 'approval_completed' %}selected{% endif %}>立项完成</option>
+                    <option value="planning_completed" {% if filters.stage == 'planning_completed' %}selected{% endif %}>规划与设计完成</option>
+                    <option value="preparation_completed" {% if filters.stage == 'preparation_completed' %}selected{% endif %}>施工准备完成</option>
+                    <option value="implementation_in_progress" {% if filters.stage == 'implementation_in_progress' %}selected{% endif %}>施工实施中</option>
+                    <option value="acceptance_in_progress" {% if filters.stage == 'acceptance_in_progress' %}selected{% endif %}>竣工验收中</option>
+                    <option value="settlement_in_progress" {% if filters.stage == 'settlement_in_progress' %}selected{% endif %}>竣工结算中</option>
+                    <option value="closed" {% if filters.stage == 'closed' %}selected{% endif %}>已闭环</option>
+                    <option value="terminated" {% if filters.stage == 'terminated' %}selected{% endif %}>已终止</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="status" class="form-label">项目状态</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">全部</option>
+                    <option value="draft" {% if filters.status == 'draft' %}selected{% endif %}>草稿</option>
+                    <option value="registered" {% if filters.status == 'registered' %}selected{% endif %}>基础信息已登记</option>
+                    <option value="in_preliminary" {% if filters.status == 'in_preliminary' %}selected{% endif %}>前期决策中</option>
+                    <option value="preliminary_approved" {% if filters.status == 'preliminary_approved' %}selected{% endif %}>前期决策已通过</option>
+                    <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}>进行中</option>
+                    <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>已完成</option>
+                    <option value="cancelled" {% if filters.status == 'cancelled' %}selected{% endif %}>已取消</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="nature" class="form-label">项目性质</label>
+                <select name="nature" id="nature" class="form-select">
+                    <option value="">全部</option>
+                    <option value="government" {% if filters.nature == 'government' %}selected{% endif %}>政府投资</option>
+                    <option value="enterprise" {% if filters.nature == 'enterprise' %}selected{% endif %}>企业投资</option>
+                </select>
+            </div>
+
+            {# Search Field (Exact + Fuzzy) #}
+            <div class="col-md-4">
+                <label for="search" class="form-label">搜索</label>
+                <input type="text"
+                       name="search"
+                       id="search"
+                       class="form-control"
+                       placeholder="项目编号（精确）/ 项目名称、负责人、登记人（模糊）"
+                       value="{{ filters.search }}">
+            </div>
+
+            {# Sorting #}
+            <div class="col-md-6">
+                <label for="sortBy" class="form-label">排序方式</label>
+                <div class="input-group">
+                    <select name="sortBy" id="sortBy" class="form-select">
+                        <option value="updatedAt" {% if filters.sortBy == 'updatedAt' %}selected{% endif %}>最近更新时间</option>
+                        <option value="createdAt" {% if filters.sortBy == 'createdAt' %}selected{% endif %}>登记日期</option>
+                        <option value="projectName" {% if filters.sortBy == 'projectName' %}selected{% endif %}>项目名称</option>
+                        <option value="budget" {% if filters.sortBy == 'budget' %}selected{% endif %}>预算</option>
+                    </select>
+                    <select name="sortOrder" id="sortOrder" class="form-select" style="max-width: 150px;">
+                        <option value="DESC" {% if filters.sortOrder == 'DESC' %}selected{% endif %}>倒序</option>
+                        <option value="ASC" {% if filters.sortOrder == 'ASC' %}selected{% endif %}>正序</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Action Buttons #}
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+                <a href="{{ path('project_homepage') }}" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> 重置
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

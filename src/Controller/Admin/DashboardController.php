@@ -67,7 +67,7 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
+        yield MenuItem::linkToDashboard('项目展示主页', 'fa fa-home');
         yield MenuItem::section('项目管理');
         yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
         yield MenuItem::section('项目生命周期');

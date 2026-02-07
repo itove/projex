@@ -30,3 +30,21 @@ preliminary_approved: 前期决策已通过
 in_progress: 进行中
 completed: 已完成
 cancelled: 已取消
+
+# Project Homepage
+currentProgress: 当前实施进度
+overallProgress: 整体进度
+currentStage: 当前流程阶段
+projectNumber: 项目编号
+projectName: 项目名称
+projectType: 项目类型
+projectNature: 项目性质
+leaderName: 负责人姓名
+leaderPhone: 负责人电话
+registrantName: 登记人姓名
+budget: 项目预算
+plannedTimeline: 计划工期
+location: 项目地点
+fundingSource: 资金来源
+contractorName: 中标单位
+acceptanceResult: 验收结果

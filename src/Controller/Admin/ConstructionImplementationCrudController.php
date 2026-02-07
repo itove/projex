@@ -14,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
@@ -55,6 +56,13 @@ class ConstructionImplementationCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(6)
             ->setHelp('完成日期必须晚于开始日期');
+
+        // Progress Field
+        yield IntegerField::new('currentProgress', '当前实施进度（%）')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->setHelp('施工实施进度百分比（0-100）')
+            ->setFormTypeOption('attr', ['min' => 0, 'max' => 100]);
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')

@@ -1,0 +1,130 @@
+{# 4.3.2.3 Data Overview Widgets - Summary Statistics #}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">项目总数</h6>
+                        <h2 class="card-title mb-0">{{ statistics.total }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-project-diagram fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">进行中</h6>
+                        <h2 class="card-title mb-0">{{ statistics.byStatus.in_progress }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-spinner fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">已闭环</h6>
+                        <h2 class="card-title mb-0">{{ statistics.closed }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">已终止</h6>
+                        <h2 class="card-title mb-0">{{ statistics.byStatus.cancelled }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-times-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Lifecycle Stage Distribution #}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">各流程阶段项目分布</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-file-alt fa-2x text-primary"></i>
+                        </div>
+                        <h6>前期决策</h6>
+                        <p class="h4 text-primary">{{ statistics.byStage.preliminary }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-check-square fa-2x text-success"></i>
+                        </div>
+                        <h6>立项</h6>
+                        <p class="h4 text-success">{{ statistics.byStage.approval }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-pencil-ruler fa-2x text-info"></i>
+                        </div>
+                        <h6>规划设计</h6>
+                        <p class="h4 text-info">{{ statistics.byStage.planning }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-tools fa-2x text-warning"></i>
+                        </div>
+                        <h6>施工准备</h6>
+                        <p class="h4 text-warning">{{ statistics.byStage.preparation }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-hard-hat fa-2x text-danger"></i>
+                        </div>
+                        <h6>施工实施</h6>
+                        <p class="h4 text-danger">{{ statistics.byStage.implementation }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-clipboard-check fa-2x text-secondary"></i>
+                        </div>
+                        <h6>竣工验收</h6>
+                        <p class="h4 text-secondary">{{ statistics.byStage.acceptance }}</p>
+                    </div>
+                    <div class="col">
+                        <div class="mb-2">
+                            <i class="fas fa-calculator fa-2x text-dark"></i>
+                        </div>
+                        <h6>竣工结算</h6>
+                        <p class="h4 text-dark">{{ statistics.byStage.settlement }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -36,6 +36,14 @@ class ConstructionImplementation
     )]
     private ?\DateTimeImmutable $completionDate = null;
 
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: '进度百分比必须在 {{ min }} 到 {{ max }} 之间'
+    )]
+    private ?int $currentProgress = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $constructionProgressDetails = null;
 
@@ -250,6 +258,17 @@ class ConstructionImplementation
             }
         }
 
+        return $this;
+    }
+
+    public function getCurrentProgress(): ?int
+    {
+        return $this->currentProgress;
+    }
+
+    public function setCurrentProgress(?int $currentProgress): self
+    {
+        $this->currentProgress = $currentProgress;
         return $this;
     }
 
