@@ -1,0 +1,113 @@
+{# Project Lifecycle Section for Detail Page #}
+
+{# Summary Header #}
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-line"></i> 项目生命周期概览
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="summary-item">
+                    <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ summary.overallProgress }}%</h3>
+                    <small class="text-muted">整体进度</small>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-primary"
+                             role="progressbar"
+                             style="width: {{ summary.overallProgress }}%"
+                             aria-valuenow="{{ summary.overallProgress }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="summary-item">
+                    <i class="fas fa-tasks text-success fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ summary.completedStages }}/{{ summary.totalStages }}</h3>
+                    <small class="text-muted">已完成阶段</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="summary-item">
+                    <i class="fas fa-spinner text-warning fa-2x mb-2"></i>
+                    <h4 class="mb-0">{{ summary.currentStage }}</h4>
+                    <small class="text-muted">当前阶段</small>
+                    {% if summary.currentProgress is not null %}
+                        <div class="mt-1">
+                            <span class="badge bg-warning">{{ summary.currentProgress }}%</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-item">
+                    <i class="fas fa-folder-open text-info fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ summary.totalFiles }}</h3>
+                    <small class="text-muted">总文档数</small>
+                </div>
+            </div>
+        </div>
+        {% if summary.plannedEndDate is not null %}
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <p class="mb-0">
+                        <i class="far fa-calendar-alt text-muted"></i>
+                        <strong>预计完成日期：</strong>
+                        <span class="text-primary">{{ summary.plannedEndDate|date('Y年m月d日') }}</span>
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Horizontal Timeline #}
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-stream"></i> 生命周期进度
+        </h6>
+    </div>
+    <div class="card-body">
+        {% include 'admin/project/_lifecycle_timeline.html.twig' with {stages: stages} %}
+    </div>
+</div>
+
+{# Stage Detail Cards #}
+<div class="row">
+    {% for stage in stages %}
+        <div class="col-lg-6 mb-4">
+            {% include 'admin/project/_stage_card.html.twig' with {
+                stage: stage,
+                stages: stages,
+                project: project
+            } %}
+        </div>
+    {% endfor %}
+</div>
+
+<style>
+.summary-item {
+    padding: 10px;
+}
+
+.summary-item i {
+    display: block;
+}
+
+.summary-item h3,
+.summary-item h4 {
+    font-weight: bold;
+    color: #333;
+}
+
+.summary-item small {
+    display: block;
+    margin-top: 5px;
+}
+</style>

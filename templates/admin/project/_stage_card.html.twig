@@ -1,0 +1,207 @@
+{# Single Stage Detail Card #}
+<div class="card stage-card h-100
+    {% if stage.status == 'completed' %}border-success
+    {% elseif stage.status == 'in_progress' %}border-warning
+    {% else %}border-secondary{% endif %}">
+
+    <div class="card-header
+        {% if stage.status == 'completed' %}bg-success text-white
+        {% elseif stage.status == 'in_progress' %}bg-warning
+        {% else %}bg-light{% endif %}">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="fas {{ stage.icon }} me-2"></i>
+                {{ stage.number }}. {{ stage.name }}
+            </h6>
+            <span class="badge
+                {% if stage.status == 'completed' %}bg-light text-success
+                {% elseif stage.status == 'in_progress' %}bg-dark
+                {% else %}bg-secondary{% endif %}">
+                {% if stage.status == 'completed' %}
+                    ✓ 已完成
+                {% elseif stage.status == 'in_progress' %}
+                    ⚠ 进行中
+                {% else %}
+                    ○ 未开始
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        {% if stage.entity is not null %}
+            {# Stage exists - show information #}
+            <div class="mb-3">
+                {% if stage.entity.startDate is defined and stage.entity.startDate is not null %}
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-start text-muted"></i>
+                        <strong>开始日期：</strong>
+                        <span class="text-muted">{{ stage.entity.startDate|date('Y-m-d') }}</span>
+                    </p>
+                {% endif %}
+
+                {% if stage.entity.completionDate is defined and stage.entity.completionDate is not null %}
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-check text-success"></i>
+                        <strong>完成日期：</strong>
+                        <span class="text-success">{{ stage.entity.completionDate|date('Y-m-d') }}</span>
+                    </p>
+                {% endif %}
+
+                {% if stage.entity.acceptanceDate is defined and stage.entity.acceptanceDate is not null %}
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-check text-success"></i>
+                        <strong>验收日期：</strong>
+                        <span class="text-success">{{ stage.entity.acceptanceDate|date('Y-m-d') }}</span>
+                    </p>
+                {% endif %}
+
+                {% if stage.info is not null %}
+                    <p class="mb-1">
+                        <i class="fas fa-info-circle text-primary"></i>
+                        <strong>{{ stage.info }}</strong>
+                    </p>
+                {% endif %}
+
+                {# Progress bar for implementation stage #}
+                {% if stage.progress is defined and stage.progress is not null %}
+                    <div class="mb-2">
+                        <small class="text-muted">当前进度</small>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar
+                                {% if stage.progress < 30 %}bg-danger
+                                {% elseif stage.progress < 70 %}bg-warning
+                                {% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ stage.progress }}%"
+                                 aria-valuenow="{{ stage.progress }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ stage.progress }}%
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# File count #}
+                <p class="mb-0">
+                    <i class="fas fa-paperclip text-info"></i>
+                    <strong>附件：</strong>
+                    <span class="badge bg-info">{{ stage.entity.files|length }} 个文件</span>
+                    {% if stage.entity.images is defined %}
+                        <span class="badge bg-secondary">{{ stage.entity.images|length }} 张图片</span>
+                    {% endif %}
+                </p>
+            </div>
+
+        {% else %}
+            {# Stage not started #}
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle"></i>
+                {% if stage.number > 1 %}
+                    需完成前一阶段才能开始此流程
+                {% else %}
+                    点击下方按钮开始登记
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="card-footer bg-transparent">
+        <div class="d-flex gap-2 flex-wrap">
+            {% if stage.entity is not null %}
+                {# Stage exists - show view and edit links #}
+                <a href="{{ path(stage.route ~ '_detail', {entityId: stage.entity.id}) }}"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i> 查看详情
+                </a>
+
+                {% if stage.status == 'in_progress' %}
+                    <a href="{{ path(stage.route ~ '_edit', {entityId: stage.entity.id}) }}"
+                       class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit"></i> 更新进度
+                    </a>
+                {% endif %}
+
+                {# View documents button - links to file list with filter #}
+                <a href="{{ path('admin_file_index') }}?filters[{{ stage.route|replace({'admin_': ''}) }}]={{ stage.entity.id }}"
+                   class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-folder-open"></i> 查看文档
+                </a>
+
+            {% else %}
+                {# Stage not started - show start button if previous stage is complete #}
+                {% if stage.number == 1 or (stages[stage.number - 2] is defined and stages[stage.number - 2].status == 'completed') %}
+                    <a href="{{ path(stage.route ~ '_new') }}?project={{ project.id }}"
+                       class="btn btn-sm btn-success">
+                        <i class="fas fa-plus-circle"></i> 开始登记
+                    </a>
+                {% else %}
+                    <button class="btn btn-sm btn-secondary" disabled>
+                        <i class="fas fa-lock"></i> 前置条件未满足
+                    </button>
+                {% endif %}
+
+                <a href="#stage-requirements-{{ stage.number }}"
+                   class="btn btn-sm btn-outline-secondary"
+                   data-bs-toggle="collapse">
+                    <i class="fas fa-question-circle"></i> 查看要求
+                </a>
+            {% endif %}
+        </div>
+
+        {# Collapsible requirements section #}
+        {% if stage.entity is null %}
+            <div class="collapse mt-2" id="stage-requirements-{{ stage.number }}">
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <strong>登记要求：</strong>
+                        {% if stage.number == 1 %}
+                            需上传项目建议书、可行性研究报告等文档
+                        {% elseif stage.number == 2 %}
+                            需上传立项申请表、立项批复文件等
+                        {% elseif stage.number == 3 %}
+                            需上传规划审批文件、初步设计、施工图等
+                        {% elseif stage.number == 4 %}
+                            需上传招标文件、合同、施工许可证等
+                        {% elseif stage.number == 5 %}
+                            需定期更新施工进度、上传现场照片和验收记录
+                        {% elseif stage.number == 6 %}
+                            需上传竣工验收报告、专项验收证明等
+                        {% elseif stage.number == 7 %}
+                            需上传竣工结算书、决算报告、审计报告等
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.stage-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stage-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.stage-card .card-header {
+    border-bottom: 2px solid;
+}
+
+.stage-card.border-success .card-header {
+    border-bottom-color: #198754;
+}
+
+.stage-card.border-warning .card-header {
+    border-bottom-color: #ffc107;
+}
+
+.stage-card.border-secondary .card-header {
+    border-bottom-color: #6c757d;
+}
+</style>

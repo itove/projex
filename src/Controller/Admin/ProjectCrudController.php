@@ -9,10 +9,12 @@ use App\Entity\ProjectType;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
+use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNumberGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -38,6 +40,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly ProjectLockingService $lockingService,
         private readonly EntityManagerInterface $entityManager,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly ProjectDisplayService $displayService,
     ) {
     }
 
@@ -57,7 +60,8 @@ class ProjectCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_DETAIL, '项目详情')
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->setPaginatorPageSize(20)
-            ->setSearchFields(['projectName', 'projectNumber', 'leaderName', 'projectLocation']);
+            ->setSearchFields(['projectName', 'projectNumber', 'leaderName', 'projectLocation'])
+            ->overrideTemplate('crud/detail', 'admin/project/detail.html.twig');
     }
 
     public function configureFields(string $pageName): iterable
@@ -303,5 +307,19 @@ class ProjectCrudController extends AbstractCrudController
         ));
 
         return $this->redirect($this->adminUrlGenerator->setAction(Action::INDEX)->generateUrl());
+    }
+
+    public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
+    {
+        if (Crud::PAGE_DETAIL === $responseParameters->get('pageName')) {
+            $entity = $responseParameters->get('entity');
+            $project = $entity->getInstance();
+
+            $responseParameters->set('project', $project);
+            $responseParameters->set('stages', $this->displayService->getLifecycleStages($project));
+            $responseParameters->set('summary', $this->displayService->getProjectSummary($project));
+        }
+
+        return $responseParameters;
     }
 }
