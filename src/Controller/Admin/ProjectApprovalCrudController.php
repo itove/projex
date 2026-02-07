@@ -74,7 +74,7 @@ class ProjectApprovalCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('立项相关的文件：投资批复、用地批复、环评批复等');
 
         yield CollectionField::new('images', '附件图片')

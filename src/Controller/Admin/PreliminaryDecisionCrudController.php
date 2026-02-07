@@ -72,7 +72,7 @@ class PreliminaryDecisionCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('前期决策相关的文件：项目建议书、可行性研究报告、审批文件等');
 
         yield CollectionField::new('images', '附件图片')

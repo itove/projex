@@ -9,7 +9,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Routing\Attribute\Route;
+use Vich\UploaderBundle\Storage\StorageInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -21,9 +28,39 @@ use Vich\UploaderBundle\Form\Type\VichFileType;
 
 class FileCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private StorageInterface $storage,
+        private EntityManagerInterface $entityManager
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return File::class;
+    }
+
+    #[Route('/admin/file/download/{fileId}', name: 'admin_file_download')]
+    public function download(int $fileId): BinaryFileResponse
+    {
+        $file = $this->entityManager->getRepository(File::class)->find($fileId);
+
+        if (!$file) {
+            throw $this->createNotFoundException('File not found');
+        }
+
+        $filePath = $this->storage->resolvePath($file, 'file');
+
+        if (!file_exists($filePath)) {
+            throw $this->createNotFoundException('File not found on disk');
+        }
+
+        $response = new BinaryFileResponse($filePath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $file->getOriginalName()
+        );
+
+        return $response;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -129,8 +166,16 @@ class FileCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $downloadAction = Action::new('download', '下载', 'fa fa-download')
+            ->linkToUrl(function (File $file) {
+                return $this->generateUrl('admin_file_download', ['fileId' => $file->getId()]);
+            })
+            ->setCssClass('btn btn-primary')
+            ->displayAsButton();
+
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_DETAIL, $downloadAction)
             ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }
 

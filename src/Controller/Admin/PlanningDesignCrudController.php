@@ -74,7 +74,7 @@ class PlanningDesignCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('设计相关的文件：初步设计、施工图、概算文件等');
 
         yield CollectionField::new('images', '附件图片')

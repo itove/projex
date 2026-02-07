@@ -69,8 +69,7 @@ class ConstructionImplementationCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->setColumns(12)
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('施工实施相关的文件：施工日志、检验报告、监理报告等');
 
         yield CollectionField::new('images', '附件图片')

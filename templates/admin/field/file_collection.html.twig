@@ -1,0 +1,17 @@
+{# Custom template for rendering file collections with download links #}
+{% if field.value is empty %}
+    <span class="badge badge-secondary">无附件</span>
+{% else %}
+    <ul class="list-unstyled mb-0">
+        {% for file in field.value %}
+            <li class="mb-2">
+                <a href="{{ path('admin_file_download', {fileId: file.id}) }}"
+                   class="text-decoration-none">
+                    <i class="fa fa-download me-1"></i>
+                    {{ file.originalName }}
+                    <small class="text-muted">({{ file.fileSizeFormatted }})</small>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

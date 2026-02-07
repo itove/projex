@@ -57,8 +57,7 @@ class CompletionAcceptanceCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->setColumns(12)
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('竣工验收相关的文件：竣工报告、验收证书、质量评定报告等');
 
         yield CollectionField::new('images', '附件图片')

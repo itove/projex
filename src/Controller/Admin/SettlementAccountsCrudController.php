@@ -57,8 +57,7 @@ class SettlementAccountsCrudController extends AbstractCrudController
 
         // Files and Images
         yield CollectionField::new('files', '附件文件')
-            // ->setColumns(12)
-            // ->onlyOnDetail()
+            ->setTemplatePath('admin/field/file_collection.html.twig')
             ->setHelp('结算相关的文件：结算书、审核报告、支付凭证等');
 
         yield CollectionField::new('images', '附件图片')
