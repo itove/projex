@@ -49,10 +49,10 @@ class SettlementAccounts
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $warrantyManagementDetails = null;
 
-    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'settlementAccounts')]
+    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'settlementAccounts', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $files;
 
-    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'settlementAccounts')]
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'settlementAccounts', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $images;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

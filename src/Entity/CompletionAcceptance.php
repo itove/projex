@@ -49,10 +49,10 @@ class CompletionAcceptance
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $archiveDocumentationDetails = null;
 
-    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'completionAcceptance')]
+    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'completionAcceptance', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $files;
 
-    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'completionAcceptance')]
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'completionAcceptance', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $images;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
