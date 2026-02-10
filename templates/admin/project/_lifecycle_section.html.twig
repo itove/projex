@@ -9,32 +9,31 @@
     </div>
     <div class="card-body">
         <div class="row text-center">
-            <div class="col-md-3 mb-3 mb-md-0">
+            <div class="col-md-2 mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
-                    <h3 class="mb-0">{{ summary.overallProgress }}%</h3>
-                    <small class="text-muted">整体进度</small>
-                    {#
+                    {% set v = 50 %}
+                    <h3 class="mb-0">{{ summary.stageProgress }}%</h3>
+                    <small class="text-muted">项目总进度</small>
                     <div class="progress mt-2" style="height: 8px;">
                         <div class="progress-bar bg-primary"
                              role="progressbar"
-                             style="width: {{ summary.overallProgress }}%"
-                             aria-valuenow="{{ summary.overallProgress }}"
+                             style="width: {{ summary.stageProgress }}%"
+                             aria-valuenow="{{ summary.stageProgress }}"
                              aria-valuemin="0"
                              aria-valuemax="100">
                         </div>
                     </div>
-                    #}
                 </div>
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
+            <div class="col-md-2 mb-2 mb-md-0">
                 <div class="summary-item">
-                    <i class="fas fa-tasks text-success fa-2x mb-2"></i>
-                    <h3 class="mb-0">{{ summary.completedStages }}/{{ summary.totalStages }}</h3>
-                    <small class="text-muted">已完成阶段</small>
+                    <i class="fas fa-cny text-success fa-2x mb-2"></i>
+                    <h3 class="mb-0">已付款 50 万</h3>
+                    <small class="text-muted">总款项 100 万</small>
                 </div>
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
+            <div class="col-md-2 mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-spinner text-warning fa-2x mb-2"></i>
                     <h4 class="mb-0">{{ summary.currentStage }}</h4>
@@ -46,7 +45,14 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2 mb-2 mb-md-0">
+                <div class="summary-item">
+                    <i class="fas fa-tasks text-success fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ summary.completedStages }}/{{ summary.totalStages }}</h3>
+                    <small class="text-muted">已完成阶段</small>
+                </div>
+            </div>
+            <div class="col-md-2">
                 <div class="summary-item">
                     <i class="fas fa-folder-open text-info fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.totalFiles }}</h3>
