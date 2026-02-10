@@ -9,7 +9,7 @@
     </div>
     <div class="card-body">
         <div class="row text-center">
-            <div class="col-md-2 mb-2 mb-md-0">
+            <div class="col-md mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
                     {% set v = 50 %}
@@ -26,14 +26,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2 mb-2 mb-md-0">
+            <div class="col-md mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-cny text-success fa-2x mb-2"></i>
                     <h3 class="mb-0">已付款 50 万</h3>
                     <small class="text-muted">总款项 100 万</small>
                 </div>
             </div>
-            <div class="col-md-2 mb-2 mb-md-0">
+            <div class="col-md mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-spinner text-warning fa-2x mb-2"></i>
                     <h4 class="mb-0">{{ summary.currentStage }}</h4>
@@ -45,14 +45,14 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-md-2 mb-2 mb-md-0">
+            <div class="col-md mb-2 mb-md-0">
                 <div class="summary-item">
                     <i class="fas fa-tasks text-success fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.completedStages }}/{{ summary.totalStages }}</h3>
                     <small class="text-muted">已完成阶段</small>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md">
                 <div class="summary-item">
                     <i class="fas fa-folder-open text-info fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.totalFiles }}</h3>
