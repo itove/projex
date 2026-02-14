@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Project;
 use App\Entity\ProjectType;
+use App\Entity\User;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
@@ -13,6 +14,9 @@ use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNumberGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -20,6 +24,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -79,6 +85,12 @@ class ProjectCrudController extends AbstractCrudController
         yield TextField::new('projectNumber', '项目编号')
             ->hideOnForm()
             ->setColumns(6);
+
+        yield AssociationField::new('org', '所属组织')
+            ->setRequired(true)
+            ->setColumns(6)
+            ->autocomplete()
+            ->setHelp('项目所属的组织机构');
 
         yield AssociationField::new('projectType', '项目类型')
             ->setRequired(true)
@@ -175,13 +187,19 @@ class ProjectCrudController extends AbstractCrudController
             ->hideOnIndex();
 
         // Registrant Info Section
+        yield AssociationField::new('registeredBy', '登记人')
+            ->autocomplete()
+            ->setColumns(4)
+            ->hideOnIndex()
+            ->setHelp('系统会自动记录登记人信息');
+
         yield TextField::new('registrantName', '登记人姓名')
             ->setRequired(true)
             ->setColumns(4)
             ->hideOnIndex();
 
-        yield TextField::new('registrantOrganization', '登记人单位')
-            ->setRequired(true)
+        yield AssociationField::new('registrantOrganization', '登记人单位')
+            ->autocomplete()
             ->setColumns(4)
             ->hideOnIndex();
 
@@ -242,10 +260,29 @@ class ProjectCrudController extends AbstractCrudController
             ->linkToCrudAction('submitForReview')
             ->displayIf(fn(Project $project) => $project->getStatus() === ProjectStatus::DRAFT);
 
-        return $actions
+        $actions = $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_EDIT, $submitAction)
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+            ->add(Crud::PAGE_EDIT, $submitAction);
+
+        // Permission controls based on roles (Section 4.3.4)
+
+        // Only admins can delete projects
+        $actions->setPermission(Action::DELETE, 'ROLE_SYSTEM_ADMIN');
+
+        // Project managers can edit (already filtered to their own projects)
+        // Supervisors and admins can view but not edit unless they're also project managers
+        if ($this->isGranted('ROLE_SUPERVISOR') && !$this->isGranted('ROLE_PROJECT_MANAGER')) {
+            $actions->disable(Action::NEW, Action::EDIT);
+        }
+
+        // Auditors can only view (filtered by assignment, currently showing none)
+        if ($this->isGranted('ROLE_AUDITOR') &&
+            !$this->isGranted('ROLE_PROJECT_MANAGER') &&
+            !$this->isGranted('ROLE_SUPERVISOR')) {
+            $actions->disable(Action::NEW, Action::EDIT);
+        }
+
+        return $actions;
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -321,5 +358,74 @@ class ProjectCrudController extends AbstractCrudController
         }
 
         return $responseParameters;
+    }
+
+    /**
+     * Filter projects based on user role (Section 4.3.4)
+     * - Project Managers: only see projects they registered
+     * - Auditors: only see projects assigned to them (TODO: needs audit assignment system)
+     * - Supervisors: see all projects
+     * - System Admins: see all projects
+     */
+    public function createIndexQueryBuilder(
+        SearchDto $searchDto,
+        EntityDto $entityDto,
+        FieldCollection $fields,
+        FilterCollection $filters
+    ): QueryBuilder {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $qb;
+        }
+
+        // System admins and supervisors can see all projects
+        if ($this->isGranted('ROLE_SYSTEM_ADMIN') || $this->isGranted('ROLE_SUPERVISOR')) {
+            return $qb;
+        }
+
+        // Project managers only see projects they registered
+        if ($this->isGranted('ROLE_PROJECT_MANAGER')) {
+            $qb->andWhere('entity.registeredBy = :user')
+               ->setParameter('user', $user);
+            return $qb;
+        }
+
+        // Auditors only see projects assigned to them
+        // TODO: Implement audit assignment filtering when assignment system is created
+        if ($this->isGranted('ROLE_AUDITOR')) {
+            // For now, show no projects until assignment system is implemented
+            // Later: JOIN with audit_assignment table
+            $qb->andWhere('1 = 0'); // Show nothing for now
+            return $qb;
+        }
+
+        // Default: show no projects if no role matches
+        $qb->andWhere('1 = 0');
+        return $qb;
+    }
+
+    /**
+     * Auto-populate registeredBy and org when creating a new project
+     */
+    public function createEntity(string $entityFqcn): Project
+    {
+        $project = new Project();
+
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if ($user) {
+            $project->setRegisteredBy($user);
+            $project->setOrg($user->getOrg());
+            $project->setRegistrantOrganization($user->getOrg());
+            $project->setRegistrantName($user->getName());
+            $project->setRegistrantPhone($user->getPhone() ?? '');
+        }
+
+        return $project;
     }
 }

@@ -17,6 +17,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['project_number'], name: 'idx_project_number')]
 #[ORM\Index(columns: ['status'], name: 'idx_status')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_created_at')]
+#[ORM\Index(columns: ['org_id'], name: 'idx_project_org')]
+#[ORM\Index(columns: ['registered_by_id'], name: 'idx_project_registered_by')]
 #[ORM\HasLifecycleCallbacks]
 class Project
 {
@@ -106,16 +108,25 @@ class Project
     #[Assert\NotNull(message: '资金来源不能为空')]
     private ?FundingSource $fundingSource = null;
 
-    // Registrant Info
+    // Organization (project belongs to)
+    #[ORM\ManyToOne(targetEntity: Org::class, inversedBy: 'projects')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\NotNull(message: '所属组织不能为空')]
+    private ?Org $org = null;
+
+    // Registrant Info (who registered the project)
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $registeredBy = null;
+
     #[ORM\Column(type: Types::STRING, length: 100)]
     #[Assert\NotBlank(message: '登记人姓名不能为空')]
     #[Assert\Length(max: 100, maxMessage: '登记人姓名不能超过 {{ limit }} 个字符')]
     private ?string $registrantName = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Assert\NotBlank(message: '登记人单位不能为空')]
-    #[Assert\Length(max: 255, maxMessage: '登记人单位不能超过 {{ limit }} 个字符')]
-    private ?string $registrantOrganization = null;
+    #[ORM\ManyToOne(targetEntity: Org::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Org $registrantOrganization = null;
 
     #[ORM\Column(type: Types::STRING, length: 20)]
     #[Assert\NotBlank(message: '登记人电话不能为空')]
@@ -382,6 +393,28 @@ class Project
         return $this;
     }
 
+    public function getOrg(): ?Org
+    {
+        return $this->org;
+    }
+
+    public function setOrg(?Org $org): self
+    {
+        $this->org = $org;
+        return $this;
+    }
+
+    public function getRegisteredBy(): ?User
+    {
+        return $this->registeredBy;
+    }
+
+    public function setRegisteredBy(?User $registeredBy): self
+    {
+        $this->registeredBy = $registeredBy;
+        return $this;
+    }
+
     public function getRegistrantName(): ?string
     {
         return $this->registrantName;
@@ -393,12 +426,12 @@ class Project
         return $this;
     }
 
-    public function getRegistrantOrganization(): ?string
+    public function getRegistrantOrganization(): ?Org
     {
         return $this->registrantOrganization;
     }
 
-    public function setRegistrantOrganization(string $registrantOrganization): self
+    public function setRegistrantOrganization(?Org $registrantOrganization): self
     {
         $this->registrantOrganization = $registrantOrganization;
         return $this;

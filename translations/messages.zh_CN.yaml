@@ -10,6 +10,10 @@ CompletionAcceptance: 竣工验收流程
 SettlementAccounts: 结算流程
 File: 文件
 Image: 图片
+Org: 组织机构
+Role: 角色
+Permission: 权限
+User: 用户
 'Project submitted successfully': 项目提交成功
 
 # ProjectNature enum

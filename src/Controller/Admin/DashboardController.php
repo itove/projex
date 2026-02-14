@@ -15,6 +15,9 @@ use App\Entity\ProjectType;
 use App\Entity\ProjectSubtype;
 use App\Entity\SettlementAccounts;
 use App\Entity\Org;
+use App\Entity\Permission;
+use App\Entity\Role;
+use App\Entity\User;
 use App\Service\DashboardData;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -92,6 +95,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('文件管理');
         yield MenuItem::linkToCrud('文件', 'fa fa-file', File::class);
         yield MenuItem::linkToCrud('图片', 'fa fa-image', Image::class);
+        yield MenuItem::section('权限管理');
+        yield MenuItem::linkToCrud('组织机构', 'fa fa-building', Org::class);
+        yield MenuItem::linkToCrud('用户', 'fa fa-users', User::class);
+        yield MenuItem::linkToCrud('角色', 'fa fa-user-tag', Role::class);
+        yield MenuItem::linkToCrud('权限', 'fa fa-key', Permission::class);
     }
 
     public function configureCrud(): Crud

@@ -19,6 +19,8 @@ class ProjectFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             ProjectTypeFixtures::class,
+            OrgFixtures::class,
+            UserFixtures::class,
         ];
     }
 
@@ -270,9 +272,22 @@ class ProjectFixtures extends Fixture implements DependentFixtureInterface
             $project->setScale($data['scale']);
             $project->setFundingSource($data['funding']);
             $project->setRegistrantName($data['registrant']);
-            $project->setRegistrantOrganization($data['organization']);
             $project->setRegistrantPhone($data['regPhone']);
             $project->setStatus($data['status']);
+
+            // Assign organization (cycle through the 10 orgs)
+            $orgIndex = $index % 10;
+            /** @var \App\Entity\Org $org */
+            $org = $this->getReference(OrgFixtures::ORG_REFERENCE_PREFIX . $orgIndex, \App\Entity\Org::class);
+            $project->setOrg($org);
+            $project->setRegistrantOrganization($org);
+
+            // Find a project manager from the same org to set as registeredBy
+            $userRepo = $manager->getRepository(\App\Entity\User::class);
+            $projectManager = $userRepo->findOneBy(['org' => $org]);
+            if ($projectManager) {
+                $project->setRegisteredBy($projectManager);
+            }
 
             // Generate project number for REGISTERED projects
             if ($data['status'] === ProjectStatus::REGISTERED) {

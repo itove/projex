@@ -4,40 +4,41 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\Org;
+use App\Entity\Role;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 
-class OrgCrudController extends AbstractCrudController
+class RoleCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return Org::class;
+        return Role::class;
     }
 
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('组织机构')
-            ->setEntityLabelInPlural('组织机构')
-            ->setPageTitle(Crud::PAGE_INDEX, '组织机构列表')
+            ->setEntityLabelInSingular('角色')
+            ->setEntityLabelInPlural('角色')
+            ->setPageTitle(Crud::PAGE_INDEX, '角色列表')
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->setPaginatorPageSize(20);
     }
 
     public function configureFields(string $pageName): iterable
     {
-        yield TextField::new('name', '组织名称')->setRequired(true);
-        yield TextField::new('orgCode', '组织编码')->setRequired(true);
-        yield TextareaField::new('description', '组织描述')->hideOnIndex();
-        yield TextField::new('contactPerson', '联系人')->hideOnIndex();
-        yield TextField::new('contactPhone', '联系电话')->hideOnIndex();
-        yield TextField::new('address', '地址')->hideOnIndex();
+        yield TextField::new('roleCode', '角色编码')->setRequired(true);
+        yield TextField::new('roleName', '角色名称')->setRequired(true);
+        yield TextareaField::new('roleDescription', '角色描述')->hideOnIndex();
+        yield BooleanField::new('isPreset', '预设角色')->renderAsSwitch(false);
+        yield AssociationField::new('permissions', '权限')->autocomplete();
         yield DateTimeField::new('createdAt', '创建时间')->hideOnForm();
         yield DateTimeField::new('updatedAt', '更新时间')->hideOnForm()->hideOnIndex();
     }
