@@ -87,6 +87,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $gid = 1000;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $plainPassword = null;
+
     public function __construct()
     {
         $this->userRoles = new ArrayCollection();
@@ -191,7 +194,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
     /**
@@ -336,6 +339,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGid(int $gid): self
     {
         $this->gid = $gid;
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
+
         return $this;
     }
 }

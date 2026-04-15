@@ -100,6 +100,13 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('用户', 'fa fa-users', User::class);
         yield MenuItem::linkToCrud('角色', 'fa fa-user-tag', Role::class);
         yield MenuItem::linkToCrud('权限', 'fa fa-key', Permission::class);
+
+        yield MenuItem::section("系统设置");
+        yield MenuItem::linkToCrud('修改密码', 'fas fa-key', User::class)
+            ->setController(ChpwCrudController::class)
+            ->setAction('edit')
+            ->setEntityId($this->getUser()->getId())
+        ;
     }
 
     public function configureCrud(): Crud

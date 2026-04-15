@@ -14,6 +14,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -38,6 +40,11 @@ class UserCrudController extends AbstractCrudController
         yield TextField::new('name', '姓名')->setRequired(true);
         yield AssociationField::new('org', '所属组织')->setRequired(true)->autocomplete();
         yield AssociationField::new('userRoles', '角色')->autocomplete();
+        yield TextField::new('plainPassword')
+            ->setRequired(true)
+            ->setFormType(PasswordType::class)
+            ->onlyOnForms()
+        ;
         yield TextField::new('phone', '手机号');
         yield EmailField::new('email', '邮箱');
         yield TextField::new('position', '职位')->hideOnIndex();
