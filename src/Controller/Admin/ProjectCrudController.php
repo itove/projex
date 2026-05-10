@@ -13,6 +13,7 @@ use App\Enum\ProjectStatus;
 use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNumberGenerator;
+use App\Service\ProjectSpreadsheetImportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -37,7 +38,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectCrudController extends AbstractCrudController
 {
@@ -47,6 +51,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly EntityManagerInterface $entityManager,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly ProjectDisplayService $displayService,
+        private readonly ProjectSpreadsheetImportService $spreadsheetImportService,
     ) {
     }
 
@@ -260,8 +265,23 @@ class ProjectCrudController extends AbstractCrudController
             ->linkToCrudAction('submitForReview')
             ->displayIf(fn(Project $project) => $project->getStatus() === ProjectStatus::DRAFT);
 
+        $canImport = fn (?object $_entity = null): bool => $this->isGranted('ROLE_SYSTEM_ADMIN')
+            || $this->isGranted('ROLE_PROJECT_MANAGER');
+
+        $batchImport = Action::new('batchImport', '批量导入', 'fa fa-file-import')
+            ->linkToCrudAction('batchImport')
+            ->createAsGlobalAction()
+            ->displayIf($canImport);
+
+        $downloadImportTemplate = Action::new('downloadImportTemplate', '下载导入模板', 'fa fa-download')
+            ->linkToCrudAction('downloadImportTemplate')
+            ->createAsGlobalAction()
+            ->displayIf($canImport);
+
         $actions = $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $batchImport)
+            ->add(Crud::PAGE_INDEX, $downloadImportTemplate)
             ->add(Crud::PAGE_EDIT, $submitAction);
 
         // Permission controls based on roles (Section 4.3.4)
@@ -344,6 +364,97 @@ class ProjectCrudController extends AbstractCrudController
         ));
 
         return $this->redirect($this->adminUrlGenerator->setAction(Action::INDEX)->generateUrl());
+    }
+
+    public function batchImport(AdminContext $context): Response
+    {
+        $this->denyAccessUnlessProjectImporter();
+
+        $request = $context->getRequest();
+        $indexUrl = $this->adminUrlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl();
+        $importPageUrl = $this->adminUrlGenerator->setController(self::class)->setAction('batchImport')->generateUrl();
+
+        if ($request->isMethod('POST')) {
+            $token = (string) $request->request->get('_csrf_token');
+            if (!$this->isCsrfTokenValid('ea_project_import', $token)) {
+                $this->addFlash('error', '无效的请求令牌，请刷新页面后重试。');
+
+                return $this->redirect($importPageUrl);
+            }
+
+            /** @var UploadedFile|null $upload */
+            $upload = $request->files->get('import_file');
+            if (!$upload instanceof UploadedFile || !$upload->isValid()) {
+                $this->addFlash('error', '请选择有效的 Excel 文件。');
+
+                return $this->redirect($importPageUrl);
+            }
+
+            $name = strtolower($upload->getClientOriginalExtension());
+            if ($name !== 'xlsx') {
+                $this->addFlash('error', '仅支持 .xlsx 格式（Office Open XML）。');
+
+                return $this->redirect($importPageUrl);
+            }
+
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                $this->addFlash('error', '当前用户无效，无法导入。');
+
+                return $this->redirect($indexUrl);
+            }
+
+            try {
+                $result = $this->spreadsheetImportService->importFromPath($upload->getRealPath(), $user);
+            } catch (\Throwable $e) {
+                $this->addFlash('error', '读取表格失败：'.$e->getMessage());
+
+                return $this->redirect($importPageUrl);
+            }
+
+            if ($result['errors'] !== []) {
+                foreach ($result['errors'] as $message) {
+                    $this->addFlash('error', $message);
+                }
+
+                return $this->redirect($importPageUrl);
+            }
+
+            if ($result['imported'] === 0) {
+                $this->addFlash('warning', '没有找到可导入的数据行（空行已跳过）。');
+            } else {
+                $this->addFlash('success', sprintf('成功导入 %d 条项目。', $result['imported']));
+            }
+
+            return $this->redirect($indexUrl);
+        }
+
+        return $this->render('admin/project/import.html.twig', [
+            'import_submit_url' => $importPageUrl,
+            'template_download_url' => $this->adminUrlGenerator->setController(self::class)->setAction('downloadImportTemplate')->generateUrl(),
+            'back_url' => $indexUrl,
+            'csrf_token_id' => 'ea_project_import',
+        ]);
+    }
+
+    public function downloadImportTemplate(AdminContext $context): StreamedResponse
+    {
+        $this->denyAccessUnlessProjectImporter();
+
+        $response = new StreamedResponse(function (): void {
+            $this->spreadsheetImportService->saveTemplateTo('php://output');
+        });
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment; filename="project_import_template.xlsx"');
+
+        return $response;
+    }
+
+    private function denyAccessUnlessProjectImporter(): void
+    {
+        if (!$this->isGranted('ROLE_SYSTEM_ADMIN') && !$this->isGranted('ROLE_PROJECT_MANAGER')) {
+            throw $this->createAccessDeniedException('您没有批量导入项目的权限。');
+        }
     }
 
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore

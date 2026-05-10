@@ -1,0 +1,25 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}批量导入项目{% endblock %}
+
+{% block main %}
+    <div class="content-body">
+        <p class="text-muted">
+            上传符合模板格式的 .xlsx 文件，可同时导入多行项目数据。导入的项目状态为「草稿」。
+            <a href="{{ template_download_url }}">下载导入模板</a>
+        </p>
+
+        <form method="post" action="{{ import_submit_url }}" enctype="multipart/form-data" class="mt-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token(csrf_token_id) }}">
+
+            <div class="mb-3">
+                <label for="import_file" class="form-label">选择 Excel 文件（.xlsx）</label>
+                <input type="file" class="form-control" id="import_file" name="import_file"
+                       accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">开始导入</button>
+            <a href="{{ back_url }}" class="btn btn-secondary">返回列表</a>
+        </form>
+    </div>
+{% endblock %}
