@@ -20,16 +20,32 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Overtrue\Pinyin\Pinyin;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ProjectSpreadsheetImportService
 {
+    /** @var array<string, ProjectType> */
+    private array $importTypesByNormalizedName = [];
+
+    /** @var array<string, ProjectSubtype> */
+    private array $importSubtypesByCacheKey = [];
+
+    /** @var list<ProjectType> */
+    private array $importPendingTypes = [];
+
+    /** @var list<ProjectSubtype> */
+    private array $importPendingSubtypes = [];
+
+    /** @var array<string, true> */
+    private array $importReservedCodes = [];
+
     /** @var array<string, string> internal field key => Chinese column title */
     public const COLUMN_HEADERS = [
         'org_code' => '组织编码',
         'project_name' => '项目名称',
-        'project_type_code' => '项目类型代码',
-        'project_subtype_code' => '项目子类型代码',
+        'project_type' => '项目类型',
+        'project_subtype' => '项目子类型',
         'project_industry' => '项目行业',
         'project_location' => '项目地点',
         'project_nature' => '项目性质',
@@ -50,8 +66,8 @@ final class ProjectSpreadsheetImportService
     private const FIELD_LEGEND = [
         'org_code' => '必填。与「组织机构」中的组织编码一致，例如 ORG-ZHCS-002。',
         'project_name' => '必填。',
-        'project_type_code' => '必填。项目类型代码，例如 integration、construction。',
-        'project_subtype_code' => '选填。须属于所选类型；为空则不关联子类型。',
+        'project_type' => '必填。填写项目类型名称（与后台「项目类型」名称一致）；若不存在则自动新增。',
+        'project_subtype' => '选填。填写项目子类型名称（须属于所选类型）；若不存在则自动新增；留空表示不关联子类型。',
         'project_industry' => '必填。',
         'project_location' => '必填。',
         'project_nature' => '必填。可用枚举值 government、enterprise，或中文：政府投资、企业投资。',
@@ -90,8 +106,8 @@ final class ProjectSpreadsheetImportService
         $sample = [
             'ORG-ZHCS-002',
             '批量导入示例项目（可删除本行后导入）',
-            'integration',
-            'smart_city',
+            '集成类',
+            '智慧城市',
             '信息技术',
             '上海市浦东新区',
             '政府投资',
@@ -146,53 +162,85 @@ final class ProjectSpreadsheetImportService
      */
     public function importFromPath(string $path, User $user): array
     {
-        $spreadsheet = IOFactory::load($path);
-        $sheet = $spreadsheet->getSheetByName('项目导入') ?? $spreadsheet->getActiveSheet();
+        $this->resetImportScratchState();
 
-        $headerToCol = $this->resolveHeaderColumns($sheet);
-        $errors = [];
-        $toPersist = [];
+        try {
+            $spreadsheet = IOFactory::load($path);
+            $sheet = $spreadsheet->getSheetByName('项目导入') ?? $spreadsheet->getActiveSheet();
 
-        $highestRow = $sheet->getHighestDataRow();
-        for ($row = 2; $row <= $highestRow; ++$row) {
-            if ($this->isRowEmpty($sheet, $row, $headerToCol)) {
-                continue;
-            }
+            $headerToCol = $this->resolveHeaderColumns($sheet);
+            $errors = [];
+            $toPersist = [];
 
-            $linePrefix = sprintf('第 %d 行：', $row);
-            try {
-                $project = $this->buildProjectFromRow($sheet, $row, $headerToCol, $user);
-            } catch (\InvalidArgumentException $e) {
-                $errors[] = $linePrefix.$e->getMessage();
-                continue;
-            }
-
-            $violations = $this->validator->validate($project);
-            if (\count($violations) > 0) {
-                $msgs = [];
-                foreach ($violations as $v) {
-                    $msgs[] = $v->getMessage();
+            $highestRow = $sheet->getHighestDataRow();
+            for ($row = 2; $row <= $highestRow; ++$row) {
+                if ($this->isRowEmpty($sheet, $row, $headerToCol)) {
+                    continue;
                 }
-                $errors[] = $linePrefix.implode('；', $msgs);
-                continue;
+
+                $linePrefix = sprintf('第 %d 行：', $row);
+                try {
+                    $project = $this->buildProjectFromRow($sheet, $row, $headerToCol, $user);
+                } catch (\InvalidArgumentException $e) {
+                    $errors[] = $linePrefix.$e->getMessage();
+                    continue;
+                }
+
+                $violations = $this->validator->validate($project);
+                if (\count($violations) > 0) {
+                    $msgs = [];
+                    foreach ($violations as $v) {
+                        $msgs[] = $v->getMessage();
+                    }
+                    $errors[] = $linePrefix.implode('；', $msgs);
+                    continue;
+                }
+
+                $toPersist[] = $project;
             }
 
-            $toPersist[] = $project;
-        }
-
-        if ($errors !== []) {
-            return ['imported' => 0, 'errors' => $errors];
-        }
-
-        $this->entityManager->wrapInTransaction(function () use ($toPersist): void {
-            foreach ($toPersist as $project) {
-                $project->setStatus(ProjectStatus::DRAFT);
-                $this->entityManager->persist($project);
+            if ($errors !== []) {
+                return ['imported' => 0, 'errors' => $errors];
             }
-            $this->entityManager->flush();
-        });
 
-        return ['imported' => \count($toPersist), 'errors' => []];
+            foreach ($this->importPendingTypes as $type) {
+                foreach ($this->validator->validate($type) as $v) {
+                    $errors[] = sprintf('自动创建的项目类型「%s」：%s', $type->getName() ?? '', $v->getMessage());
+                }
+            }
+
+            foreach ($this->importPendingSubtypes as $subtype) {
+                foreach ($this->validator->validate($subtype) as $v) {
+                    $errors[] = sprintf(
+                        '自动创建的项目子类型「%s」：%s',
+                        $subtype->getName() ?? '',
+                        $v->getMessage()
+                    );
+                }
+            }
+
+            if ($errors !== []) {
+                return ['imported' => 0, 'errors' => $errors];
+            }
+
+            $this->entityManager->wrapInTransaction(function () use ($toPersist): void {
+                foreach ($this->importPendingTypes as $type) {
+                    $this->entityManager->persist($type);
+                }
+                foreach ($this->importPendingSubtypes as $subtype) {
+                    $this->entityManager->persist($subtype);
+                }
+                foreach ($toPersist as $project) {
+                    $project->setStatus(ProjectStatus::DRAFT);
+                    $this->entityManager->persist($project);
+                }
+                $this->entityManager->flush();
+            });
+
+            return ['imported' => \count($toPersist), 'errors' => []];
+        } finally {
+            $this->resetImportScratchState();
+        }
     }
 
     /**
@@ -232,7 +280,7 @@ final class ProjectSpreadsheetImportService
         $required = [
             'org_code',
             'project_name',
-            'project_type_code',
+            'project_type',
             'project_industry',
             'project_location',
             'project_nature',
@@ -288,27 +336,17 @@ final class ProjectSpreadsheetImportService
             throw new \InvalidArgumentException(sprintf('组织编码「%s」不存在。', $orgCode));
         }
 
-        $typeCode = $this->requiredString($sheet, $row, $headerToCol, 'project_type_code');
-        $projectType = $this->entityManager->getRepository(ProjectType::class)->findOneBy(['code' => $typeCode]);
-        if (!$projectType instanceof ProjectType) {
-            throw new \InvalidArgumentException(sprintf('项目类型代码「%s」不存在。', $typeCode));
+        $typeName = $this->requiredString($sheet, $row, $headerToCol, 'project_type');
+        if ($typeName === '') {
+            throw new \InvalidArgumentException('项目类型不能为空。');
         }
 
-        $subtype = null;
-        $subtypeCode = $this->optionalString($sheet, $row, $headerToCol, 'project_subtype_code');
-        if ($subtypeCode !== '') {
-            $subtype = $this->entityManager->getRepository(ProjectSubtype::class)->findOneBy(['code' => $subtypeCode]);
-            if (!$subtype instanceof ProjectSubtype) {
-                throw new \InvalidArgumentException(sprintf('项目子类型代码「%s」不存在。', $subtypeCode));
-            }
-            if ($subtype->getProjectType()?->getId() !== $projectType->getId()) {
-                throw new \InvalidArgumentException(sprintf(
-                    '子类型「%s」不属于类型「%s」。',
-                    $subtypeCode,
-                    $typeCode
-                ));
-            }
-        }
+        $projectType = $this->resolveProjectTypeByName($typeName);
+
+        $subtypeName = $this->optionalString($sheet, $row, $headerToCol, 'project_subtype');
+        $subtype = $subtypeName !== ''
+            ? $this->resolveProjectSubtypeByName($subtypeName, $projectType)
+            : null;
 
         $regOrgCode = $this->optionalString($sheet, $row, $headerToCol, 'registrant_org_code');
         $regOrg = $org;
@@ -508,6 +546,162 @@ final class ProjectSpreadsheetImportService
         }
 
         return null;
+    }
+
+    private function resetImportScratchState(): void
+    {
+        $this->importTypesByNormalizedName = [];
+        $this->importSubtypesByCacheKey = [];
+        $this->importPendingTypes = [];
+        $this->importPendingSubtypes = [];
+        $this->importReservedCodes = [];
+    }
+
+    private function normalizeCatalogName(string $name): string
+    {
+        return trim($name);
+    }
+
+    private function catalogCacheKey(string $trimmedName): string
+    {
+        return mb_strtolower($trimmedName, 'UTF-8');
+    }
+
+    private function resolveProjectTypeByName(string $name): ProjectType
+    {
+        $trim = $this->normalizeCatalogName($name);
+        if ($trim === '') {
+            throw new \InvalidArgumentException('项目类型不能为空。');
+        }
+
+        $cacheKey = $this->catalogCacheKey($trim);
+        if (isset($this->importTypesByNormalizedName[$cacheKey])) {
+            return $this->importTypesByNormalizedName[$cacheKey];
+        }
+
+        $existing = $this->entityManager->getRepository(ProjectType::class)->findOneBy(['name' => $trim]);
+        if ($existing instanceof ProjectType) {
+            $this->importTypesByNormalizedName[$cacheKey] = $existing;
+
+            return $existing;
+        }
+
+        $type = new ProjectType();
+        $type->setName($trim);
+        $type->setCode($this->allocateUniqueProjectTypeCode($trim));
+        $type->setDescription('由项目批量导入自动创建');
+        $type->setSortOrder(99);
+        $type->setIsActive(true);
+
+        $this->importPendingTypes[] = $type;
+        $this->importTypesByNormalizedName[$cacheKey] = $type;
+
+        return $type;
+    }
+
+    private function resolveProjectSubtypeByName(string $name, ProjectType $projectType): ProjectSubtype
+    {
+        $trim = $this->normalizeCatalogName($name);
+        if ($trim === '') {
+            throw new \InvalidArgumentException('项目子类型不能为空。');
+        }
+
+        $cacheKey = spl_object_id($projectType).'|'.$this->catalogCacheKey($trim);
+        if (isset($this->importSubtypesByCacheKey[$cacheKey])) {
+            return $this->importSubtypesByCacheKey[$cacheKey];
+        }
+
+        if ($projectType->getId() !== null) {
+            $existing = $this->entityManager->getRepository(ProjectSubtype::class)->findOneBy([
+                'name' => $trim,
+                'projectType' => $projectType,
+            ]);
+            if ($existing instanceof ProjectSubtype) {
+                $this->importSubtypesByCacheKey[$cacheKey] = $existing;
+
+                return $existing;
+            }
+        }
+
+        $subtype = new ProjectSubtype();
+        $subtype->setProjectType($projectType);
+        $subtype->setName($trim);
+        $subtype->setCode($this->allocateUniqueProjectSubtypeCode($trim));
+        $subtype->setSortOrder(99);
+        $subtype->setIsActive(true);
+
+        $this->importPendingSubtypes[] = $subtype;
+        $this->importSubtypesByCacheKey[$cacheKey] = $subtype;
+
+        return $subtype;
+    }
+
+    private function slugCodeBase(string $name, string $emptyFallback): string
+    {
+        $trim = trim($name);
+        $permalink = Pinyin::permalink($trim, '_');
+        $slug = strtolower((string) preg_replace('/[^a-z_]/', '_', $permalink));
+        $slug = (string) preg_replace('/_+/', '_', $slug);
+        $slug = trim($slug, '_');
+        if ($slug === '') {
+            $slug = $emptyFallback;
+        }
+        if (\strlen($slug) > 35) {
+            $slug = substr($slug, 0, 35);
+            $slug = rtrim($slug, '_');
+        }
+
+        return $slug;
+    }
+
+    private function allocateUniqueProjectTypeCode(string $displayName): string
+    {
+        $base = $this->slugCodeBase($displayName, 'import_type');
+
+        return $this->reserveUniqueCode($base, fn (string $c): bool => $this->isProjectTypeCodeUnavailable($c));
+    }
+
+    private function allocateUniqueProjectSubtypeCode(string $displayName): string
+    {
+        $base = $this->slugCodeBase($displayName, 'import_subtype');
+
+        return $this->reserveUniqueCode($base, fn (string $c): bool => $this->isProjectSubtypeCodeUnavailable($c));
+    }
+
+    private function isProjectTypeCodeUnavailable(string $code): bool
+    {
+        if (isset($this->importReservedCodes[$code])) {
+            return true;
+        }
+
+        return null !== $this->entityManager->getRepository(ProjectType::class)->findOneBy(['code' => $code]);
+    }
+
+    private function isProjectSubtypeCodeUnavailable(string $code): bool
+    {
+        if (isset($this->importReservedCodes[$code])) {
+            return true;
+        }
+
+        return null !== $this->entityManager->getRepository(ProjectSubtype::class)->findOneBy(['code' => $code]);
+    }
+
+    private function reserveUniqueCode(string $base, callable $isTaken): string
+    {
+        $candidate = $base;
+        $n = 0;
+        while ($isTaken($candidate)) {
+            ++$n;
+            $suffix = '_'.$n;
+            $maxBaseLen = 50 - \strlen($suffix);
+            $truncBase = \strlen($base) > $maxBaseLen ? substr($base, 0, max(1, $maxBaseLen)) : $base;
+            $truncBase = rtrim($truncBase, '_');
+            $candidate = $truncBase.$suffix;
+        }
+
+        $this->importReservedCodes[$candidate] = true;
+
+        return $candidate;
     }
 
     private function stringCell(Cell $cell): string
