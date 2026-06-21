@@ -4,7 +4,7 @@ vich_uploader:
     mappings:
         project_files:
             uri_prefix: /uploads/files
-            upload_destination: '%kernel.project_dir%/var/uploads/files'
+            upload_destination: '%kernel.project_dir%/public/uploads/files'
             namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
             inject_on_load: false
             delete_on_update: true
@@ -12,7 +12,14 @@ vich_uploader:
 
         project_images:
             uri_prefix: /uploads/images
-            upload_destination: '%kernel.project_dir%/var/uploads/images'
+            upload_destination: '%kernel.project_dir%/public/uploads/images'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: false
+            delete_on_update: true
+            delete_on_remove: true
+        project_title_images:
+            uri_prefix: /uploads/title-images
+            upload_destination: '%kernel.project_dir%/public/uploads/title-images'
             namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
             inject_on_load: false
             delete_on_update: true

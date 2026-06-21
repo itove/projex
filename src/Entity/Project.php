@@ -8,9 +8,13 @@ use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
 use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File as SymfonyFile;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: 'project')]
@@ -20,6 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['org_id'], name: 'idx_project_org')]
 #[ORM\Index(columns: ['registered_by_id'], name: 'idx_project_registered_by')]
 #[ORM\HasLifecycleCallbacks]
+#[Vich\Uploadable]
 class Project
 {
     #[ORM\Id]
@@ -146,6 +151,22 @@ class Project
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisiteNotes = null;
 
+    // Title Image (single cover image)
+    #[Vich\UploadableField(mapping: 'project_title_images', fileNameProperty: 'titleImageName')]
+    #[Assert\Image(
+        maxSize: '10M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        mimeTypesMessage: '请上传有效的图片文件 (JPEG, PNG, GIF, WebP)'
+    )]
+    private ?SymfonyFile $titleImageFile = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $titleImageName = null;
+
+    // Slides (multiple images)
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $images;
+
     // Lifecycle Stage Relationships
     #[ORM\OneToOne(targetEntity: PreliminaryDecision::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
     private ?PreliminaryDecision $preliminaryDecision = null;
@@ -180,6 +201,11 @@ class Project
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
 
     #[ORM\PrePersist]
     public function onPrePersist(): void
@@ -612,6 +638,62 @@ class Project
         }
 
         $this->settlementAccounts = $settlementAccounts;
+        return $this;
+    }
+
+    public function getTitleImageFile(): ?SymfonyFile
+    {
+        return $this->titleImageFile;
+    }
+
+    public function setTitleImageFile(?SymfonyFile $titleImageFile): self
+    {
+        $this->titleImageFile = $titleImageFile;
+
+        if ($titleImageFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function getTitleImageName(): ?string
+    {
+        return $this->titleImageName;
+    }
+
+    public function setTitleImageName(?string $titleImageName): self
+    {
+        $this->titleImageName = $titleImageName;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Image $image): self
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Image $image): self
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getProject() === $this) {
+                $image->setProject(null);
+            }
+        }
+
         return $this;
     }
 

@@ -49,6 +49,11 @@ class ImageCrudController extends AbstractCrudController
             ->setRequired($pageName === Crud::PAGE_NEW)
             ->setHelp('支持格式: JPEG, PNG, GIF, WebP。最大大小: 10MB');
 
+        yield AssociationField::new('project', '所属项目')
+            ->autocomplete()
+            ->setRequired(false)
+            ->setColumns(6);
+
         yield AssociationField::new('preliminaryDecision', '所属前期决策')
             ->autocomplete()
             ->setRequired(false)

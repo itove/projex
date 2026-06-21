@@ -21,6 +21,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Index(columns: ['construction_implementation_id'], name: 'idx_image_construction_implementation')]
 #[ORM\Index(columns: ['completion_acceptance_id'], name: 'idx_image_completion_acceptance')]
 #[ORM\Index(columns: ['settlement_accounts_id'], name: 'idx_image_settlement_accounts')]
+#[ORM\Index(columns: ['project_id'], name: 'idx_image_project')]
 #[ORM\HasLifecycleCallbacks]
 #[Vich\Uploadable]
 class Image
@@ -57,6 +58,10 @@ class Image
     #[ORM\ManyToOne(targetEntity: SettlementAccounts::class, inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?SettlementAccounts $settlementAccounts = null;
+
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'images')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Project $project = null;
 
     #[Vich\UploadableField(mapping: 'project_images', fileNameProperty: 'fileName', size: 'fileSize', mimeType: 'mimeType', originalName: 'originalName', dimensions: 'dimensions')]
     #[Assert\Image(
@@ -350,6 +355,17 @@ class Image
     public function setSettlementAccounts(?SettlementAccounts $settlementAccounts): self
     {
         $this->settlementAccounts = $settlementAccounts;
+        return $this;
+    }
+
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
+
+    public function setProject(?Project $project): self
+    {
+        $this->project = $project;
         return $this;
     }
 
