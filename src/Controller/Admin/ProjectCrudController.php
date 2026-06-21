@@ -274,7 +274,7 @@ class ProjectCrudController extends AbstractCrudController
             ->hideOnIndex()
             ->setColumns(12);
 
-        yield CollectionField::new('images', '项目图集')
+        $imagesField = CollectionField::new('images', '项目图集')
             ->setEntryType(ImageType::class)
             ->setRequired(false)
             ->allowAdd()
@@ -283,6 +283,12 @@ class ProjectCrudController extends AbstractCrudController
             ->renderExpanded()
             ->setColumns(12)
             ->setHelp('项目幻灯片图集，每张图片支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
+
+        if ($pageName === Crud::PAGE_DETAIL) {
+            $imagesField->setTemplatePath('admin/field/project_images_lightbox.html.twig');
+        }
+
+        yield $imagesField;
     }
 
     public function configureActions(Actions $actions): Actions

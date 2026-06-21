@@ -1,0 +1,79 @@
+{% if field.value is not empty %}
+<div class="project-images-lightbox">
+    <style>
+        .project-images-lightbox .thumb-grid {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .project-images-lightbox .thumb-item {
+            position: relative;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            border-radius: 0.375rem;
+            background: #1a1a1a;
+        }
+        .project-images-lightbox .thumb-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+        .project-images-lightbox .thumb-item:hover img {
+            transform: scale(1.07);
+        }
+        .project-images-lightbox .thumb-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            padding: 0.4rem 0.5rem;
+        }
+        .project-images-lightbox .thumb-item:hover .thumb-overlay {
+            opacity: 1;
+        }
+        .project-images-lightbox .thumb-overlay .thumb-caption {
+            color: #fff;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+
+    {# First image as the visible thumbnail; all images registered for lightbox navigation #}
+    <div class="thumb-grid">
+        {% for image in field.value %}
+        <a href="/uploads/images/{{ image.fileName }}"
+           class="project-glightbox {% if not loop.first %}d-none{% endif %}"
+           data-gallery="project-slides"
+           data-title="{{ image.caption ?? '' }}"
+           data-description="{{ image.description ?? '' }}">
+            {% if loop.first %}
+            <div class="thumb-item">
+                <img src="/uploads/images/{{ image.fileName }}"
+                     alt="{{ image.altText ?? image.caption ?? image.originalName }}">
+                <div class="thumb-overlay">
+                    <i class="fas fa-search-plus" style="color:#fff;font-size:1.5rem;margin-bottom:0.25rem;"></i>
+                    {% if image.caption %}
+                    <span class="thumb-caption">{{ image.caption }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="mt-2">
+        <small class="text-muted">
+            <i class="fas fa-images me-1"></i>{{ field.value|length }} 张图片，点击查看大图
+        </small>
+    </div>
+</div>
+{% else %}
+<span class="badge badge-secondary">暂无图片</span>
+{% endif %}
