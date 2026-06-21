@@ -149,11 +149,13 @@ class ProjectCrudController extends AbstractCrudController
         yield TextField::new('leaderName', '负责人姓名')
             ->setRequired(true)
             ->setColumns(4)
+            ->hideOnDetail()
         ;
 
         yield TextField::new('leaderPhone', '负责人电话')
             ->setRequired(true)
             ->setColumns(4)
+            ->hideOnDetail()
             ->hideOnIndex();
 
         // Project Parameters Section
@@ -188,26 +190,36 @@ class ProjectCrudController extends AbstractCrudController
             ->setFormTypeOption('disabled', $lockCoreFields)
             ->hideOnIndex();
 
+        yield TextField::new('leader', '负责人')
+            ->onlyOnDetail();
+
+        yield TextField::new('registrant', '登记人')
+            ->onlyOnDetail();
+
         // Registrant Info Section
         yield AssociationField::new('registeredBy', '登记人')
             ->autocomplete()
             ->setColumns(4)
             ->hideOnIndex()
+            ->hideOnDetail()
             ->setHelp('系统会自动记录登记人信息');
 
         yield TextField::new('registrantName', '登记人姓名')
             ->setRequired(true)
             ->setColumns(4)
+            ->hideOnDetail()
             ->hideOnIndex();
 
-        yield AssociationField::new('registrantOrganization', '登记人单位')
-            ->autocomplete()
-            ->setColumns(4)
-            ->hideOnIndex();
+        // yield AssociationField::new('registrantOrganization', '登记人单位')
+        //     ->autocomplete()
+        //     ->setColumns(4)
+        //     ->hideOnDetail()
+        //     ->hideOnIndex();
 
         yield TextField::new('registrantPhone', '登记人电话')
             ->setRequired(true)
             ->setColumns(4)
+            ->hideOnDetail()
             ->hideOnIndex();
 
         // Optional Fields Section

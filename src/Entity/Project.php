@@ -706,4 +706,14 @@ class Project
     {
         return $this->updatedAt;
     }
+
+    public function getLeader(): ?string
+    {
+        return $this->leaderName . ' ' . $this->leaderPhone;
+    }
+
+    public function getRegistrant(): ?string
+    {
+        return $this->registrantName. ' ' . $this->registrantPhone;
+    }
 }
