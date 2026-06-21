@@ -58,6 +58,50 @@
 
 {% block content %}
 <div class="container-fluid">
+
+    {# Project Title Image Slideshow #}
+    {% if slideProjects|length > 0 %}
+    <div id="projectSlideshow" class="carousel slide mb-4 rounded overflow-hidden shadow" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            {% for project in slideProjects %}
+            <button type="button" data-bs-target="#projectSlideshow" data-bs-slide-to="{{ loop.index0 }}"
+                    {% if loop.first %}class="active" aria-current="true"{% endif %}
+                    aria-label="{{ project.projectName }}"></button>
+            {% endfor %}
+        </div>
+        <div class="carousel-inner">
+            {% for project in slideProjects %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <a href="{{ path('admin_project_detail', { entityId: project.id }) }}">
+                    <img src="/uploads/title-images/{{ project.titleImageName }}"
+                         class="d-block w-100"
+                         style="max-height: 420px; object-fit: cover;"
+                         alt="{{ project.projectName }}">
+                </a>
+                <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.45); border-radius: 0.5rem; padding: 0.75rem 1.25rem;">
+                    <h5 class="mb-1">
+                        <a href="{{ path('admin_project_detail', { entityId: project.id }) }}" class="text-white text-decoration-none">
+                            {{ project.projectName }}
+                        </a>
+                    </h5>
+                    <p class="mb-0 small">
+                        <i class="fas fa-map-marker-alt"></i> {{ project.projectLocation }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#projectSlideshow" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">上一张</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#projectSlideshow" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">下一张</span>
+        </button>
+    </div>
+    {% endif %}
+
     {# 4.3.2.3 Data Overview Widgets #}
     <div class="row mb-4">
         <div class="col-md-3 mb-3">

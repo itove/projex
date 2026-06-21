@@ -231,30 +231,6 @@ class ProjectCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex();
 
-        // Title Image & Slides Section
-        yield TextField::new('titleImageFile', '封面图片')
-            ->setFormType(\Vich\UploaderBundle\Form\Type\VichImageType::class)
-            ->onlyOnForms()
-            ->setRequired(false)
-            ->setColumns(12)
-            ->setHelp('项目封面图片，支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
-
-        yield \EasyCorp\Bundle\EasyAdminBundle\Field\ImageField::new('titleImageName', '封面图片')
-            ->setBasePath('/uploads/title-images')
-            ->hideOnForm()
-            ->hideOnIndex()
-            ->setColumns(12);
-
-        yield CollectionField::new('images', '项目图集')
-            ->setEntryType(ImageType::class)
-            ->setRequired(false)
-            ->allowAdd()
-            ->allowDelete()
-            ->hideOnIndex()
-            ->renderExpanded()
-            ->setColumns(12)
-            ->setHelp('项目幻灯片图集，每张图片支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
-
         // System Fields (display only)
         yield ChoiceField::new('status', '状态')
             ->setChoices(array_combine(
@@ -283,6 +259,30 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(12)
             ->hideOnIndex();
+
+        // Title Image & Slides Section
+        yield TextField::new('titleImageFile', '封面图片')
+            ->setFormType(\Vich\UploaderBundle\Form\Type\VichImageType::class)
+            ->onlyOnForms()
+            ->setRequired(false)
+            ->setColumns(12)
+            ->setHelp('项目封面图片，支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
+
+        yield \EasyCorp\Bundle\EasyAdminBundle\Field\ImageField::new('titleImageName', '封面图片')
+            ->setBasePath('/uploads/title-images')
+            ->hideOnForm()
+            ->hideOnIndex()
+            ->setColumns(12);
+
+        yield CollectionField::new('images', '项目图集')
+            ->setEntryType(ImageType::class)
+            ->setRequired(false)
+            ->allowAdd()
+            ->allowDelete()
+            ->hideOnIndex()
+            ->renderExpanded()
+            ->setColumns(12)
+            ->setHelp('项目幻灯片图集，每张图片支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
     }
 
     public function configureActions(Actions $actions): Actions

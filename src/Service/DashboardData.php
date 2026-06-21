@@ -59,7 +59,18 @@ class DashboardData
             'projectCards' => $projectCards,
             'filters' => $filters,
             'statistics' => $statistics,
+            'slideProjects' => $this->getSlideProjects(),
         ];
+    }
+
+    private function getSlideProjects(): array
+    {
+        return $this->projectRepository->createQueryBuilder('p')
+            ->where('p.titleImageName IS NOT NULL')
+            ->orderBy('p.updatedAt', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
