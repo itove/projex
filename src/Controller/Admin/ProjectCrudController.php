@@ -39,6 +39,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
@@ -262,6 +263,13 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(false)
             ->setColumns(12)
             ->hideOnIndex();
+
+        yield UrlField::new('monitoringUrl', '监控')
+            ->setRequired(false)
+            ->setColumns(12)
+            ->hideOnIndex()
+            ->setDefaultProtocol('https')
+            ->setHelp('项目监控页面链接，如视频监控或进度看板');
 
         // System Fields (display only)
         yield ChoiceField::new('status', '状态')

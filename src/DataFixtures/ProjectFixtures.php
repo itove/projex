@@ -99,6 +99,7 @@ class ProjectFixtures extends Fixture implements DependentFixtureInterface
                 'organization' => '科技园区管理公司',
                 'regPhone' => '13900139003',
                 'status' => ProjectStatus::DRAFT,
+                'monitoringUrl' => 'https://monitor.example.com/project/security',
             ],
             [
                 'name' => '水利枢纽工程建设',
@@ -162,6 +163,7 @@ class ProjectFixtures extends Fixture implements DependentFixtureInterface
                 'organization' => '市环保局',
                 'regPhone' => '13900139006',
                 'status' => ProjectStatus::REGISTERED,
+                'monitoringUrl' => 'https://monitor.example.com/project/environmental',
             ],
             [
                 'name' => '高速公路交通工程',
@@ -274,6 +276,10 @@ class ProjectFixtures extends Fixture implements DependentFixtureInterface
             $project->setRegistrantName($data['registrant']);
             $project->setRegistrantPhone($data['regPhone']);
             $project->setStatus($data['status']);
+
+            if (!empty($data['monitoringUrl'])) {
+                $project->setMonitoringUrl($data['monitoringUrl']);
+            }
 
             // Assign organization (cycle through the 10 orgs)
             $orgIndex = $index % 10;

@@ -151,6 +151,11 @@ class Project
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $prerequisiteNotes = null;
 
+    #[ORM\Column(type: Types::STRING, length: 2048, nullable: true)]
+    #[Assert\Url(message: '请输入有效的监控链接')]
+    #[Assert\Length(max: 2048, maxMessage: '监控链接不能超过 {{ limit }} 个字符')]
+    private ?string $monitoringUrl = null;
+
     // Title Image (single cover image)
     #[Vich\UploadableField(mapping: 'project_title_images', fileNameProperty: 'titleImageName')]
     #[Assert\Image(
@@ -504,6 +509,17 @@ class Project
     public function setPrerequisiteNotes(?string $prerequisiteNotes): self
     {
         $this->prerequisiteNotes = $prerequisiteNotes;
+        return $this;
+    }
+
+    public function getMonitoringUrl(): ?string
+    {
+        return $this->monitoringUrl;
+    }
+
+    public function setMonitoringUrl(?string $monitoringUrl): self
+    {
+        $this->monitoringUrl = $monitoringUrl;
         return $this;
     }
 
