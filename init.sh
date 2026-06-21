@@ -2,17 +2,21 @@
 #
 # vim:ft=sh
 
-############### Variables ###############
+set -e
 
-############### Functions ###############
-
-############### Main Part ###############
 project=$(basename $PWD)
 passwd=111
+www_user=nginx
 
 [ -f .env.local ] && . .env.local
 
 sudo -u postgres psql -c "create role $project with login createdb password '$project'";
+
+sudo chown -R al:$www_user var/
+sudo chown -R al:$www_user public/
+find public/ -type d -exec chmod 775 {} \;
+find var/ -type d -exec chmod 775 {} \;
+find var/ -type f -exec chmod 664 {} \;
 
 bin/console doc:data:create
 bin/console doc:m:m -n
@@ -28,4 +32,3 @@ if [ "$APP_ENV" = prod ]; then
     bin/console secrets:generate-keys
     # bin/console secrets:set APP_SECRET
 fi
-
