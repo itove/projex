@@ -156,11 +156,6 @@ class ProjectCrudController extends AbstractCrudController
             ->setColumns(4)
             ->hideOnIndex();
 
-        yield EmailField::new('leaderEmail', '负责人邮箱')
-            ->setRequired(false)
-            ->setColumns(4)
-            ->hideOnIndex();
-
         // Project Parameters Section
         yield MoneyField::new('budget', '项目预算')
             ->setCurrency('CNY')
