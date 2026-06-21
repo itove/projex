@@ -113,5 +113,27 @@ class OrgFixtures extends Fixture
         }
 
         $manager->flush();
+
+        $hierarchy = [
+            1 => 0,
+            2 => 0,
+            3 => 1,
+            4 => 0,
+            5 => 0,
+            6 => 2,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+        ];
+
+        foreach ($hierarchy as $childIndex => $parentIndex) {
+            /** @var Org $childOrg */
+            $childOrg = $this->getReference(self::ORG_REFERENCE_PREFIX . $childIndex, Org::class);
+            /** @var Org $parentOrg */
+            $parentOrg = $this->getReference(self::ORG_REFERENCE_PREFIX . $parentIndex, Org::class);
+            $childOrg->setParent($parentOrg);
+        }
+
+        $manager->flush();
     }
 }

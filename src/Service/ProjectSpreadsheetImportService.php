@@ -88,6 +88,7 @@ final class ProjectSpreadsheetImportService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator,
+        private readonly OrgAccessService $orgAccessService,
     ) {
     }
 
@@ -336,6 +337,10 @@ final class ProjectSpreadsheetImportService
             throw new \InvalidArgumentException(sprintf('组织编码「%s」不存在。', $orgCode));
         }
 
+        if (!$this->orgAccessService->canAccessOrg($user, $org)) {
+            throw new \InvalidArgumentException(sprintf('无权导入组织编码「%s」下的项目。', $orgCode));
+        }
+
         $typeName = $this->requiredString($sheet, $row, $headerToCol, 'project_type');
         if ($typeName === '') {
             throw new \InvalidArgumentException('项目类型不能为空。');
@@ -356,6 +361,10 @@ final class ProjectSpreadsheetImportService
                 throw new \InvalidArgumentException(sprintf('登记人组织编码「%s」不存在。', $regOrgCode));
             }
             $regOrg = $resolved;
+        }
+
+        if (!$this->orgAccessService->canAccessOrg($user, $regOrg)) {
+            throw new \InvalidArgumentException(sprintf('无权使用登记人组织编码「%s」。', $regOrg->getOrgCode()));
         }
 
         $nature = $this->parseProjectNature($this->requiredString($sheet, $row, $headerToCol, 'project_nature'));

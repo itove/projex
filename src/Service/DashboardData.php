@@ -10,8 +10,10 @@ namespace App\Service;
 
 use App\DTO\ProjectCardDTO;
 use App\Entity\Project;
+use App\Entity\User;
 use App\Repository\ProjectRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 
@@ -23,6 +25,8 @@ class DashboardData
         private ProjectRepository $projectRepository,
         private ProjectDisplayService $displayService,
         private RequestStack $requestStack,
+        private Security $security,
+        private OrgAccessService $orgAccessService,
     ) {
     }
 
@@ -65,12 +69,17 @@ class DashboardData
 
     private function getSlideProjects(): array
     {
-        return $this->projectRepository->createQueryBuilder('p')
+        $qb = $this->projectRepository->createQueryBuilder('p')
             ->where('p.titleImageName IS NOT NULL')
             ->orderBy('p.updatedAt', 'DESC')
-            ->setMaxResults(5)
-            ->getQuery()
-            ->getResult();
+            ->setMaxResults(5);
+
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            $this->orgAccessService->applyProjectOrgScope($qb, $user, 'p');
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -135,6 +144,11 @@ class DashboardData
             $qb->orderBy('p.' . $sortBy, $sortOrder);
         } else {
             $qb->orderBy('p.updatedAt', 'DESC');
+        }
+
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            $this->orgAccessService->applyProjectOrgScope($qb, $user, 'p');
         }
 
         return $qb->getQuery()->getResult();

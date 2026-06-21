@@ -21,7 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
-class SettlementAccountsCrudController extends AbstractCrudController
+class SettlementAccountsCrudController extends AbstractOrgScopedLifecycleCrudController
 {
     public static function getEntityFqcn(): string
     {

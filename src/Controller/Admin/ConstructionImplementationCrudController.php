@@ -22,7 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
-class ConstructionImplementationCrudController extends AbstractCrudController
+class ConstructionImplementationCrudController extends AbstractOrgScopedLifecycleCrudController
 {
     public static function getEntityFqcn(): string
     {

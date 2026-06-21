@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
 use App\Enum\ProjectStatus;
+use App\Service\OrgAccessService;
 use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNumberGenerator;
@@ -40,6 +41,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use App\Security\Voter\ProjectVoter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,6 +56,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly ProjectDisplayService $displayService,
         private readonly ProjectSpreadsheetImportService $spreadsheetImportService,
+        private readonly OrgAccessService $orgAccessService,
     ) {
     }
 
@@ -97,6 +100,25 @@ class ProjectCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(6)
             ->autocomplete()
+            ->setQueryBuilder(function ($queryBuilder) {
+                $user = $this->getUser();
+                if (!$user instanceof User) {
+                    return $queryBuilder;
+                }
+
+                $accessibleOrgIds = $this->orgAccessService->getAccessibleOrgIds($user);
+                if ($accessibleOrgIds === null) {
+                    return $queryBuilder;
+                }
+
+                if ($accessibleOrgIds === []) {
+                    return $queryBuilder->andWhere('1 = 0');
+                }
+
+                return $queryBuilder
+                    ->andWhere('entity.id IN (:accessibleOrgIds)')
+                    ->setParameter('accessibleOrgIds', $accessibleOrgIds);
+            })
             ->setHelp('项目所属的组织机构');
 
         yield AssociationField::new('projectType', '项目类型')
@@ -361,10 +383,62 @@ class ProjectCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Project) {
+            $this->assertProjectOrgAccessible($entityInstance);
             $entityInstance->setStatus(ProjectStatus::DRAFT);
         }
 
         parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Project) {
+            $this->assertProjectOrgAccessible($entityInstance);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    public function detail(AdminContext $context): KeyValueStore|Response
+    {
+        $project = $context->getEntity()->getInstance();
+        if ($project instanceof Project) {
+            $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
+        }
+
+        return parent::detail($context);
+    }
+
+    public function edit(AdminContext $context): KeyValueStore|Response
+    {
+        $project = $context->getEntity()->getInstance();
+        if ($project instanceof Project) {
+            $this->denyAccessUnlessGranted(ProjectVoter::MANAGE, $project);
+        }
+
+        return parent::edit($context);
+    }
+
+    public function delete(AdminContext $context): KeyValueStore|Response
+    {
+        $project = $context->getEntity()->getInstance();
+        if ($project instanceof Project) {
+            $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
+        }
+
+        return parent::delete($context);
+    }
+
+    private function assertProjectOrgAccessible(Project $project): void
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('未登录用户无法操作项目。');
+        }
+
+        if (!$this->orgAccessService->canAccessOrg($user, $project->getOrg())) {
+            throw $this->createAccessDeniedException('无权将项目分配到该组织。');
+        }
     }
 
     public function submitForReview(AdminContext $context): RedirectResponse
@@ -375,6 +449,8 @@ class ProjectCrudController extends AbstractCrudController
             $this->addFlash('error', '无效的项目实例');
             return $this->redirect($this->adminUrlGenerator->setAction(Action::INDEX)->generateUrl());
         }
+
+        $this->denyAccessUnlessGranted(ProjectVoter::MANAGE, $project);
 
         if ($project->getStatus() !== ProjectStatus::DRAFT) {
             $this->addFlash('error', '只有草稿状态的项目可以提交审核');
@@ -511,11 +587,9 @@ class ProjectCrudController extends AbstractCrudController
     }
 
     /**
-     * Filter projects based on user role (Section 4.3.4)
-     * - Project Managers: only see projects they registered
-     * - Auditors: only see projects assigned to them (TODO: needs audit assignment system)
-     * - Supervisors: see all projects
-     * - System Admins: see all projects
+     * Filter projects by org hierarchy scope.
+     * Users can only see projects belonging to their org or subsidiaries.
+     * Role controls view vs manage actions elsewhere.
      */
     public function createIndexQueryBuilder(
         SearchDto $searchDto,
@@ -525,36 +599,13 @@ class ProjectCrudController extends AbstractCrudController
     ): QueryBuilder {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        /** @var User|null $user */
         $user = $this->getUser();
-
-        if (!$user) {
+        if (!$user instanceof User) {
             return $qb;
         }
 
-        // System admins and supervisors can see all projects
-        if ($this->isGranted('ROLE_SYSTEM_ADMIN') || $this->isGranted('ROLE_SUPERVISOR')) {
-            return $qb;
-        }
+        $this->orgAccessService->applyProjectOrgScope($qb, $user, 'entity');
 
-        // Project managers only see projects they registered
-        if ($this->isGranted('ROLE_PROJECT_MANAGER')) {
-            $qb->andWhere('entity.registeredBy = :user')
-               ->setParameter('user', $user);
-            return $qb;
-        }
-
-        // Auditors only see projects assigned to them
-        // TODO: Implement audit assignment filtering when assignment system is created
-        if ($this->isGranted('ROLE_AUDITOR')) {
-            // For now, show no projects until assignment system is implemented
-            // Later: JOIN with audit_assignment table
-            $qb->andWhere('1 = 0'); // Show nothing for now
-            return $qb;
-        }
-
-        // Default: show no projects if no role matches
-        $qb->andWhere('1 = 0');
         return $qb;
     }
 

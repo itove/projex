@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrgRepository::class)]
 #[ORM\Table(name: 'org')]
+#[ORM\Index(columns: ['parent_id'], name: 'idx_org_parent')]
 #[ORM\HasLifecycleCallbacks]
 class Org
 {
@@ -41,6 +42,13 @@ class Org
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $address = null;
 
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Org $parent = null;
+
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
+    private Collection $children;
+
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'org')]
     private Collection $users;
 
@@ -55,6 +63,7 @@ class Org
 
     public function __construct()
     {
+        $this->children = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->projects = new ArrayCollection();
     }
@@ -146,6 +155,46 @@ class Org
     public function setAddress(?string $address): self
     {
         $this->address = $address;
+        return $this;
+    }
+
+    public function getParent(): ?Org
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?Org $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Org>
+     */
+    public function getChildren(): Collection
+    {
+        return $this->children;
+    }
+
+    public function addChild(Org $child): self
+    {
+        if (!$this->children->contains($child)) {
+            $this->children->add($child);
+            $child->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChild(Org $child): self
+    {
+        if ($this->children->removeElement($child)) {
+            if ($child->getParent() === $this) {
+                $child->setParent(null);
+            }
+        }
+
         return $this;
     }
 
