@@ -10,9 +10,8 @@
     <div class="card-body">
         <div class="row text-center">
             <div class="col-md mb-2 mb-md-0">
-                <div class="summary-item">
+                <a href="{{ summary.links.stageProgress }}" class="summary-item summary-item-link text-decoration-none text-dark d-block">
                     <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
-                    {% set v = 50 %}
                     <h3 class="mb-0">{{ summary.stageProgress }}%</h3>
                     <small class="text-muted">项目总进度</small>
                     <div class="progress mt-2" style="height: 8px;">
@@ -24,7 +23,7 @@
                              aria-valuemax="100">
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md mb-2 mb-md-0">
                 <div class="summary-item">
@@ -34,7 +33,7 @@
                 </div>
             </div>
             <div class="col-md mb-2 mb-md-0">
-                <div class="summary-item">
+                <a href="{{ summary.links.currentStage }}" class="summary-item summary-item-link text-decoration-none text-dark d-block">
                     <i class="fas fa-spinner text-warning fa-2x mb-2"></i>
                     <h4 class="mb-0">{{ summary.currentStage }}</h4>
                     <small class="text-muted">当前阶段</small>
@@ -43,21 +42,21 @@
                             <span class="badge bg-warning">{{ summary.currentProgress }}%</span>
                         </div>
                     {% endif %}
-                </div>
+                </a>
             </div>
             <div class="col-md mb-2 mb-md-0">
-                <div class="summary-item">
+                <a href="{{ summary.links.completedStages }}" class="summary-item summary-item-link text-decoration-none text-dark d-block">
                     <i class="fas fa-tasks text-success fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.completedStages }}/{{ summary.totalStages }}</h3>
                     <small class="text-muted">已完成阶段</small>
-                </div>
+                </a>
             </div>
             <div class="col-md">
-                <div class="summary-item">
+                <a href="{{ summary.links.totalFiles }}" class="summary-item summary-item-link text-decoration-none text-dark d-block">
                     <i class="fas fa-folder-open text-info fa-2x mb-2"></i>
                     <h3 class="mb-0">{{ summary.totalFiles }}</h3>
                     <small class="text-muted">总文档数</small>
-                </div>
+                </a>
             </div>
         </div>
         {% if summary.plannedEndDate is not null %}
@@ -75,7 +74,7 @@
 </div>
 
 {# Horizontal Timeline #}
-<div class="card mb-4">
+<div class="card mb-4" id="lifecycle-timeline">
     <div class="card-header">
         <div class="mb-0">
             <i class="fas fa-stream"></i> 生命周期进度
@@ -87,7 +86,7 @@
 </div>
 
 {# Stage Detail Cards #}
-<div class="row">
+<div class="row" id="lifecycle-stages">
     {% for stage in stages %}
         <div class="col-lg-6 mb-4">
             {% include 'admin/project/_stage_card.html.twig' with {
@@ -117,5 +116,14 @@
 .summary-item small {
     display: block;
     margin-top: 5px;
+}
+
+.summary-item-link {
+    border-radius: 0.375rem;
+    transition: background 0.15s;
+}
+
+.summary-item-link:hover {
+    background: #f8f9fa;
 }
 </style>

@@ -2,7 +2,7 @@
 <div class="lifecycle-timeline">
     <div class="timeline-track">
         {% for stage in stages %}
-            <div class="timeline-stage
+            <a href="{{ stage.url }}" class="timeline-stage text-decoration-none
                 {% if stage.status == 'completed' %}completed
                 {% elseif stage.status == 'in_progress' %}in-progress
                 {% else %}not-started{% endif %}">
@@ -38,7 +38,7 @@
                 {% if not loop.last %}
                     <div class="stage-line"></div>
                 {% endif %}
-            </div>
+            </a>
         {% endfor %}
     </div>
 </div>
@@ -64,6 +64,13 @@
     flex: 1;
     position: relative;
     text-align: center;
+    color: inherit;
+    transition: transform 0.15s;
+}
+
+.timeline-stage:hover {
+    transform: translateY(-2px);
+    color: inherit;
 }
 
 .stage-icon {

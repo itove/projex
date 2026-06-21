@@ -51,6 +51,29 @@
     .stage-icon {
         font-size: 2rem;
     }
+    a.stat-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    a.stat-card-link:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        color: inherit;
+    }
+    a.stage-distribution-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        transition: background 0.15s;
+    }
+    a.stage-distribution-link:hover {
+        background: #f8f9fa;
+        color: inherit;
+    }
 </style>
 {% endblock %}
 
@@ -105,67 +128,75 @@
     {# 4.3.2.3 Data Overview Widgets #}
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-white">项目总数</h6>
-                            <h2 class="card-title mb-0">{{ statistics.total }}</h2>
-                        </div>
-                        <div>
-                            <i class="fas fa-project-diagram fa-3x"></i>
+            <a href="{{ statisticsLinks.total }}" class="stat-card-link">
+                <div class="card stat-card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-white">项目总数</h6>
+                                <h2 class="card-title mb-0">{{ statistics.total }}</h2>
+                            </div>
+                            <div>
+                                <i class="fas fa-project-diagram fa-3x"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-white">进行中</h6>
-                            <h2 class="card-title mb-0">{{ statistics.byStatus.in_progress }}</h2>
-                        </div>
-                        <div>
-                            <i class="fas fa-spinner fa-3x"></i>
+            <a href="{{ statisticsLinks.in_progress }}" class="stat-card-link">
+                <div class="card stat-card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-white">进行中</h6>
+                                <h2 class="card-title mb-0">{{ statistics.byStatus.in_progress }}</h2>
+                            </div>
+                            <div>
+                                <i class="fas fa-spinner fa-3x"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-white">已闭环</h6>
-                            <h2 class="card-title mb-0">{{ statistics.closed }}</h2>
-                        </div>
-                        <div>
-                            <i class="fas fa-check-circle fa-3x"></i>
+            <a href="{{ statisticsLinks.closed }}" class="stat-card-link">
+                <div class="card stat-card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-white">已闭环</h6>
+                                <h2 class="card-title mb-0">{{ statistics.closed }}</h2>
+                            </div>
+                            <div>
+                                <i class="fas fa-check-circle fa-3x"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3 mb-3">
-            <div class="card stat-card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-white">已终止</h6>
-                            <h2 class="card-title mb-0">{{ statistics.byStatus.cancelled }}</h2>
-                        </div>
-                        <div>
-                            <i class="fas fa-times-circle fa-3x"></i>
+            <a href="{{ statisticsLinks.cancelled }}" class="stat-card-link">
+                <div class="card stat-card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-white">已终止</h6>
+                                <h2 class="card-title mb-0">{{ statistics.byStatus.cancelled }}</h2>
+                            </div>
+                            <div>
+                                <i class="fas fa-times-circle fa-3x"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -179,53 +210,67 @@
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-file-alt stage-icon text-primary"></i>
-                            </div>
-                            <h6>前期决策</h6>
-                            <p class="h4 text-primary">{{ statistics.byStage.preliminary }}</p>
+                            <a href="{{ statisticsLinks.stages.preliminary }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-file-alt stage-icon text-primary"></i>
+                                </div>
+                                <h6>前期决策</h6>
+                                <p class="h4 text-primary mb-0">{{ statistics.byStage.preliminary }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-check-square stage-icon text-success"></i>
-                            </div>
-                            <h6>立项</h6>
-                            <p class="h4 text-success">{{ statistics.byStage.approval }}</p>
+                            <a href="{{ statisticsLinks.stages.approval }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-check-square stage-icon text-success"></i>
+                                </div>
+                                <h6>立项</h6>
+                                <p class="h4 text-success mb-0">{{ statistics.byStage.approval }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-pencil-ruler stage-icon text-info"></i>
-                            </div>
-                            <h6>规划设计</h6>
-                            <p class="h4 text-info">{{ statistics.byStage.planning }}</p>
+                            <a href="{{ statisticsLinks.stages.planning }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-pencil-ruler stage-icon text-info"></i>
+                                </div>
+                                <h6>规划设计</h6>
+                                <p class="h4 text-info mb-0">{{ statistics.byStage.planning }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-tools stage-icon text-warning"></i>
-                            </div>
-                            <h6>施工准备</h6>
-                            <p class="h4 text-warning">{{ statistics.byStage.preparation }}</p>
+                            <a href="{{ statisticsLinks.stages.preparation }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-tools stage-icon text-warning"></i>
+                                </div>
+                                <h6>施工准备</h6>
+                                <p class="h4 text-warning mb-0">{{ statistics.byStage.preparation }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-hard-hat stage-icon text-danger"></i>
-                            </div>
-                            <h6>施工实施</h6>
-                            <p class="h4 text-danger">{{ statistics.byStage.implementation }}</p>
+                            <a href="{{ statisticsLinks.stages.implementation }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-hard-hat stage-icon text-danger"></i>
+                                </div>
+                                <h6>施工实施</h6>
+                                <p class="h4 text-danger mb-0">{{ statistics.byStage.implementation }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-clipboard-check stage-icon text-secondary"></i>
-                            </div>
-                            <h6>竣工验收</h6>
-                            <p class="h4 text-secondary">{{ statistics.byStage.acceptance }}</p>
+                            <a href="{{ statisticsLinks.stages.acceptance }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-clipboard-check stage-icon text-secondary"></i>
+                                </div>
+                                <h6>竣工验收</h6>
+                                <p class="h4 text-secondary mb-0">{{ statistics.byStage.acceptance }}</p>
+                            </a>
                         </div>
                         <div class="col">
-                            <div class="mb-2">
-                                <i class="fas fa-calculator stage-icon text-dark"></i>
-                            </div>
-                            <h6>竣工结算</h6>
-                            <p class="h4 text-dark">{{ statistics.byStage.settlement }}</p>
+                            <a href="{{ statisticsLinks.stages.settlement }}" class="stage-distribution-link">
+                                <div class="mb-2">
+                                    <i class="fas fa-calculator stage-icon text-dark"></i>
+                                </div>
+                                <h6>竣工结算</h6>
+                                <p class="h4 text-dark mb-0">{{ statistics.byStage.settlement }}</p>
+                            </a>
                         </div>
                     </div>
                 </div>

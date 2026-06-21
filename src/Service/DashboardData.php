@@ -27,6 +27,7 @@ class DashboardData
         private RequestStack $requestStack,
         private Security $security,
         private OrgAccessService $orgAccessService,
+        private ProjectNavigationService $projectNavigationService,
     ) {
     }
 
@@ -64,6 +65,7 @@ class DashboardData
             'filters' => $filters,
             'statistics' => $statistics,
             'slideProjects' => $this->getSlideProjects(),
+            'statisticsLinks' => $this->projectNavigationService->buildDashboardStatisticsLinks(),
         ];
     }
 

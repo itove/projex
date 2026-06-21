@@ -4,7 +4,7 @@
     {% elseif stage.status == 'in_progress' %}border-warning
     {% else %}border-secondary{% endif %}">
 
-    <div class="card-header
+    <a href="{{ stage.url }}" class="card-header text-decoration-none
         {% if stage.status == 'completed' %}bg-success text-white
         {% elseif stage.status == 'in_progress' %}bg-warning
         {% else %}bg-light{% endif %}">
@@ -27,7 +27,7 @@
                 {% endif %}
             </span>
         </div>
-    </div>
+    </a>
 
     <div class="card-body">
         {% if stage.entity is not null %}

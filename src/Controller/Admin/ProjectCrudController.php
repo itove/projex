@@ -14,6 +14,7 @@ use App\Enum\ProjectStatus;
 use App\Service\OrgAccessService;
 use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
+use App\Service\ProjectNavigationService;
 use App\Service\ProjectNumberGenerator;
 use App\Service\ProjectSpreadsheetImportService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -58,6 +59,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly ProjectDisplayService $displayService,
         private readonly ProjectSpreadsheetImportService $spreadsheetImportService,
         private readonly OrgAccessService $orgAccessService,
+        private readonly ProjectNavigationService $projectNavigationService,
     ) {
     }
 
@@ -580,9 +582,19 @@ class ProjectCrudController extends AbstractCrudController
             $entity = $responseParameters->get('entity');
             $project = $entity->getInstance();
 
+            $stages = $this->displayService->getLifecycleStages($project);
+            $summary = $this->displayService->getProjectSummary($project);
+            $summary['links'] = $this->projectNavigationService->buildProjectDetailSummaryLinks(
+                $stages,
+                (int) $project->getId(),
+            );
+
             $responseParameters->set('project', $project);
-            $responseParameters->set('stages', $this->displayService->getLifecycleStages($project));
-            $responseParameters->set('summary', $this->displayService->getProjectSummary($project));
+            $responseParameters->set('stages', $this->projectNavigationService->enrichStagesWithUrls(
+                $stages,
+                (int) $project->getId(),
+            ));
+            $responseParameters->set('summary', $summary);
         }
 
         return $responseParameters;
@@ -615,6 +627,11 @@ class ProjectCrudController extends AbstractCrudController
                 $qb->andWhere('entity.org = :filterOrgId')
                     ->setParameter('filterOrgId', $orgId);
             }
+        }
+
+        $request = $this->getContext()?->getRequest();
+        if ($request !== null) {
+            $this->projectNavigationService->applyListFilters($qb, $request, 'entity');
         }
 
         return $qb;
