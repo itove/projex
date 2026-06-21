@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Org;
 use App\Entity\Project;
 use App\Entity\ProjectType;
 use App\Entity\User;
@@ -377,6 +378,7 @@ class ProjectCrudController extends AbstractCrudController
             )
             ->add(EntityFilter::new('projectType', '项目类型'))
             ->add(EntityFilter::new('projectSubtype', '项目子类型'))
+            ->add(EntityFilter::new('org', '所属组织'))
             ->add(DateTimeFilter::new('createdAt', '创建时间'));
     }
 
@@ -605,6 +607,15 @@ class ProjectCrudController extends AbstractCrudController
         }
 
         $this->orgAccessService->applyProjectOrgScope($qb, $user, 'entity');
+
+        $orgId = $this->getContext()?->getRequest()?->query->getInt('orgId');
+        if ($orgId > 0) {
+            $org = $this->entityManager->getRepository(Org::class)->find($orgId);
+            if ($org instanceof Org && $this->orgAccessService->canAccessOrg($user, $org)) {
+                $qb->andWhere('entity.org = :filterOrgId')
+                    ->setParameter('filterOrgId', $orgId);
+            }
+        }
 
         return $qb;
     }

@@ -80,6 +80,7 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linkToDashboard('项目展示主页', 'fa fa-home');
         yield MenuItem::section('项目管理');
+        yield MenuItem::linkToRoute('公司项目总览', 'fa fa-sitemap', 'admin_org_project_overview');
         yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
         yield MenuItem::section('项目生命周期');
         yield MenuItem::linkToCrud('前期决策流程', 'fa fa-clipboard-check', PreliminaryDecision::class);
