@@ -8,6 +8,7 @@ final class OrgOverviewNode
 {
     /**
      * @param list<OrgOverviewNode> $children
+     * @param list<OrgOverviewProjectItem> $projects
      */
     public function __construct(
         public readonly int $id,
@@ -18,6 +19,7 @@ final class OrgOverviewNode
         public int $totalProjectCount,
         public readonly string $projectListUrl,
         public array $children = [],
+        public array $projects = [],
     ) {
     }
 }

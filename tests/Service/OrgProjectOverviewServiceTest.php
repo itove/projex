@@ -97,6 +97,26 @@ class OrgProjectOverviewServiceTest extends KernelTestCase
         $this->assertStringContainsString((string) $node->id, $node->projectListUrl);
     }
 
+    public function testOrgNodeIncludesDirectProjects(): void
+    {
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'pm_li']);
+        $this->assertNotNull($user);
+
+        $this->loginAs($user);
+
+        $tree = $this->overviewService->getTree($user);
+        $node = $this->findNodeByOrgCode($tree, 'ORG-ZHCS-002');
+
+        $this->assertNotNull($node);
+        $this->assertCount($node->directProjectCount, $node->projects);
+
+        if ($node->projects !== []) {
+            $project = $node->projects[0];
+            $this->assertNotEmpty($project->name);
+            $this->assertStringContainsString('/admin/project/', $project->detailUrl);
+        }
+    }
+
     /**
      * @param list<\App\DTO\OrgOverviewNode> $nodes
      */
