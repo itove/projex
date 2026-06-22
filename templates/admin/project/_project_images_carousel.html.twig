@@ -1,0 +1,37 @@
+{# @var images iterable<App\Entity\Image> #}
+<div id="{{ carouselId }}" class="carousel slide mb-4 rounded border shadow-sm overflow-hidden" data-bs-ride="carousel">
+    {% if images|length > 1 %}
+    <div class="carousel-indicators">
+        {% for image in images %}
+        <button type="button" data-bs-target="#{{ carouselId }}" data-bs-slide-to="{{ loop.index0 }}"
+                {% if loop.first %}class="active" aria-current="true"{% endif %}
+                aria-label="{{ image.caption ?? image.originalName }}"></button>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="carousel-inner">
+        {% for image in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <img src="/uploads/images/{{ image.fileName }}"
+                 class="d-block w-100"
+                 style="max-height: 480px; object-fit: contain; background: #1a1a1a;"
+                 alt="{{ image.altText ?? image.caption ?? image.originalName }}">
+            {% if image.caption %}
+            <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.45); border-radius: 0.5rem; padding: 0.5rem 1rem;">
+                <p class="mb-0 small">{{ image.caption }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if images|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">上一张</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">下一张</span>
+    </button>
+    {% endif %}
+</div>

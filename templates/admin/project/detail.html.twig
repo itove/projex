@@ -68,80 +68,12 @@
 {% endblock %}
 
 {% block main %}
-    {# Project Images Slideshow #}
     {% set projectImages = entity.instance.images %}
     {% if projectImages|length > 0 %}
-    <div id="projectImagesSlide" class="carousel slide mb-4 rounded border shadow-sm" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            {% for image in projectImages %}
-            <button type="button" data-bs-target="#projectImagesSlide" data-bs-slide-to="{{ loop.index0 }}"
-                    {% if loop.first %}class="active" aria-current="true"{% endif %}
-                    aria-label="{{ image.caption ?? image.originalName }}"></button>
-            {% endfor %}
-        </div>
-        <div class="carousel-inner">
-            {% for image in projectImages %}
-            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                <div class="row g-0 align-items-stretch" style="min-height: 320px;">
-                    <div class="col-md-7 d-flex align-items-center justify-content-center bg-dark" style="max-height: 480px;">
-                        <img src="/uploads/images/{{ image.fileName }}"
-                             class="img-fluid"
-                             style="max-height: 480px; width: 100%; object-fit: contain;"
-                             alt="{{ image.altText ?? image.caption ?? image.originalName }}">
-                    </div>
-                    <div class="col-md-5 p-4 d-flex flex-column justify-content-center bg-white">
-                        {% set proj = entity.instance %}
-                        <h5 class="mb-3">
-                            <i class="fas fa-project-diagram text-primary me-1"></i>
-                            {{ proj.projectName }}
-                        </h5>
-                        <dl class="row small mb-0">
-                            <dt class="col-5 text-muted">项目编号</dt>
-                            <dd class="col-7">{{ proj.projectNumber ?? '—' }}</dd>
-
-                            <dt class="col-5 text-muted">项目类型</dt>
-                            <dd class="col-7">{{ proj.projectType }}</dd>
-
-                            <dt class="col-5 text-muted">项目性质</dt>
-                            <dd class="col-7">{{ proj.projectNature.label() }}</dd>
-
-                            <dt class="col-5 text-muted">项目地点</dt>
-                            <dd class="col-7">{{ proj.projectLocation }}</dd>
-
-                            <dt class="col-5 text-muted">项目预算</dt>
-                            <dd class="col-7 text-success fw-bold">¥ {{ proj.budget|number_format(2, '.', ',') }}</dd>
-
-                            <dt class="col-5 text-muted">计划工期</dt>
-                            <dd class="col-7">
-                                {{ proj.plannedStartDate|date('Y-m-d') }}
-                                &nbsp;~&nbsp;
-                                {{ proj.plannedEndDate|date('Y-m-d') }}
-                            </dd>
-
-                            <dt class="col-5 text-muted">负责人</dt>
-                            <dd class="col-7">{{ proj.leaderName }}</dd>
-
-                            <dt class="col-5 text-muted">资金来源</dt>
-                            <dd class="col-7">{{ proj.fundingSource.label() }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% if projectImages|length > 1 %}
-        <button class="carousel-control-prev" type="button" data-bs-target="#projectImagesSlide" data-bs-slide="prev"
-                style="width: 3rem; background: rgba(0,0,0,0.2); border-radius: 0 0 0 0.375rem;">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">上一张</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#projectImagesSlide" data-bs-slide="next"
-                style="width: 3rem; background: rgba(0,0,0,0.2); border-radius: 0 0.375rem 0 0;">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">下一张</span>
-        </button>
-        {% endif %}
-    </div>
+        {% include 'admin/project/_project_images_carousel.html.twig' with {
+            images: projectImages,
+            carouselId: 'projectImagesSlide',
+        } %}
     {% endif %}
 
     {# Standard EasyAdmin Detail Fields #}
