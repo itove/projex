@@ -46,7 +46,6 @@ class UserCrudController extends AbstractCrudController
             ->onlyOnForms()
         ;
         yield TextField::new('phone', '手机号');
-        yield EmailField::new('email', '邮箱');
         yield TextField::new('position', '职位')->hideOnIndex();
         yield BooleanField::new('isActive', '激活状态')->renderAsSwitch(false);
         yield DateTimeField::new('lastLoginAt', '最后登录时间')->hideOnForm()->hideOnIndex();
