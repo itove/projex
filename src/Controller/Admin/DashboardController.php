@@ -19,7 +19,9 @@ use App\Entity\Permission;
 use App\Entity\Role;
 use App\Entity\User;
 use App\Service\DashboardData;
+use App\Service\OrgProjectOverviewService;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -32,7 +34,11 @@ use Symfony\Component\HttpFoundation\Response;
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
-    public function __construct(private DashboardData $dashboardData) {}
+    public function __construct(
+        private readonly DashboardData $dashboardData,
+        private readonly OrgProjectOverviewService $orgProjectOverviewService,
+    ) {
+    }
 
     public function index(): Response
     {
@@ -62,6 +68,16 @@ class DashboardController extends AbstractDashboardController
         // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
         //
         // return $this->render('some/path/my-dashboard.html.twig');
+    }
+
+    #[AdminRoute(path: '/org-overview', name: 'org_project_overview')]
+    public function orgProjectOverview(): Response
+    {
+        $user = $this->getUser();
+
+        return $this->render('admin/org/overview.html.twig', [
+            'tree' => $this->orgProjectOverviewService->getTree($user instanceof User ? $user : null),
+        ]);
     }
 
     public function configureDashboard(): Dashboard
