@@ -175,14 +175,13 @@ class ProjectCrudController extends AbstractCrudController
         yield TextField::new('leaderName', '负责人姓名')
             ->setRequired(true)
             ->setColumns(4)
-            ->hideOnDetail()
+            ->onlyOnForms()
         ;
 
         yield TextField::new('leaderPhone', '负责人电话')
             ->setRequired(true)
             ->setColumns(4)
-            ->hideOnDetail()
-            ->hideOnIndex();
+            ->onlyOnForms();
 
         // Project Parameters Section
         yield MoneyField::new('budget', '项目预算')
@@ -217,7 +216,7 @@ class ProjectCrudController extends AbstractCrudController
             ->hideOnIndex();
 
         yield TextField::new('leader', '负责人')
-            ->onlyOnDetail();
+            ->hideOnForm();
 
         yield TextField::new('registrant', '登记人')
             ->onlyOnDetail();
