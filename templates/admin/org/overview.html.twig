@@ -3,232 +3,217 @@
 {% block page_title %}公司项目总览{% endblock %}
 
 {% block head_stylesheets %}
-    {{ parent() }}
-    <style>
-        .org-tree {
-            list-style: none;
-            padding-left: 0;
-            margin-bottom: 0;
-        }
-        .org-tree .org-tree {
-            padding-left: 1.5rem;
-            margin-top: 0.25rem;
-            border-left: 2px solid #dee2e6;
-        }
-        .org-tree-item {
-            margin-bottom: 0.5rem;
-        }
-        .org-tree-card {
-            padding: 0.75rem 1rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background: #fff;
-            transition: box-shadow 0.15s;
-        }
-        .org-tree-card:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-        .org-tree-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-        .org-tree-name {
-            font-weight: 600;
-        }
-        .org-tree-name a {
-            color: inherit;
-            text-decoration: none;
-        }
-        .org-tree-name a:hover {
-            color: #0d6efd;
-        }
-        .org-tree-meta {
-            color: #6c757d;
-            font-size: 0.875rem;
-            margin-top: 0.125rem;
-        }
-        .org-tree-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            flex-shrink: 0;
-            justify-content: flex-end;
-        }
-        .org-tree-actions {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #f0f0f0;
-        }
-        .org-projects-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background: #f8f9fa;
-            color: #495057;
-            font-size: 0.8125rem;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
-        }
-        .org-projects-toggle:hover {
-            background: #e9ecef;
-            border-color: #ced4da;
-            color: #212529;
-        }
-        .org-projects-toggle[aria-expanded="true"] {
-            background: #e7f1ff;
-            border-color: #b6d4fe;
-            color: #0d6efd;
-        }
-        .org-projects-toggle .when-expanded {
-            display: none;
-        }
-        .org-projects-toggle[aria-expanded="true"] .when-collapsed {
-            display: none;
-        }
-        .org-projects-toggle[aria-expanded="true"] .when-expanded {
-            display: inline;
-        }
-        .org-children-label {
-            display: block;
-            margin: 0.5rem 0 0.25rem 1.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .org-project-section {
-            margin-top: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border: 1px dashed #dee2e6;
-            border-radius: 0.375rem;
-            background: #fafbfc;
-        }
-        .org-project-section-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6c757d;
-            margin-bottom: 0.35rem;
-        }
-        .org-project-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .org-project-item {
-            margin-bottom: 0.25rem;
-        }
-        .org-project-item:last-child {
-            margin-bottom: 0;
-        }
-        .org-project-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #e9ecef;
-            border-radius: 0.375rem;
-            background: #fff;
-            color: inherit;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: background 0.15s;
-        }
-        .org-project-link:hover {
-            background: #f8f9fa;
-            color: inherit;
-        }
-        .org-project-name {
-            font-weight: 500;
-        }
-        .org-project-meta {
-            color: #6c757d;
-            font-size: 0.8125rem;
-        }
-    </style>
+{{ parent() }}
+<style>
+.org-tree-root {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.org-children {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 1.5rem;
+    border-left: 2px solid var(--bs-border-color, #dee2e6);
+}
+
+.org-node {
+    margin: 0;
+    padding: 0;
+}
+
+details.org-details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.375rem;
+    user-select: none;
+    transition: background 0.1s ease;
+}
+
+details.org-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details.org-details > summary::before {
+    content: '▶';
+    font-size: 0.6rem;
+    color: var(--bs-secondary-color, #6c757d);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+    width: 0.8rem;
+    display: inline-block;
+}
+
+details.org-details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+details.org-details.org-leaf > summary::before {
+    visibility: hidden;
+}
+
+details.org-details > summary:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.org-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.org-abbr {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    background: var(--bs-secondary-bg, #e9ecef);
+    color: var(--bs-secondary-color, #6c757d);
+    font-family: monospace;
+    letter-spacing: 0.02em;
+}
+
+.org-count-link {
+    text-decoration: none;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: var(--bs-primary-bg-subtle, #cfe2ff);
+    color: var(--bs-primary-text-emphasis, #0a58ca);
+    transition: background 0.1s ease;
+    white-space: nowrap;
+}
+
+.org-count-link:hover {
+    background: var(--bs-primary, #0d6efd);
+    color: #fff;
+}
+
+.org-count-link.zero {
+    background: var(--bs-secondary-bg, #e9ecef);
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.org-total-badge {
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color, #6c757d);
+    white-space: nowrap;
+}
+
+details.org-project-details {
+    margin: 0.15rem 0 0.25rem 1.3rem;
+}
+
+details.org-project-details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.78rem;
+    color: var(--bs-secondary-color, #6c757d);
+    border-radius: 0.25rem;
+    user-select: none;
+}
+
+details.org-project-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details.org-project-details > summary::before {
+    content: '▶';
+    font-size: 0.55rem;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+    width: 0.7rem;
+    display: inline-block;
+}
+
+details.org-project-details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+details.org-project-details > summary:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    color: var(--bs-body-color, #212529);
+}
+
+.org-project-list {
+    list-style: none;
+    padding: 0.25rem 0 0.25rem 0.5rem;
+    margin: 0;
+}
+
+.org-project-row {
+    margin-bottom: 0.2rem;
+}
+
+.org-project-row:last-child {
+    margin-bottom: 0;
+}
+
+.org-project-row a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.1s ease;
+}
+
+.org-project-row a:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.org-project-row-name {
+    font-weight: 500;
+}
+
+.org-project-row-meta {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color, #6c757d);
+}
+</style>
 {% endblock %}
 
-{% block main %}
-<div class="container-fluid">
-    {% if tree is empty %}
-        <div class="alert alert-info mb-0">
-            <i class="fas fa-info-circle"></i> 暂无可查看的组织机构
-        </div>
-    {% else %}
-        <ul class="org-tree">
-            {% for node in tree %}
-                {{ _self.render_org_node(node) }}
-            {% endfor %}
-        </ul>
-    {% endif %}
-</div>
-{% endblock %}
+{% macro render_node(node) %}
+    {% set hasChildren = node.children is not empty %}
+    {% set hasProjects = node.projects is not empty %}
+    <li class="org-node">
+        <details class="org-details{{ not hasChildren ? ' org-leaf' : '' }}"{% if hasChildren or hasProjects %} open{% endif %}>
+            <summary>
+                <span class="org-name">{{ node.name }}</span>
+                <span class="org-abbr">{{ node.orgCode }}</span>
+                <a href="{{ node.projectListUrl }}"
+                   class="org-count-link{{ node.directProjectCount == 0 ? ' zero' : '' }}"
+                   title="查看该组织项目列表"
+                   onclick="event.stopPropagation()">
+                    {{ node.directProjectCount }} 项目
+                </a>
+                {% if node.totalProjectCount != node.directProjectCount %}
+                    <span class="org-total-badge">合计 {{ node.totalProjectCount }}</span>
+                {% endif %}
+            </summary>
 
-{% macro render_org_node(node) %}
-    <li class="org-tree-item">
-        <div class="org-tree-card">
-            <div class="org-tree-top">
-                <div class="d-flex">
-                    <div class="org-tree-name me-3">
-                        <a href="{{ node.projectListUrl }}" title="查看该组织项目列表">
-                            {{ node.name }}
-                        </a>
-                    </div>
-                    <div class="org-tree-meta">
-                        <span>{{ node.orgCode }}</span>
-                        {% if node.contactPerson %}
-                            <span class="ms-2"><i class="fas fa-user"></i> {{ node.contactPerson }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="org-tree-badges">
-                    <span class="badge bg-primary-subtle" title="本组织直属项目数">
-                        直属 {{ node.directProjectCount }}
-                    </span>
-                    <span class="badge bg-secondary-subtle" title="含下级组织项目总数">
-                        合计 {{ node.totalProjectCount }}
-                    </span>
-                </div>
-            </div>
-            {% if node.projects is not empty %}
-                <div class="org-tree-actions">
-                    <button type="button"
-                            class="org-projects-toggle"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#org-projects-{{ node.id }}"
-                            aria-expanded="false"
-                            aria-controls="org-projects-{{ node.id }}">
-                        <i class="fas fa-folder"></i>
-                        <span class="when-collapsed">展开 {{ node.directProjectCount }} 个直属项目</span>
-                        <span class="when-expanded">收起直属项目</span>
-                    </button>
-                </div>
-                <div id="org-projects-{{ node.id }}" class="collapse org-project-section">
-                    <div class="org-project-section-title">
-                        直属项目
-                    </div>
+            {% if hasProjects %}
+                <details class="org-project-details">
+                    <summary>{{ node.directProjectCount }} 个直属项目</summary>
                     <ul class="org-project-list">
                         {% for project in node.projects %}
-                            <li class="org-project-item">
-                                <a href="{{ project.detailUrl }}" class="org-project-link">
-                                    <div>
-                                        <div class="org-project-name">{{ project.name }}</div>
-                                        <div class="org-project-meta">
-                                            {% if project.projectNumber %}
-                                                <span>{{ project.projectNumber }}</span>
-                                            {% else %}
-                                                <span>—</span>
-                                            {% endif %}
+                            <li class="org-project-row">
+                                <a href="{{ project.detailUrl }}" class="bg-info-subtle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="org-project-row-name me-2">{{ project.name }}</div>
+                                        <div class="org-project-row-meta">
+                                            {{ project.projectNumber }}
                                         </div>
                                     </div>
                                     <span class="badge bg-light text-dark">{{ project.statusLabel }}</span>
@@ -236,15 +221,33 @@
                             </li>
                         {% endfor %}
                     </ul>
-                </div>
+                </details>
             {% endif %}
-        </div>
-        {% if node.children is not empty %}
-            <ul class="org-tree">
-                {% for child in node.children %}
-                    {{ _self.render_org_node(child) }}
-                {% endfor %}
-            </ul>
-        {% endif %}
+
+            {% if hasChildren %}
+                <ul class="org-children">
+                    {% for child in node.children %}
+                        {{ _self.render_node(child) }}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </details>
     </li>
 {% endmacro %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    {% if tree is empty %}
+        <div class="text-center text-muted py-5">
+            <i class="fa fa-sitemap fa-3x mb-3 d-block opacity-25"></i>
+            <p class="mb-0">暂无可查看的组织机构</p>
+        </div>
+    {% else %}
+        <ul class="org-tree-root">
+            {% for node in tree %}
+                {{ _self.render_node(node) }}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}
