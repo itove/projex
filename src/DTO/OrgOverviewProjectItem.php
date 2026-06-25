@@ -12,6 +12,7 @@ final class OrgOverviewProjectItem
         public readonly ?string $projectNumber,
         public readonly string $statusLabel,
         public readonly string $detailUrl,
+        public readonly string $leader,
     ) {
     }
 }

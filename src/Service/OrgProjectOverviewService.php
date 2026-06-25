@@ -147,6 +147,7 @@ class OrgProjectOverviewService
                 projectNumber: $project->getProjectNumber(),
                 statusLabel: $project->getStatus()->label(),
                 detailUrl: $this->buildProjectDetailUrl((int) $project->getId()),
+                leader: $project->getLeader(),
             );
         }
 

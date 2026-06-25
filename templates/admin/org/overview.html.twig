@@ -181,7 +181,46 @@ details.org-project-details > summary:hover {
     font-size: 0.75rem;
     color: var(--bs-secondary-color, #6c757d);
 }
+
+.org-tree-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+}
 </style>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById('toggle-all-projects');
+            if (!btn) {
+                return;
+            }
+
+            const getProjectDetails = () => document.querySelectorAll('details.org-project-details');
+
+            const syncButton = () => {
+                const details = getProjectDetails();
+                const allOpen = details.length > 0 && Array.from(details).every((el) => el.open);
+                btn.textContent = allOpen ? '收起全部项目' : '展开全部项目';
+            };
+
+            btn.addEventListener('click', function () {
+                const details = getProjectDetails();
+                const shouldExpand = Array.from(details).some((el) => !el.open);
+                details.forEach((el) => { el.open = shouldExpand; });
+                syncButton();
+            });
+
+            document.querySelectorAll('details.org-project-details').forEach((el) => {
+                el.addEventListener('toggle', syncButton);
+            });
+
+            syncButton();
+        });
+    </script>
 {% endblock %}
 
 {% macro render_node(node) %}
@@ -211,10 +250,11 @@ details.org-project-details > summary:hover {
                             <li class="org-project-row">
                                 <a href="{{ project.detailUrl }}" class="bg-info-subtle">
                                     <div class="d-flex align-items-center">
-                                        <div class="org-project-row-name me-2">{{ project.name }}</div>
-                                        <div class="org-project-row-meta">
-                                            {{ project.projectNumber }}
-                                        </div>
+                                        <div class="org-project-row-name me-3">{{ project.name }}</div>
+                                        {#
+                                        <div class="org-project-row-meta"> {{ project.projectNumber }} </div>
+                                        #}
+                                        <div class="org-project-row-meta"> {{ project.leader }} </div>
                                     </div>
                                     <span class="badge bg-light text-dark">{{ project.statusLabel }}</span>
                                 </a>
@@ -243,6 +283,11 @@ details.org-project-details > summary:hover {
             <p class="mb-0">暂无可查看的组织机构</p>
         </div>
     {% else %}
+        <div class="org-tree-toolbar">
+            <button type="button" id="toggle-all-projects" class="btn btn-sm btn-outline-secondary">
+                展开全部项目
+            </button>
+        </div>
         <ul class="org-tree-root">
             {% for node in tree %}
                 {{ _self.render_node(node) }}
