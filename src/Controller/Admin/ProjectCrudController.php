@@ -17,6 +17,7 @@ use App\Service\ProjectLockingService;
 use App\Service\ProjectNavigationService;
 use App\Service\ProjectNumberGenerator;
 use App\Service\ProjectSpreadsheetImportService;
+use App\Service\ProjectTaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -61,6 +62,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly ProjectSpreadsheetImportService $spreadsheetImportService,
         private readonly OrgAccessService $orgAccessService,
         private readonly ProjectNavigationService $projectNavigationService,
+        private readonly ProjectTaskService $projectTaskService,
     ) {
     }
 
@@ -602,6 +604,7 @@ class ProjectCrudController extends AbstractCrudController
                 (int) $project->getId(),
             ));
             $responseParameters->set('summary', $summary);
+            $responseParameters->set('taskSummary', $this->projectTaskService->getProjectTaskSummary($project));
         }
 
         return $responseParameters;

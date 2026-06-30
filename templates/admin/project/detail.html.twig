@@ -85,6 +85,13 @@
         {% endif %}
     {% endfor %}
 
+    {# Project Tasks Section #}
+    {% if taskSummary is defined %}
+        {% include 'admin/project/_tasks_section.html.twig' with {
+            taskSummary: taskSummary
+        } %}
+    {% endif %}
+
     {# Project Lifecycle Section #}
     <div class="lifecycle-wrapper my-4">
         {% include 'admin/project/_lifecycle_section.html.twig' with {

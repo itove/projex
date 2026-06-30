@@ -172,6 +172,9 @@ class Project
     #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $images;
 
+    #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $tasks;
+
     // Lifecycle Stage Relationships
     #[ORM\OneToOne(targetEntity: PreliminaryDecision::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
     private ?PreliminaryDecision $preliminaryDecision = null;
@@ -210,6 +213,7 @@ class Project
     public function __construct()
     {
         $this->images = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -707,6 +711,35 @@ class Project
         if ($this->images->removeElement($image)) {
             if ($image->getProject() === $this) {
                 $image->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ProjectTask>
+     */
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function addTask(ProjectTask $task): self
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks->add($task);
+            $task->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTask(ProjectTask $task): self
+    {
+        if ($this->tasks->removeElement($task)) {
+            if ($task->getProject() === $this) {
+                $task->setProject(null);
             }
         }
 

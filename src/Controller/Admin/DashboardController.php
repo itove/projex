@@ -11,6 +11,7 @@ use App\Entity\PlanningDesign;
 use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
 use App\Entity\ProjectApproval;
+use App\Entity\ProjectTask;
 use App\Entity\ProjectType;
 use App\Entity\ProjectSubtype;
 use App\Entity\SettlementAccounts;
@@ -98,6 +99,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('项目管理');
         yield MenuItem::linkToRoute('公司项目总览', 'fa fa-sitemap', 'admin_org_project_overview');
         yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
+        yield MenuItem::linkToCrud('项目任务', 'fa fa-tasks', ProjectTask::class);
         yield MenuItem::section('项目生命周期');
         yield MenuItem::linkToCrud('前期决策流程', 'fa fa-clipboard-check', PreliminaryDecision::class);
         yield MenuItem::linkToCrud('立项流程', 'fa fa-file-signature', ProjectApproval::class);
