@@ -5,6 +5,11 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    # Behind nginx/Apache/Cloudflare terminating TLS: trust forwarded scheme/host
+    # so generated URLs use https:// instead of http://
+    trusted_proxies: private_ranges
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port']
+
     #esi: true
     #fragments: true
 
