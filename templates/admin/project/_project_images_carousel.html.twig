@@ -14,7 +14,7 @@
         <div class="carousel-item {% if loop.first %}active{% endif %}">
             <img src="/uploads/images/{{ image.fileName }}"
                  class="d-block w-100"
-                 style="max-height: 480px; object-fit: contain; background: #1a1a1a;"
+                 style="max-height: 480px; object-fit: cover; background: #1a1a1a;"
                  alt="{{ image.altText ?? image.caption ?? image.originalName }}">
             {% if image.caption %}
             <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.45); border-radius: 0.5rem; padding: 0.5rem 1rem;">
