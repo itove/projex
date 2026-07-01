@@ -1,23 +1,16 @@
 {# @var project App\Entity\Project #}
-<div class="row g-0 align-items-stretch project-slide-panel">
-    <div class="col-md-7 position-relative project-slide-image">
-        <img src="{{ imageSrc }}"
-             class="project-slide-image__img"
-             alt="{{ imageAlt }}">
-        <div class="carousel-caption d-none d-md-block text-start project-slide-caption">
-            <h5 class="mb-1">
-                {% if detailUrl is defined and detailUrl %}
-                    <a href="{{ detailUrl }}" class="text-white text-decoration-none">{{ project.projectName }}</a>
-                {% else %}
-                    {{ project.projectName }}
-                {% endif %}
-            </h5>
-            <p class="mb-0 small">
-                <i class="fas fa-map-marker-alt"></i> {{ project.projectLocation }}
-            </p>
-        </div>
-    </div>
-    <div class="col-md-5 p-4 d-flex flex-column justify-content-center bg-white project-slide-info">
-        {% include 'admin/project/_project_info_panel.html.twig' with {project: project} %}
+<div class="project-slide-panel position-relative">
+    <img src="{{ imageSrc }}"
+         class="project-slide-image__img"
+         alt="{{ imageAlt }}">
+    <div class="project-slide-overlay">
+        <h5 class="project-slide-overlay__title mb-0">
+            {% if detailUrl is defined and detailUrl %}
+                <a href="{{ detailUrl }}" class="text-white text-decoration-none">{{ project.projectName }}</a>
+            {% else %}
+                {{ project.projectName }}
+            {% endif %}
+        </h5>
+        {% include 'admin/project/_project_info_panel.html.twig' with {project: project, layout: 'overlay'} %}
     </div>
 </div>

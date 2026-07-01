@@ -1,4 +1,44 @@
 {# @var project App\Entity\Project #}
+{% if layout is defined and layout == 'overlay' %}
+<div class="project-info-panel project-info-panel--overlay small mb-0">
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">项目编号</span>
+        <span class="project-info-panel__value">{{ project.projectNumber ?? '—' }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">项目类型</span>
+        <span class="project-info-panel__value">{{ project.projectType }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">项目性质</span>
+        <span class="project-info-panel__value">{{ project.projectNature.label() }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">项目地点</span>
+        <span class="project-info-panel__value">{{ project.projectLocation }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">项目预算</span>
+        <span class="project-info-panel__value project-info-panel__value--budget">¥ {{ project.budget|number_format(2, '.', ',') }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">计划工期</span>
+        <span class="project-info-panel__value">
+            {{ project.plannedStartDate|date('Y-m-d') }}
+            ~
+            {{ project.plannedEndDate|date('Y-m-d') }}
+        </span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">负责人</span>
+        <span class="project-info-panel__value">{{ project.leaderName }}</span>
+    </div>
+    <div class="project-info-panel__item">
+        <span class="project-info-panel__label">资金来源</span>
+        <span class="project-info-panel__value">{{ project.fundingSource.label() }}</span>
+    </div>
+</div>
+{% else %}
 <dl class="row small mb-0 project-info-panel">
     <dt class="col-5 text-muted">项目编号</dt>
     <dd class="col-7">{{ project.projectNumber ?? '—' }}</dd>
@@ -28,3 +68,4 @@
     <dt class="col-5 text-muted">资金来源</dt>
     <dd class="col-7">{{ project.fundingSource.label() }}</dd>
 </dl>
+{% endif %}
