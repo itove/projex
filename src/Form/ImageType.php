@@ -19,7 +19,7 @@ class ImageType extends AbstractType
             ->add('imageFile', VichImageType::class, [
                 'label' => '图片文件',
                 'required' => false,
-                'allow_delete' => true,
+                'allow_delete' => false,
                 'download_uri' => false,
             ])
             ->add('caption', TextType::class, [

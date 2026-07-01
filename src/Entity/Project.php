@@ -109,6 +109,9 @@ class Project
     #[Assert\NotBlank(message: '项目规模不能为空')]
     private ?string $scale = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $introduction = null;
+
     #[ORM\Column(type: Types::STRING, enumType: FundingSource::class)]
     #[Assert\NotNull(message: '资金来源不能为空')]
     private ?FundingSource $fundingSource = null;
@@ -414,6 +417,17 @@ class Project
     public function setScale(string $scale): self
     {
         $this->scale = $scale;
+        return $this;
+    }
+
+    public function getIntroduction(): ?string
+    {
+        return $this->introduction;
+    }
+
+    public function setIntroduction(?string $introduction): self
+    {
+        $this->introduction = $introduction;
         return $this;
     }
 
@@ -764,5 +778,31 @@ class Project
     public function getRegistrant(): ?string
     {
         return $this->registrantName. ' ' . $this->registrantPhone;
+    }
+
+    public function isOverdue(?\DateTimeImmutable $today = null): bool
+    {
+        if ($this->plannedEndDate === null) {
+            return false;
+        }
+
+        if (\in_array($this->status, [ProjectStatus::COMPLETED, ProjectStatus::CANCELLED], true)) {
+            return false;
+        }
+
+        $today ??= new \DateTimeImmutable('today', new \DateTimeZone('Asia/Shanghai'));
+
+        return $today > $this->plannedEndDate;
+    }
+
+    public function getOverdueDays(?\DateTimeImmutable $today = null): int
+    {
+        if (!$this->isOverdue($today)) {
+            return 0;
+        }
+
+        $today ??= new \DateTimeImmutable('today', new \DateTimeZone('Asia/Shanghai'));
+
+        return (int) $today->diff($this->plannedEndDate)->days;
     }
 }

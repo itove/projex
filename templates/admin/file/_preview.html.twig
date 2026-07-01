@@ -1,0 +1,70 @@
+{# @var file App\Entity\File #}
+{% set previewType = preview_type|default('unsupported') %}
+{% set inlineUrl = path('admin_file_inline', {fileId: file.id}) %}
+{% set previewUrl = path('admin_file_preview', {fileId: file.id}) %}
+{% set downloadUrl = path('admin_file_download', {fileId: file.id}) %}
+{% set officePreviewAvailable = office_preview_available|default(false) %}
+
+<div class="card mb-4 file-preview-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa fa-eye me-1"></i> 文档预览</span>
+        <div class="d-flex gap-2">
+            {% if previewType == 'office' and officePreviewAvailable %}
+                <a href="{{ previewUrl }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                    <i class="fa fa-external-link-alt"></i> 新窗口打开
+                </a>
+            {% elseif previewType != 'office' and previewType != 'unsupported' %}
+                <a href="{{ inlineUrl }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                    <i class="fa fa-external-link-alt"></i> 新窗口打开
+                </a>
+            {% endif %}
+            <a href="{{ downloadUrl }}" class="btn btn-sm btn-primary">
+                <i class="fa fa-download"></i> 下载
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if previewType == 'pdf' %}
+            <iframe src="{{ inlineUrl }}#toolbar=1" class="file-preview-frame" title="{{ file.originalName }}"></iframe>
+        {% elseif previewType == 'image' %}
+            <div class="file-preview-image-wrap">
+                <img src="{{ inlineUrl }}" alt="{{ file.originalName }}" class="file-preview-image">
+            </div>
+        {% elseif previewType == 'text' %}
+            <iframe src="{{ inlineUrl }}" class="file-preview-frame file-preview-frame--text" title="{{ file.originalName }}"></iframe>
+        {% elseif previewType == 'video' %}
+            <div class="file-preview-media-wrap">
+                <video src="{{ inlineUrl }}" class="file-preview-media" controls>
+                    您的浏览器不支持视频预览，请<a href="{{ downloadUrl }}">下载</a>后查看。
+                </video>
+            </div>
+        {% elseif previewType == 'audio' %}
+            <div class="file-preview-audio-wrap">
+                <p class="mb-2 text-muted small">{{ file.originalName }}</p>
+                <audio src="{{ inlineUrl }}" class="file-preview-audio" controls>
+                    您的浏览器不支持音频预览，请<a href="{{ downloadUrl }}">下载</a>后查看。
+                </audio>
+            </div>
+        {% elseif previewType == 'office' and officePreviewAvailable %}
+            <iframe src="{{ previewUrl }}" class="file-preview-frame file-preview-frame--office" title="{{ file.originalName }}"></iframe>
+        {% elseif previewType == 'office' %}
+            <div class="file-preview-fallback">
+                <i class="fa fa-file-word fa-3x text-muted mb-3"></i>
+                <p class="mb-2">当前 Office 格式暂不支持在线预览</p>
+                <p class="text-muted small mb-3">{{ file.mimeType ?? '未知类型' }} · {{ file.fileSizeFormatted }}</p>
+                <a href="{{ downloadUrl }}" class="btn btn-primary">
+                    <i class="fa fa-download"></i> 下载文件
+                </a>
+            </div>
+        {% else %}
+            <div class="file-preview-fallback">
+                <i class="fa fa-file fa-3x text-muted mb-3"></i>
+                <p class="mb-2">当前文件格式暂不支持在线预览</p>
+                <p class="text-muted small mb-3">{{ file.mimeType ?? '未知类型' }} · {{ file.fileSizeFormatted }}</p>
+                <a href="{{ downloadUrl }}" class="btn btn-primary">
+                    <i class="fa fa-download"></i> 下载文件
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>

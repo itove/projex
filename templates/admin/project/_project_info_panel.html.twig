@@ -1,0 +1,30 @@
+{# @var project App\Entity\Project #}
+<dl class="row small mb-0 project-info-panel">
+    <dt class="col-5 text-muted">项目编号</dt>
+    <dd class="col-7">{{ project.projectNumber ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">项目类型</dt>
+    <dd class="col-7">{{ project.projectType }}</dd>
+
+    <dt class="col-5 text-muted">项目性质</dt>
+    <dd class="col-7">{{ project.projectNature.label() }}</dd>
+
+    <dt class="col-5 text-muted">项目地点</dt>
+    <dd class="col-7">{{ project.projectLocation }}</dd>
+
+    <dt class="col-5 text-muted">项目预算</dt>
+    <dd class="col-7 text-success fw-bold">¥ {{ project.budget|number_format(2, '.', ',') }}</dd>
+
+    <dt class="col-5 text-muted">计划工期</dt>
+    <dd class="col-7">
+        {{ project.plannedStartDate|date('Y-m-d') }}
+        &nbsp;~&nbsp;
+        {{ project.plannedEndDate|date('Y-m-d') }}
+    </dd>
+
+    <dt class="col-5 text-muted">负责人</dt>
+    <dd class="col-7">{{ project.leaderName }}</dd>
+
+    <dt class="col-5 text-muted">资金来源</dt>
+    <dd class="col-7">{{ project.fundingSource.label() }}</dd>
+</dl>

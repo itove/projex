@@ -1,0 +1,46 @@
+{# @var project App\Entity\Project #}
+{# @var images iterable<App\Entity\Image> #}
+<div class="project-detail-gallery mb-4 rounded border shadow-sm overflow-hidden">
+    <div class="row g-0 align-items-stretch project-detail-gallery__row">
+        <div class="col-md-7 position-relative project-detail-gallery__media">
+            <div id="{{ carouselId }}" class="carousel slide h-100" data-bs-ride="carousel">
+                {% if images|length > 1 %}
+                <div class="carousel-indicators">
+                    {% for image in images %}
+                    <button type="button" data-bs-target="#{{ carouselId }}" data-bs-slide-to="{{ loop.index0 }}"
+                            {% if loop.first %}class="active" aria-current="true"{% endif %}
+                            aria-label="{{ image.caption ?? image.originalName }}"></button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="carousel-inner h-100">
+                    {% for image in images %}
+                    <div class="carousel-item h-100{% if loop.first %} active{% endif %}">
+                        <img src="/uploads/images/{{ image.fileName }}"
+                             class="project-detail-gallery__image"
+                             alt="{{ image.altText ?? image.caption ?? image.originalName }}">
+                        {% if image.caption %}
+                        <div class="carousel-caption d-none d-md-block project-detail-gallery__caption">
+                            <p class="mb-0 small">{{ image.caption }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">上一张</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">下一张</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-5 project-detail-gallery__info">
+            {% include 'admin/project/_project_intro_panel.html.twig' with {project: project} %}
+        </div>
+    </div>
+</div>

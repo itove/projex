@@ -1,5 +1,84 @@
 /* Custom EasyAdmin styles */
 
+/* 项目逾期提醒 */
+.datagrid tbody tr[data-project-overdue="1"] > td {
+    background: linear-gradient(90deg, #fff6f6 0%, #ffeded 100%) !important;
+    color: #9b1c1c;
+    border-top: 1px solid #ffe0e0;
+    border-bottom: 1px solid #ffe0e0;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.datagrid tbody tr[data-project-overdue="1"] > td:first-child {
+    box-shadow: inset 4px 0 0 #e03131;
+}
+
+.datagrid tbody tr[data-project-overdue="1"]:hover > td {
+    background: linear-gradient(90deg, #ffeded 0%, #ffe0e0 100%) !important;
+}
+
+.datagrid tbody tr[data-project-overdue="1"] td a {
+    color: #c22525;
+    font-weight: 500;
+}
+
+.datagrid tbody tr[data-project-overdue="1"] td a:hover {
+    color: #a61e1e;
+}
+
+.project-name-cell {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.project-name-cell__text {
+    font-weight: 500;
+}
+
+.project-overdue-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #c22525;
+    background: rgba(224, 49, 49, 0.1);
+    border: 1px solid rgba(224, 49, 49, 0.25);
+    white-space: nowrap;
+}
+
+.project-overdue-badge .fa {
+    font-size: 0.68rem;
+}
+
+.project-overdue-alert {
+    border: 2px solid #f03e3e;
+    background-color: #fff5f5;
+    color: #c92a2a;
+}
+
+.project-overdue-alert__icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    margin-top: 0.15rem;
+}
+
+.project-overdue-alert__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.project-overdue-alert__detail {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
 /* Login page title */
 #header-logo .logo {
     font-size: 1.8rem;
@@ -12,4 +91,277 @@ body {
   .btn-sm{
     padding: 0 8px !important;
   }
+}
+
+/* 项目编辑页 - 图集单张删除 */
+.project-image-collection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.project-image-entry {
+  border: 1px solid var(--border-color, #dee2e6);
+  border-radius: 0.375rem;
+  padding: 1rem;
+  background: var(--body-bg, #fff);
+}
+
+.project-image-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color, #dee2e6);
+}
+
+.project-image-entry-title {
+  font-weight: 600;
+  color: var(--text-color, #212529);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-image-entry .field-collection-delete-button {
+  position: static;
+  flex-shrink: 0;
+}
+
+/* 项目展示主页 - 轮播图固定尺寸 */
+:root {
+  --project-slideshow-height: 400px;
+}
+
+#projectSlideshow .carousel-inner,
+#projectSlideshow .carousel-item,
+#projectSlideshow .project-slide-panel {
+  height: var(--project-slideshow-height);
+}
+
+#projectSlideshow .project-slide-image {
+  height: var(--project-slideshow-height);
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+#projectSlideshow .project-slide-image__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#projectSlideshow .project-slide-caption {
+  left: 1rem;
+  right: auto;
+  bottom: 1rem;
+  max-width: 70%;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+}
+
+#projectSlideshow .project-slide-info {
+  height: var(--project-slideshow-height);
+  overflow-y: auto;
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --project-slideshow-height: 320px;
+  }
+
+  #projectSlideshow .carousel-inner,
+  #projectSlideshow .carousel-item,
+  #projectSlideshow .project-slide-panel {
+    height: auto;
+    min-height: var(--project-slideshow-height);
+  }
+
+  #projectSlideshow .project-slide-image {
+    height: 220px;
+  }
+
+  #projectSlideshow .project-slide-info {
+    height: auto;
+    min-height: 180px;
+  }
+}
+
+/* 项目详情页 - 图集轮播（左图右信息） */
+.project-detail-gallery__row {
+  height: var(--project-slideshow-height, 400px);
+}
+
+.project-detail-gallery__media,
+.project-detail-gallery__media .carousel,
+.project-detail-gallery__media .carousel-inner,
+.project-detail-gallery__media .carousel-item {
+  height: 100%;
+}
+
+.project-detail-gallery__media {
+  background: #1a1a1a;
+}
+
+.project-detail-gallery__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.project-detail-gallery__caption {
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.project-detail-gallery__info {
+  height: var(--project-slideshow-height, 400px);
+  overflow-y: auto;
+  background: #f8f9fa;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.5rem 1.75rem;
+}
+
+.project-intro-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 100%;
+}
+
+.project-intro-panel__title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-color, #212529);
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.project-intro-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.project-intro-panel__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6c757d;
+  letter-spacing: 0.02em;
+}
+
+.project-intro-panel__content {
+  line-height: 1.75;
+  font-size: 0.9375rem;
+  color: #495057;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.project-intro-panel__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #adb5bd;
+  font-style: italic;
+}
+
+@media (max-width: 767.98px) {
+  .project-detail-gallery__row {
+    height: auto;
+  }
+
+  .project-detail-gallery__media {
+    height: 220px;
+  }
+
+  .project-detail-gallery__info {
+    height: auto;
+    padding: 1.25rem 1rem;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .project-intro-panel__title {
+    font-size: 1.125rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+/* 文件管理 - 在线预览 */
+.file-preview-card .card-header {
+  background: var(--body-bg, #fff);
+}
+
+.file-preview-frame {
+  width: 100%;
+  height: min(75vh, 720px);
+  border: 0;
+  display: block;
+  background: #f8f9fa;
+}
+
+.file-preview-frame--text {
+  background: #fff;
+}
+
+.file-preview-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  max-height: min(75vh, 720px);
+  padding: 1rem;
+  background: #1a1a1a;
+  overflow: auto;
+}
+
+.file-preview-image {
+  max-width: 100%;
+  max-height: min(75vh, 700px);
+  object-fit: contain;
+}
+
+.file-preview-media-wrap,
+.file-preview-audio-wrap {
+  padding: 1.5rem;
+  background: #f8f9fa;
+}
+
+.file-preview-media {
+  width: 100%;
+  max-height: min(75vh, 720px);
+  background: #000;
+}
+
+.file-preview-audio {
+  width: 100%;
+}
+
+.file-preview-office-hint {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #495057;
+  background: #fff3cd;
+  border-top: 1px solid #ffecb5;
+}
+
+.file-preview-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 2rem;
+  text-align: center;
+  background: #f8f9fa;
 }

@@ -1,0 +1,12 @@
+{# @var project App\Entity\Project #}
+<div class="project-intro-panel">
+    <h2 class="project-intro-panel__title">{{ project.projectName }}</h2>
+    <div class="project-intro-panel__section">
+        <span class="project-intro-panel__label">项目简介</span>
+        {% if project.introduction %}
+            <div class="project-intro-panel__content">{{ project.introduction|nl2br }}</div>
+        {% else %}
+            <p class="project-intro-panel__empty">暂无项目简介</p>
+        {% endif %}
+    </div>
+</div>

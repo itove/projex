@@ -12,13 +12,13 @@
             <div class="col-md mb-2 mb-md-0">
                 <a href="{{ summary.links.stageProgress }}" class="summary-item summary-item-link text-decoration-none text-dark d-block">
                     <i class="fas fa-percentage text-primary fa-2x mb-2"></i>
-                    <h3 class="mb-0">{{ summary.stageProgress }}%</h3>
+                    <h3 class="mb-0">{{ summary.overallProgress }}%</h3>
                     <small class="text-muted">项目总进度</small>
                     <div class="progress mt-2" style="height: 8px;">
                         <div class="progress-bar bg-primary"
                              role="progressbar"
-                             style="width: {{ summary.stageProgress }}%"
-                             aria-valuenow="{{ summary.stageProgress }}"
+                             style="width: {{ summary.overallProgress }}%"
+                             aria-valuenow="{{ summary.overallProgress }}"
                              aria-valuemin="0"
                              aria-valuemax="100">
                         </div>

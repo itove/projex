@@ -198,25 +198,41 @@ class ProjectDisplayService
     }
 
     /**
-     * Calculate overall progress percentage (based on lifecycle stage)
+     * Calculate overall progress percentage based on completed lifecycle stages.
      */
     public function getOverallProgressPercentage(Project $project): int
     {
-        $stage = $this->getLifecycleStageNumber($project);
-
-        // Each stage is roughly 14.3% (100 / 7)
-        $baseProgress = (int) ($stage * 14.3);
-
-        // If in construction implementation, add detailed progress
-        if ($stage === 5) {
-            $implementationProgress = $this->getProgressPercentage($project);
-            if ($implementationProgress !== null) {
-                // Add up to 14% based on implementation progress
-                $baseProgress += (int) ($implementationProgress * 0.143);
-            }
+        if ($project->getStatus() === \App\Enum\ProjectStatus::COMPLETED) {
+            return 100;
         }
 
-        return min(100, $baseProgress);
+        $stages = $this->getLifecycleStages($project);
+        $totalStages = count($stages);
+        if ($totalStages === 0) {
+            return 0;
+        }
+
+        $stageWeight = 100 / $totalStages;
+        $progress = 0.0;
+
+        foreach ($stages as $stage) {
+            if ($stage['status'] === 'completed') {
+                $progress += $stageWeight;
+                continue;
+            }
+
+            if ($stage['status'] === 'in_progress') {
+                if ($stage['number'] === 5 && isset($stage['progress']) && $stage['progress'] !== null) {
+                    $progress += $stageWeight * ($stage['progress'] / 100);
+                } else {
+                    $progress += $stageWeight * 0.5;
+                }
+            }
+
+            break;
+        }
+
+        return min(100, (int) round($progress));
     }
 
     /**
@@ -383,7 +399,6 @@ class ProjectDisplayService
             'plannedEndDate' => $project->getPlannedEndDate(),
             'totalFiles' => $totalFiles,
             'paymentProgress' => 50,
-            'stageProgress' => 80,
         ];
     }
 }
