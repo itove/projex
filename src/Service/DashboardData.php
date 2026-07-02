@@ -12,6 +12,8 @@ use App\DTO\ProjectCardDTO;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Repository\ProjectRepository;
+use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -28,6 +30,7 @@ class DashboardData
         private Security $security,
         private OrgAccessService $orgAccessService,
         private ProjectNavigationService $projectNavigationService,
+        private ProjectLifecycleStageRegistry $stageRegistry,
     ) {
     }
 
@@ -91,18 +94,18 @@ class DashboardData
     {
         $qb = $this->projectRepository->createQueryBuilder('p')
             ->leftJoin('p.projectType', 'pt')
-            ->leftJoin('p.projectSubtype', 'ps')
-            ->leftJoin('p.preliminaryDecision', 'pd')
-            ->leftJoin('p.projectApproval', 'pa')
-            ->leftJoin('p.planningDesign', 'pld')
-            ->leftJoin('p.constructionPreparation', 'cp')
-            ->leftJoin('p.constructionImplementation', 'ci')
-            ->leftJoin('p.completionAcceptance', 'ca')
-            ->leftJoin('p.settlementAccounts', 'sa');
+            ->leftJoin('p.projectSubtype', 'ps');
+
+        $stageAliases = [];
+        foreach ($this->stageRegistry->all() as $index => $definition) {
+            $alias = 'dash_stage_' . $index;
+            $stageAliases[$definition->key] = $alias;
+            $qb->leftJoin(sprintf('p.%s', $definition->projectProperty), $alias);
+        }
 
         // Filter by lifecycle stage
         if (!empty($filters['stage'])) {
-            $this->applyStageFilter($qb, $filters['stage']);
+            $this->applyStageFilter($qb, $filters['stage'], $stageAliases);
         }
 
         // Filter by project status
@@ -157,31 +160,60 @@ class DashboardData
     }
 
     /**
-     * Apply lifecycle stage filter
+     * Apply lifecycle stage filter.
+     *
+     * Recognizes two generic filter value shapes derived from the stage
+     * registry: "{stageKey}_completed" (that stage's entity exists) and
+     * "{stageKey}_in_progress" (that stage's entity exists but the next
+     * stage hasn't started yet - or, for the final stage, the project isn't
+     * marked completed yet), plus the status-based "closed"/"terminated".
+     *
+     * @param array<string, string> $stageAliases stage key => join alias
      */
-    private function applyStageFilter($qb, string $stage): void
+    private function applyStageFilter(QueryBuilder $qb, string $stage, array $stageAliases): void
     {
-        match ($stage) {
-            'preliminary_completed' => $qb->andWhere('pd.id IS NOT NULL'),
-            'approval_completed' => $qb->andWhere('pa.id IS NOT NULL'),
-            'planning_completed' => $qb->andWhere('pld.id IS NOT NULL'),
-            'preparation_completed' => $qb->andWhere('cp.id IS NOT NULL'),
-            'implementation_in_progress' => $qb->andWhere('ci.id IS NOT NULL')
-                ->andWhere('ca.id IS NULL'),
-            'acceptance_in_progress' => $qb->andWhere('ca.id IS NOT NULL')
-                ->andWhere('sa.id IS NULL'),
-            'settlement_in_progress' => $qb->andWhere('sa.id IS NOT NULL')
-                ->andWhere('p.status != :completed')
-                ->setParameter('completed', \App\Enum\ProjectStatus::COMPLETED->value),
-            'closed' => $qb->andWhere('p.status IN (:closedStatuses)')
+        if ($stage === 'closed') {
+            $qb->andWhere('p.status IN (:closedStatuses)')
                 ->setParameter('closedStatuses', [
                     \App\Enum\ProjectStatus::COMPLETED->value,
-                    \App\Enum\ProjectStatus::CANCELLED->value
-                ]),
-            'terminated' => $qb->andWhere('p.status = :cancelled')
-                ->setParameter('cancelled', \App\Enum\ProjectStatus::CANCELLED->value),
-            default => null,
-        };
+                    \App\Enum\ProjectStatus::CANCELLED->value,
+                ]);
+
+            return;
+        }
+
+        if ($stage === 'terminated') {
+            $qb->andWhere('p.status = :cancelled')
+                ->setParameter('cancelled', \App\Enum\ProjectStatus::CANCELLED->value);
+
+            return;
+        }
+
+        $definitions = $this->stageRegistry->all();
+
+        foreach ($definitions as $index => $definition) {
+            $alias = $stageAliases[$definition->key];
+
+            if ($stage === $definition->key . '_completed') {
+                $qb->andWhere(sprintf('%s.id IS NOT NULL', $alias));
+
+                return;
+            }
+
+            if ($stage === $definition->key . '_in_progress') {
+                $qb->andWhere(sprintf('%s.id IS NOT NULL', $alias));
+
+                $nextDefinition = $definitions[$index + 1] ?? null;
+                if ($nextDefinition !== null) {
+                    $qb->andWhere(sprintf('%s.id IS NULL', $stageAliases[$nextDefinition->key]));
+                } else {
+                    $qb->andWhere('p.status != :notCompletedStatus')
+                        ->setParameter('notCompletedStatus', \App\Enum\ProjectStatus::COMPLETED->value);
+                }
+
+                return;
+            }
+        }
     }
 
     /**
@@ -190,15 +222,11 @@ class DashboardData
     private function calculateStatistics(array $projects): array
     {
         $total = count($projects);
-        $byStage = [
-            'preliminary' => 0,
-            'approval' => 0,
-            'planning' => 0,
-            'preparation' => 0,
-            'implementation' => 0,
-            'acceptance' => 0,
-            'settlement' => 0,
-        ];
+        $stageDefinitions = $this->stageRegistry->all();
+        $byStage = array_fill_keys(array_map(
+            static fn ($definition) => $definition->key,
+            $stageDefinitions
+        ), 0);
         $byStatus = [
             'draft' => 0,
             'in_progress' => 0,
@@ -210,16 +238,9 @@ class DashboardData
         foreach ($projects as $project) {
             // Count by lifecycle stage
             $stageNumber = $this->displayService->getLifecycleStageNumber($project);
-            match ($stageNumber) {
-                1 => $byStage['preliminary']++,
-                2 => $byStage['approval']++,
-                3 => $byStage['planning']++,
-                4 => $byStage['preparation']++,
-                5 => $byStage['implementation']++,
-                6 => $byStage['acceptance']++,
-                7 => $byStage['settlement']++,
-                default => null,
-            };
+            if ($stageNumber > 0 && isset($stageDefinitions[$stageNumber - 1])) {
+                $byStage[$stageDefinitions[$stageNumber - 1]->key]++;
+            }
 
             // Count by status
             $status = $project->getStatus();

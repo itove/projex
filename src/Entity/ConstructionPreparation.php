@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ConstructionPreparationRepository::class)]
 #[ORM\Table(name: 'construction_preparation')]
 #[ORM\HasLifecycleCallbacks]
-class ConstructionPreparation
+class ConstructionPreparation implements LifecycleStageInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -135,6 +135,11 @@ class ConstructionPreparation
     {
         $this->completionDate = $completionDate;
         return $this;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->completionDate !== null;
     }
 
     public function getConstructionUnit(): ?string

@@ -157,21 +157,7 @@
                 <div class="alert alert-info mb-0">
                     <small>
                         <strong>登记要求：</strong>
-                        {% if stage.number == 1 %}
-                            需上传项目建议书、可行性研究报告等文档
-                        {% elseif stage.number == 2 %}
-                            需上传立项申请表、立项批复文件等
-                        {% elseif stage.number == 3 %}
-                            需上传规划审批文件、初步设计、施工图等
-                        {% elseif stage.number == 4 %}
-                            需上传招标文件、合同、施工许可证等
-                        {% elseif stage.number == 5 %}
-                            需定期更新施工进度、上传现场照片和验收记录
-                        {% elseif stage.number == 6 %}
-                            需上传竣工验收报告、专项验收证明等
-                        {% elseif stage.number == 7 %}
-                            需上传竣工结算书、决算报告、审计报告等
-                        {% endif %}
+                        {{ stage.requirementsHint }}
                     </small>
                 </div>
             </div>

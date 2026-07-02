@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ProjectApprovalRepository::class)]
 #[ORM\Table(name: 'project_approval')]
 #[ORM\HasLifecycleCallbacks]
-class ProjectApproval
+class ProjectApproval implements LifecycleStageInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -132,6 +132,11 @@ class ProjectApproval
     {
         $this->completionDate = $completionDate;
         return $this;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->completionDate !== null;
     }
 
     public function getApprovingAuthority(): ?string

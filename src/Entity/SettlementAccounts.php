@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['settlement_date'], name: 'idx_settlement_date')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_settlement_accounts_created_at')]
 #[ORM\HasLifecycleCallbacks]
-class SettlementAccounts
+class SettlementAccounts implements LifecycleStageInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -111,6 +111,11 @@ class SettlementAccounts
     {
         $this->settlementDate = $settlementDate;
         return $this;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->settlementDate !== null;
     }
 
     public function getContractSettlementDetails(): ?string

@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['acceptance_date'], name: 'idx_completion_acceptance_date')]
 #[ORM\Index(columns: ['created_at'], name: 'idx_completion_acceptance_created_at')]
 #[ORM\HasLifecycleCallbacks]
-class CompletionAcceptance
+class CompletionAcceptance implements LifecycleStageInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -111,6 +111,11 @@ class CompletionAcceptance
     {
         $this->acceptanceDate = $acceptanceDate;
         return $this;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->acceptanceDate !== null;
     }
 
     public function getCompletionReportDetails(): ?string

@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Controller\Admin\ProjectCrudController;
 use App\Enum\ProjectStatus;
+use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -17,6 +18,7 @@ class ProjectNavigationService
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ProjectLifecycleStageRegistry $stageRegistry,
     ) {
     }
 
@@ -55,20 +57,17 @@ class ProjectNavigationService
      */
     public function buildDashboardStatisticsLinks(): array
     {
+        $stages = [];
+        foreach ($this->stageRegistry->all() as $index => $definition) {
+            $stages[$definition->key] = $this->projectListUrl(currentStage: $index + 1);
+        }
+
         return [
             'total' => $this->projectListUrl(),
             'in_progress' => $this->projectListUrl(statusGroup: 'in_progress'),
             'closed' => $this->projectListUrl(statusGroup: 'closed'),
             'cancelled' => $this->projectListUrl(status: ProjectStatus::CANCELLED->value),
-            'stages' => [
-                'preliminary' => $this->projectListUrl(currentStage: 1),
-                'approval' => $this->projectListUrl(currentStage: 2),
-                'planning' => $this->projectListUrl(currentStage: 3),
-                'preparation' => $this->projectListUrl(currentStage: 4),
-                'implementation' => $this->projectListUrl(currentStage: 5),
-                'acceptance' => $this->projectListUrl(currentStage: 6),
-                'settlement' => $this->projectListUrl(currentStage: 7),
-            ],
+            'stages' => $stages,
         ];
     }
 
@@ -146,31 +145,36 @@ class ProjectNavigationService
         }
 
         $currentStage = $request->query->getInt('currentStage');
-        if ($currentStage >= 1 && $currentStage <= 7) {
+        if ($currentStage >= 1 && $currentStage <= $this->stageRegistry->count()) {
             $this->applyCurrentStageFilter($qb, $currentStage, $projectAlias);
         }
     }
 
+    /**
+     * A project is "at" stage N when stage N's entity exists and either it's
+     * the last stage, or the next stage's entity doesn't exist yet.
+     */
     private function applyCurrentStageFilter(QueryBuilder $qb, int $stage, string $projectAlias): void
     {
-        $qb->leftJoin(sprintf('%s.preliminaryDecision', $projectAlias), 'nav_pd')
-            ->leftJoin(sprintf('%s.projectApproval', $projectAlias), 'nav_pa')
-            ->leftJoin(sprintf('%s.planningDesign', $projectAlias), 'nav_pld')
-            ->leftJoin(sprintf('%s.constructionPreparation', $projectAlias), 'nav_cp')
-            ->leftJoin(sprintf('%s.constructionImplementation', $projectAlias), 'nav_ci')
-            ->leftJoin(sprintf('%s.completionAcceptance', $projectAlias), 'nav_ca')
-            ->leftJoin(sprintf('%s.settlementAccounts', $projectAlias), 'nav_sa');
+        $definitions = $this->stageRegistry->all();
+        $stageIndex = $stage - 1;
+        if (!isset($definitions[$stageIndex])) {
+            return;
+        }
 
-        match ($stage) {
-            1 => $qb->andWhere('nav_pd.id IS NOT NULL AND nav_pa.id IS NULL'),
-            2 => $qb->andWhere('nav_pa.id IS NOT NULL AND nav_pld.id IS NULL'),
-            3 => $qb->andWhere('nav_pld.id IS NOT NULL AND nav_cp.id IS NULL'),
-            4 => $qb->andWhere('nav_cp.id IS NOT NULL AND nav_ci.id IS NULL'),
-            5 => $qb->andWhere('nav_ci.id IS NOT NULL AND nav_ca.id IS NULL'),
-            6 => $qb->andWhere('nav_ca.id IS NOT NULL AND nav_sa.id IS NULL'),
-            7 => $qb->andWhere('nav_sa.id IS NOT NULL'),
-            default => null,
-        };
+        $aliases = [];
+        foreach ($definitions as $index => $definition) {
+            $alias = 'nav_stage_' . $index;
+            $aliases[] = $alias;
+            $qb->leftJoin(sprintf('%s.%s', $projectAlias, $definition->projectProperty), $alias);
+        }
+
+        $qb->andWhere(sprintf('%s.id IS NOT NULL', $aliases[$stageIndex]));
+
+        $nextAlias = $aliases[$stageIndex + 1] ?? null;
+        if ($nextAlias !== null) {
+            $qb->andWhere(sprintf('%s.id IS NULL', $nextAlias));
+        }
     }
 
     /**

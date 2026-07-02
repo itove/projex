@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\LifecycleStageInterface;
 use App\Entity\Project;
+use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 
 /**
  * Service to calculate derived display fields for projects
@@ -12,34 +14,22 @@ use App\Entity\Project;
  */
 class ProjectDisplayService
 {
+    public function __construct(
+        private readonly ProjectLifecycleStageRegistry $stageRegistry,
+    ) {
+    }
+
     /**
      * Get the current lifecycle stage label for a project
      */
     public function getCurrentStageLabel(Project $project): string
     {
-        if ($project->getSettlementAccounts() !== null) {
-            return '竣工结算中';
-        }
-        if ($project->getCompletionAcceptance() !== null) {
-            return '竣工验收中';
-        }
-        if ($project->getConstructionImplementation() !== null) {
-            return '施工实施中';
-        }
-        if ($project->getConstructionPreparation() !== null) {
-            return '施工准备中';
-        }
-        if ($project->getPlanningDesign() !== null) {
-            return '规划与设计中';
-        }
-        if ($project->getProjectApproval() !== null) {
-            return '立项中';
-        }
-        if ($project->getPreliminaryDecision() !== null) {
-            return '前期决策中';
+        $activeStage = $this->findLastActiveStageIndex($project);
+        if ($activeStage === null) {
+            return '待前期决策';
         }
 
-        return '待前期决策';
+        return $this->stageRegistry->all()[$activeStage]->progressLabel;
     }
 
     /**
@@ -168,33 +158,14 @@ class ProjectDisplayService
     }
 
     /**
-     * Calculate lifecycle stage progress (1-7, based on which stages are completed)
+     * Calculate lifecycle stage progress (1..N, based on which stages are completed),
+     * where N is the number of stages known to the lifecycle stage registry.
      */
     public function getLifecycleStageNumber(Project $project): int
     {
-        if ($project->getSettlementAccounts() !== null) {
-            return 7;
-        }
-        if ($project->getCompletionAcceptance() !== null) {
-            return 6;
-        }
-        if ($project->getConstructionImplementation() !== null) {
-            return 5;
-        }
-        if ($project->getConstructionPreparation() !== null) {
-            return 4;
-        }
-        if ($project->getPlanningDesign() !== null) {
-            return 3;
-        }
-        if ($project->getProjectApproval() !== null) {
-            return 2;
-        }
-        if ($project->getPreliminaryDecision() !== null) {
-            return 1;
-        }
+        $activeStage = $this->findLastActiveStageIndex($project);
 
-        return 0;
+        return $activeStage === null ? 0 : $activeStage + 1;
     }
 
     /**
@@ -202,17 +173,17 @@ class ProjectDisplayService
      */
     public function getOverallProgressPercentage(Project $project): int
     {
-        $stage = $this->getLifecycleStageNumber($project);
+        $totalStages = $this->stageRegistry->count();
+        $stageNumber = $this->getLifecycleStageNumber($project);
+        $stagePercentage = 100 / $totalStages;
+        $baseProgress = (int) ($stageNumber * $stagePercentage);
 
-        // Each stage is roughly 14.3% (100 / 7)
-        $baseProgress = (int) ($stage * 14.3);
-
-        // If in construction implementation, add detailed progress
-        if ($stage === 5) {
+        // If currently in the construction implementation stage, add detailed progress
+        $currentDefinition = $stageNumber > 0 ? $this->stageRegistry->all()[$stageNumber - 1] : null;
+        if ($currentDefinition !== null && $currentDefinition->key === 'implementation') {
             $implementationProgress = $this->getProgressPercentage($project);
             if ($implementationProgress !== null) {
-                // Add up to 14% based on implementation progress
-                $baseProgress += (int) ($implementationProgress * 0.143);
+                $baseProgress += (int) ($implementationProgress * $stagePercentage / 100);
             }
         }
 
@@ -224,135 +195,50 @@ class ProjectDisplayService
      */
     public function getLifecycleStages(Project $project): array
     {
-        return [
-            [
-                'number' => 1,
-                'name' => '前期决策流程',
-                'icon' => 'fa-file-alt',
-                'entity' => $project->getPreliminaryDecision(),
-                'route' => 'admin_preliminary_decision',
-                'status' => $this->getStageStatus($project->getPreliminaryDecision()),
-                'info' => $this->getStageInfo($project->getPreliminaryDecision(), '决策单位'),
-            ],
-            [
-                'number' => 2,
-                'name' => '立项流程',
-                'icon' => 'fa-check-square',
-                'entity' => $project->getProjectApproval(),
-                'route' => 'admin_project_approval',
-                'status' => $this->getStageStatus($project->getProjectApproval()),
-                'info' => $this->getStageInfo($project->getProjectApproval(), '审批部门'),
-            ],
-            [
-                'number' => 3,
-                'name' => '规划设计流程',
-                'icon' => 'fa-pencil-ruler',
-                'entity' => $project->getPlanningDesign(),
-                'route' => 'admin_planning_design',
-                'status' => $this->getStageStatus($project->getPlanningDesign()),
-                'info' => $this->getStageInfo($project->getPlanningDesign(), '设计单位'),
-            ],
-            [
-                'number' => 4,
-                'name' => '施工准备流程',
-                'icon' => 'fa-tools',
-                'entity' => $project->getConstructionPreparation(),
-                'route' => 'admin_construction_preparation',
-                'status' => $this->getStageStatus($project->getConstructionPreparation()),
-                'info' => $this->getStageInfo($project->getConstructionPreparation(), '施工单位'),
-            ],
-            [
-                'number' => 5,
-                'name' => '施工实施流程',
-                'icon' => 'fa-hard-hat',
-                'entity' => $project->getConstructionImplementation(),
-                'route' => 'admin_construction_implementation',
-                'status' => $this->getStageStatus($project->getConstructionImplementation()),
-                'info' => $this->getStageInfo($project->getConstructionImplementation(), '实施进度'),
-                'progress' => $this->getProgressPercentage($project),
-            ],
-            [
-                'number' => 6,
-                'name' => '竣工验收流程',
-                'icon' => 'fa-clipboard-check',
-                'entity' => $project->getCompletionAcceptance(),
-                'route' => 'admin_completion_acceptance',
-                'status' => $this->getStageStatus($project->getCompletionAcceptance()),
-                'info' => $this->getStageInfo($project->getCompletionAcceptance(), '验收结果'),
-            ],
-            [
-                'number' => 7,
-                'name' => '竣工结算流程',
-                'icon' => 'fa-calculator',
-                'entity' => $project->getSettlementAccounts(),
-                'route' => 'admin_settlement_accounts',
-                'status' => $this->getStageStatus($project->getSettlementAccounts()),
-                'info' => $this->getStageInfo($project->getSettlementAccounts(), '结算金额'),
-            ],
-        ];
+        $stages = [];
+
+        foreach ($this->stageRegistry->all() as $index => $definition) {
+            $entity = $definition->getEntity($project);
+
+            $stage = [
+                'number' => $index + 1,
+                'name' => $definition->name,
+                'icon' => $definition->icon,
+                'entity' => $entity,
+                'route' => $definition->route,
+                'status' => $this->getStageStatus($entity),
+                'info' => $definition->getInfo($entity),
+                'requirementsHint' => $definition->requirementsHint,
+            ];
+
+            if ($definition->key === 'implementation') {
+                $stage['progress'] = $this->getProgressPercentage($project);
+            }
+
+            $stages[] = $stage;
+        }
+
+        return $stages;
     }
 
     /**
      * Get stage status (completed, in_progress, not_started)
      */
-    private function getStageStatus(?object $stageEntity): string
+    private function getStageStatus(?LifecycleStageInterface $stageEntity): string
     {
         if ($stageEntity === null) {
             return 'not_started';
         }
 
-        // Check if stage has completion date or is fully filled
-        if (method_exists($stageEntity, 'getCompletionDate')) {
-            return $stageEntity->getCompletionDate() !== null ? 'completed' : 'in_progress';
-        }
-
-        if (method_exists($stageEntity, 'getAcceptanceDate')) {
-            return $stageEntity->getAcceptanceDate() !== null ? 'completed' : 'in_progress';
-        }
-
-        // For stages without specific completion date, consider them in progress if entity exists
-        return 'in_progress';
-    }
-
-    /**
-     * Get stage summary information
-     */
-    private function getStageInfo(?object $stageEntity, string $type): ?string
-    {
-        if ($stageEntity === null) {
-            return null;
-        }
-
-        return match ($type) {
-            '决策单位' => method_exists($stageEntity, 'getOrganizingUnit')
-                ? $stageEntity->getOrganizingUnit()
-                : null,
-            '审批部门' => method_exists($stageEntity, 'getApprovalDepartment')
-                ? $stageEntity->getApprovalDepartment()
-                : null,
-            '设计单位' => method_exists($stageEntity, 'getDesignUnit')
-                ? $stageEntity->getDesignUnit()
-                : null,
-            '施工单位' => method_exists($stageEntity, 'getConstructionUnit')
-                ? $stageEntity->getConstructionUnit()
-                : null,
-            '实施进度' => method_exists($stageEntity, 'getCurrentProgress') && $stageEntity->getCurrentProgress() !== null
-                ? $stageEntity->getCurrentProgress() . '%'
-                : null,
-            '验收结果' => method_exists($stageEntity, 'getAcceptanceDate') && $stageEntity->getAcceptanceDate() !== null
-                ? '已验收'
-                : '验收中',
-            '结算金额' => null, // Simplified for now
-            default => null,
-        };
+        return $stageEntity->isComplete() ? 'completed' : 'in_progress';
     }
 
     /**
      * Count files for a stage entity
      */
-    public function getStageFileCount(?object $stageEntity): int
+    public function getStageFileCount(?LifecycleStageInterface $stageEntity): int
     {
-        if ($stageEntity === null || !method_exists($stageEntity, 'getFiles')) {
+        if ($stageEntity === null) {
             return 0;
         }
 
@@ -377,7 +263,7 @@ class ProjectDisplayService
         return [
             'overallProgress' => $this->getOverallProgressPercentage($project),
             'completedStages' => $completedStages,
-            'totalStages' => 7,
+            'totalStages' => $this->stageRegistry->count(),
             'currentStage' => $this->getCurrentStageLabel($project),
             'currentProgress' => $this->getProgressPercentage($project),
             'plannedEndDate' => $project->getPlannedEndDate(),
@@ -385,5 +271,21 @@ class ProjectDisplayService
             'paymentProgress' => 50,
             'stageProgress' => 80,
         ];
+    }
+
+    /**
+     * Find the 0-based index of the furthest stage that has been started
+     * (i.e. has a non-null stage entity), or null if no stage has started yet.
+     */
+    private function findLastActiveStageIndex(Project $project): ?int
+    {
+        $stages = $this->stageRegistry->all();
+        for ($i = count($stages) - 1; $i >= 0; $i--) {
+            if ($stages[$i]->getEntity($project) !== null) {
+                return $i;
+            }
+        }
+
+        return null;
     }
 }

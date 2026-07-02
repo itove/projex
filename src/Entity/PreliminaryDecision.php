@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PreliminaryDecisionRepository::class)]
 #[ORM\Table(name: 'preliminary_decision')]
 #[ORM\HasLifecycleCallbacks]
-class PreliminaryDecision
+class PreliminaryDecision implements LifecycleStageInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -129,6 +129,11 @@ class PreliminaryDecision
     {
         $this->completionDate = $completionDate;
         return $this;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->completionDate !== null;
     }
 
     public function getOrganizingUnit(): ?string
