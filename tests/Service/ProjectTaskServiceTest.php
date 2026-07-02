@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Entity\ProjectTask;
+use App\Enum\ProjectLifecycleStage;
 use App\Enum\ProjectTaskStatus;
 use App\Service\ProjectTaskService;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -73,5 +74,20 @@ class ProjectTaskServiceTest extends KernelTestCase
         $this->assertStringContainsString('filters', $listUrl);
         $this->assertStringContainsString('42', $listUrl);
         $this->assertStringContainsString('project=42', $newUrl);
+    }
+
+    public function testBuildNewTaskUrlIncludesStageWhenProvided(): void
+    {
+        $newUrl = $this->taskService->buildNewTaskUrl(42, ProjectLifecycleStage::Preparation->value);
+
+        $this->assertStringContainsString('project=42', $newUrl);
+        $this->assertStringContainsString('stage=preparation', $newUrl);
+    }
+
+    public function testBuildNewTaskUrlOmitsStageWhenEmpty(): void
+    {
+        $newUrl = $this->taskService->buildNewTaskUrl(42, '');
+
+        $this->assertStringNotContainsString('stage=', $newUrl);
     }
 }

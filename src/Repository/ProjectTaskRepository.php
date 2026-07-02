@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\ProjectTask;
+use App\Enum\ProjectLifecycleStage;
 use App\Enum\ProjectTaskStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,11 +23,16 @@ class ProjectTaskRepository extends ServiceEntityRepository
     /**
      * @return list<ProjectTask>
      */
-    public function findByProject(int $projectId, ?int $limit = null): array
+    public function findByProject(int $projectId, ?int $limit = null, ?ProjectLifecycleStage $stage = null): array
     {
         $qb = $this->createOrderedQueryBuilder('t')
             ->andWhere('t.project = :projectId')
             ->setParameter('projectId', $projectId);
+
+        if ($stage !== null) {
+            $qb->andWhere('t.lifecycleStage = :stage')
+                ->setParameter('stage', $stage);
+        }
 
         if ($limit !== null) {
             $qb->setMaxResults($limit);
@@ -35,9 +41,9 @@ class ProjectTaskRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function countOpenByProject(int $projectId): int
+    public function countOpenByProject(int $projectId, ?ProjectLifecycleStage $stage = null): int
     {
-        return (int) $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->andWhere('t.project = :projectId')
             ->andWhere('t.status IN (:openStatuses)')
@@ -45,9 +51,14 @@ class ProjectTaskRepository extends ServiceEntityRepository
             ->setParameter('openStatuses', [
                 ProjectTaskStatus::PENDING->value,
                 ProjectTaskStatus::IN_PROGRESS->value,
-            ])
-            ->getQuery()
-            ->getSingleScalarResult();
+            ]);
+
+        if ($stage !== null) {
+            $qb->andWhere('t.lifecycleStage = :stage')
+                ->setParameter('stage', $stage);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function countOverdueByProject(int $projectId): int

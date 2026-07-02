@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Controller\Admin\ProjectTaskCrudController;
 use App\Entity\Project;
 use App\Entity\ProjectTask;
+use App\Enum\ProjectLifecycleStage;
 use App\Repository\ProjectTaskRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -52,14 +53,19 @@ class ProjectTaskService
             ->generateUrl();
     }
 
-    public function buildNewTaskUrl(int $projectId): string
+    public function buildNewTaskUrl(int $projectId, ?string $stageKey = null): string
     {
-        return $this->adminUrlGenerator
+        $generator = $this->adminUrlGenerator
             ->unsetAll()
             ->setController(ProjectTaskCrudController::class)
             ->setAction(Action::NEW)
-            ->set('project', (string) $projectId)
-            ->generateUrl();
+            ->set('project', (string) $projectId);
+
+        if ($stageKey !== null && $stageKey !== '') {
+            $generator->set('stage', $stageKey);
+        }
+
+        return $generator->generateUrl();
     }
 
     public function buildTaskDetailUrl(ProjectTask $task): string

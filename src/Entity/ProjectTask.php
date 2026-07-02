@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\ProjectLifecycleStage;
 use App\Enum\ProjectTaskPriority;
 use App\Enum\ProjectTaskStatus;
 use App\Repository\ProjectTaskRepository;
@@ -19,6 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['due_date'], name: 'idx_project_task_due_date')]
 #[ORM\Index(columns: ['start_date'], name: 'idx_project_task_start_date')]
 #[ORM\Index(columns: ['end_date'], name: 'idx_project_task_end_date')]
+#[ORM\Index(columns: ['lifecycle_stage'], name: 'idx_project_task_lifecycle_stage')]
 #[ORM\HasLifecycleCallbacks]
 class ProjectTask
 {
@@ -31,6 +33,9 @@ class ProjectTask
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: '所属项目不能为空')]
     private ?Project $project = null;
+
+    #[ORM\Column(type: Types::STRING, enumType: ProjectLifecycleStage::class, nullable: true)]
+    private ?ProjectLifecycleStage $lifecycleStage = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Assert\NotBlank(message: '任务名称不能为空')]
@@ -148,6 +153,18 @@ class ProjectTask
     public function setProject(?Project $project): self
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getLifecycleStage(): ?ProjectLifecycleStage
+    {
+        return $this->lifecycleStage;
+    }
+
+    public function setLifecycleStage(?ProjectLifecycleStage $lifecycleStage): self
+    {
+        $this->lifecycleStage = $lifecycleStage;
 
         return $this;
     }

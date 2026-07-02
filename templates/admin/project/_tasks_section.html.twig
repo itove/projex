@@ -39,6 +39,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>任务名称</th>
+                            <th>所属阶段</th>
                             <th>责任单位</th>
                             <th>配合单位</th>
                             <th>开始时间</th>
@@ -60,6 +61,7 @@
                                         {{ task.title }}
                                     </a>
                                 </td>
+                                <td>{{ task.lifecycleStage ? task.lifecycleStage.label : '—' }}</td>
                                 <td>{{ task.responsibleUnit ?? '—' }}</td>
                                 <td>{{ task.cooperatingUnit ?? '—' }}</td>
                                 <td>{{ task.startDate ? task.startDate|date('Y-m-d') : '—' }}</td>

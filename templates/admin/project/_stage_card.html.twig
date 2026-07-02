@@ -130,6 +130,15 @@
                     <i class="fas fa-folder-open"></i> 查看文档
                 </a>
 
+                <a href="{{ ea_url()
+                    .setController('App\\Controller\\Admin\\ProjectTaskCrudController')
+                    .setAction('new')
+                    .set('project', project.id)
+                    .set('stage', stage.key) }}"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus"></i> 新建任务
+                </a>
+
             {% else %}
                 {# Stage not started - show start button if previous stage is complete #}
                 {% if stage.number == 1 or (stages[stage.number - 2] is defined and stages[stage.number - 2].status == 'completed') %}
@@ -147,6 +156,15 @@
                    class="btn btn-sm btn-outline-secondary"
                    data-bs-toggle="collapse">
                     <i class="fas fa-question-circle"></i> 查看要求
+                </a>
+
+                <a href="{{ ea_url()
+                    .setController('App\\Controller\\Admin\\ProjectTaskCrudController')
+                    .setAction('new')
+                    .set('project', project.id)
+                    .set('stage', stage.key) }}"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus"></i> 新建任务
                 </a>
             {% endif %}
         </div>

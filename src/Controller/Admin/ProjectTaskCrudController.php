@@ -7,6 +7,7 @@ namespace App\Controller\Admin;
 use App\Entity\Project;
 use App\Entity\ProjectTask;
 use App\Entity\User;
+use App\Enum\ProjectLifecycleStage;
 use App\Enum\ProjectTaskPriority;
 use App\Enum\ProjectTaskStatus;
 use App\Repository\ProjectRepository;
@@ -92,6 +93,11 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
                     ->setParameter('accessibleOrgIds', $accessibleOrgIds);
             });
 
+        yield ChoiceField::new('lifecycleStage', '所属阶段')
+            ->setChoices($this->lifecycleStageChoices())
+            ->setRequired(false)
+            ->setColumns(6);
+
         yield TextField::new('title', '任务名称')
             ->setRequired(true)
             ->setColumns(6);
@@ -169,6 +175,9 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
             ->hideOnIndex();
 
         if ($pageName === Crud::PAGE_INDEX) {
+            yield TextField::new('lifecycleStage', '所属阶段')
+                ->formatValue(static fn (?ProjectLifecycleStage $stage) => $stage?->label() ?? '—');
+
             yield TextField::new('progressText', '当前进度')
                 ->formatValue(static fn (?string $value) => $value !== null && $value !== ''
                     ? (mb_strlen($value) > 40 ? mb_substr($value, 0, 40).'…' : $value)
@@ -207,6 +216,7 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
     {
         return $filters
             ->add(EntityFilter::new('project', '项目'))
+            ->add(ChoiceFilter::new('lifecycleStage', '所属阶段')->setChoices($this->lifecycleStageChoices()))
             ->add(ChoiceFilter::new('status', '状态')->setChoices($this->statusChoices()))
             ->add(ChoiceFilter::new('priority', '优先级')->setChoices($this->priorityChoices()))
             ->add(EntityFilter::new('assignee', '负责人'))
@@ -243,13 +253,19 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
     public function createEntity(string $entityFqcn): ProjectTask
     {
         $task = new ProjectTask();
-        $projectId = $this->getContext()?->getRequest()?->query->getInt('project');
+        $request = $this->getContext()?->getRequest();
+        $projectId = $request?->query->getInt('project') ?? 0;
 
         if ($projectId > 0) {
             $project = $this->projectRepository->find($projectId);
             if ($project instanceof Project) {
                 $task->setProject($project);
             }
+        }
+
+        $stage = ProjectLifecycleStage::tryFromKey($request?->query->getString('stage'));
+        if ($stage !== null) {
+            $task->setLifecycleStage($stage);
         }
 
         return $task;
@@ -328,6 +344,19 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
         }
 
         return parent::new($context);
+    }
+
+    /**
+     * @return array<string, ProjectLifecycleStage>
+     */
+    private function lifecycleStageChoices(): array
+    {
+        $choices = [];
+        foreach (ProjectLifecycleStage::cases() as $stage) {
+            $choices[$stage->label()] = $stage;
+        }
+
+        return $choices;
     }
 
     /**

@@ -204,6 +204,7 @@ class ProjectDisplayService
             $entity = $this->stageRegistry->getEntity($project, $definition);
 
             $stage = [
+                'key' => $definition->key,
                 'number' => $index + 1,
                 'name' => $definition->name,
                 'icon' => $definition->icon,
