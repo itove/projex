@@ -85,6 +85,11 @@ class FileCrudController extends AbstractCrudController
     {
         yield TextField::new('file', '文件')
             ->setFormType(VichFileType::class)
+            ->setFormTypeOptions([
+                'download_label' => '下载',
+                'delete_label' => '删除',
+                'translation_domain' => false,
+            ])
             ->onlyOnForms()
             ->setRequired($pageName === Crud::PAGE_NEW)
             ->setHelp('最大文件大小: 50MB');
