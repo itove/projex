@@ -1,0 +1,15 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# Extend the bundle template directly — NOT ea.templatePath('crud/detail'), which is overridden to this file and would recurse infinitely. #}
+{% extends '@EasyAdmin/crud/detail.html.twig' %}
+
+{% block main %}
+    {{ parent() }}
+
+    {% if taskSummary is defined %}
+        {% include 'admin/project/_tasks_section.html.twig' with {
+            taskSummary: taskSummary,
+            sectionTitle: '阶段任务',
+            showStageColumn: false,
+        } %}
+    {% endif %}
+{% endblock %}

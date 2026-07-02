@@ -13,6 +13,7 @@ use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
 use App\Entity\ProjectApproval;
 use App\Entity\SettlementAccounts;
+use App\Enum\ProjectLifecycleStage;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -160,6 +161,30 @@ final class ProjectLifecycleStageRegistry
         }
 
         return null;
+    }
+
+    /**
+     * @param class-string $entityClass
+     */
+    public function findByEntityClass(string $entityClass): ?LifecycleStageDefinition
+    {
+        foreach ($this->stages as $stage) {
+            if ($stage->entityClass === $entityClass) {
+                return $stage;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param class-string $entityClass
+     */
+    public function stageEnumForEntityClass(string $entityClass): ?ProjectLifecycleStage
+    {
+        $definition = $this->findByEntityClass($entityClass);
+
+        return $definition !== null ? ProjectLifecycleStage::tryFromKey($definition->key) : null;
     }
 
     /**

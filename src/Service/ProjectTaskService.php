@@ -42,15 +42,42 @@ class ProjectTaskService
         ];
     }
 
-    public function buildProjectTaskListUrl(int $projectId): string
+    /**
+     * @return array{
+     *     openCount: int,
+     *     overdueCount: int,
+     *     tasks: list<ProjectTask>,
+     *     listUrl: string,
+     *     newUrl: string,
+     * }
+     */
+    public function getStageTaskSummary(Project $project, ProjectLifecycleStage $stage, int $recentLimit = 10): array
     {
-        return $this->adminUrlGenerator
+        $projectId = (int) $project->getId();
+
+        return [
+            'openCount' => $this->taskRepository->countOpenByProject($projectId, $stage),
+            'overdueCount' => $this->taskRepository->countOverdueByProject($projectId, $stage),
+            'tasks' => $this->taskRepository->findByProject($projectId, $recentLimit, $stage),
+            'listUrl' => $this->buildProjectTaskListUrl($projectId, $stage),
+            'newUrl' => $this->buildNewTaskUrl($projectId, $stage->value),
+        ];
+    }
+
+    public function buildProjectTaskListUrl(int $projectId, ?ProjectLifecycleStage $stage = null): string
+    {
+        $generator = $this->adminUrlGenerator
             ->unsetAll()
             ->setController(ProjectTaskCrudController::class)
             ->setAction(Action::INDEX)
             ->set('filters[project][comparison]', '=')
-            ->set('filters[project][value]', (string) $projectId)
-            ->generateUrl();
+            ->set('filters[project][value]', (string) $projectId);
+
+        if ($stage !== null) {
+            $generator->set('filters[lifecycleStage][value]', $stage->value);
+        }
+
+        return $generator->generateUrl();
     }
 
     public function buildNewTaskUrl(int $projectId, ?string $stageKey = null): string

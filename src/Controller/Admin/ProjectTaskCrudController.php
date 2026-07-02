@@ -96,7 +96,8 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
         yield ChoiceField::new('lifecycleStage', '所属阶段')
             ->setChoices($this->lifecycleStageChoices())
             ->setRequired(false)
-            ->setColumns(6);
+            ->setColumns(6)
+            ->formatValue(static fn (?ProjectLifecycleStage $stage) => $stage?->label() ?? '—');
 
         yield TextField::new('title', '任务名称')
             ->setRequired(true)
@@ -175,9 +176,6 @@ class ProjectTaskCrudController extends AbstractOrgScopedLifecycleCrudController
             ->hideOnIndex();
 
         if ($pageName === Crud::PAGE_INDEX) {
-            yield TextField::new('lifecycleStage', '所属阶段')
-                ->formatValue(static fn (?ProjectLifecycleStage $stage) => $stage?->label() ?? '—');
-
             yield TextField::new('progressText', '当前进度')
                 ->formatValue(static fn (?string $value) => $value !== null && $value !== ''
                     ? (mb_strlen($value) > 40 ? mb_substr($value, 0, 40).'…' : $value)

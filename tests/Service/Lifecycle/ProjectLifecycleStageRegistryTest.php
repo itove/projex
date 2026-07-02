@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Service\Lifecycle;
 
 use App\Entity\ConstructionImplementation;
+use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
+use App\Enum\ProjectLifecycleStage;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -94,6 +96,16 @@ class ProjectLifecycleStageRegistryTest extends TestCase
         $registry = new ProjectLifecycleStageRegistry($entityManager);
 
         $this->assertSame($expected, $registry->findEntity($project, 'implementation'));
+    }
+
+    public function testStageEnumForEntityClassMapsStageEntities(): void
+    {
+        $definition = $this->registry->findByEntityClass(PreliminaryDecision::class);
+
+        $this->assertNotNull($definition);
+        $this->assertSame('preliminary', $definition->key);
+        $this->assertSame(ProjectLifecycleStage::Preliminary, $this->registry->stageEnumForEntityClass(PreliminaryDecision::class));
+        $this->assertNull($this->registry->stageEnumForEntityClass(\App\Entity\Project::class));
     }
 
     private function persistedProject(int $id): Project

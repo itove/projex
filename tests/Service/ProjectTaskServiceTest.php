@@ -90,4 +90,13 @@ class ProjectTaskServiceTest extends KernelTestCase
 
         $this->assertStringNotContainsString('stage=', $newUrl);
     }
+
+    public function testBuildProjectTaskListUrlIncludesStageFilterWhenProvided(): void
+    {
+        $listUrl = $this->taskService->buildProjectTaskListUrl(42, ProjectLifecycleStage::Approval);
+
+        $this->assertStringContainsString('filters', $listUrl);
+        $this->assertStringContainsString('lifecycleStage', $listUrl);
+        $this->assertStringContainsString('approval', $listUrl);
+    }
 }

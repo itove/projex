@@ -21,7 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
-class CompletionAcceptanceCrudController extends AbstractOrgScopedLifecycleCrudController
+class CompletionAcceptanceCrudController extends AbstractLifecycleStageCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -30,7 +30,7 @@ class CompletionAcceptanceCrudController extends AbstractOrgScopedLifecycleCrudC
 
     public function configureCrud(Crud $crud): Crud
     {
-        return $crud
+        return parent::configureCrud($crud)
             ->setEntityLabelInSingular('竣工验收流程')
             ->setEntityLabelInPlural('竣工验收流程管理')
             ->setPageTitle(Crud::PAGE_INDEX, '竣工验收流程列表')

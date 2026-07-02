@@ -61,11 +61,11 @@ class ProjectTaskRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
-    public function countOverdueByProject(int $projectId): int
+    public function countOverdueByProject(int $projectId, ?ProjectLifecycleStage $stage = null): int
     {
         $today = new \DateTimeImmutable('today');
 
-        return (int) $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->andWhere('t.project = :projectId')
             ->andWhere('t.status IN (:openStatuses)')
@@ -76,9 +76,14 @@ class ProjectTaskRepository extends ServiceEntityRepository
                 ProjectTaskStatus::PENDING->value,
                 ProjectTaskStatus::IN_PROGRESS->value,
             ])
-            ->setParameter('today', $today)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('today', $today);
+
+        if ($stage !== null) {
+            $qb->andWhere('t.lifecycleStage = :stage')
+                ->setParameter('stage', $stage);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function createOrderedQueryBuilder(string $alias = 't'): \Doctrine\ORM\QueryBuilder

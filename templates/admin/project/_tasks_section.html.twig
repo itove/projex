@@ -1,8 +1,10 @@
 {# @var taskSummary array #}
+{% set sectionTitle = sectionTitle|default('项目任务') %}
+{% set showStageColumn = showStageColumn|default(true) %}
 <div class="card mb-4" id="project-tasks">
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-            <i class="fas fa-tasks"></i> 项目任务
+            <i class="fas fa-tasks"></i> {{ sectionTitle }}
         </div>
         <div class="d-flex gap-2">
             <a href="{{ taskSummary.newUrl }}" class="btn btn-sm btn-primary px-2">
@@ -39,7 +41,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>任务名称</th>
-                            <th>所属阶段</th>
+                            {% if showStageColumn %}
+                                <th>所属阶段</th>
+                            {% endif %}
                             <th>责任单位</th>
                             <th>配合单位</th>
                             <th>开始时间</th>
@@ -61,7 +65,9 @@
                                         {{ task.title }}
                                     </a>
                                 </td>
-                                <td>{{ task.lifecycleStage ? task.lifecycleStage.label : '—' }}</td>
+                                {% if showStageColumn %}
+                                    <td>{{ task.lifecycleStage ? task.lifecycleStage.label : '—' }}</td>
+                                {% endif %}
                                 <td>{{ task.responsibleUnit ?? '—' }}</td>
                                 <td>{{ task.cooperatingUnit ?? '—' }}</td>
                                 <td>{{ task.startDate ? task.startDate|date('Y-m-d') : '—' }}</td>

@@ -22,7 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
-class ConstructionImplementationCrudController extends AbstractOrgScopedLifecycleCrudController
+class ConstructionImplementationCrudController extends AbstractLifecycleStageCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -31,7 +31,7 @@ class ConstructionImplementationCrudController extends AbstractOrgScopedLifecycl
 
     public function configureCrud(Crud $crud): Crud
     {
-        return $crud
+        return parent::configureCrud($crud)
             ->setEntityLabelInSingular('施工实施流程')
             ->setEntityLabelInPlural('施工实施流程管理')
             ->setPageTitle(Crud::PAGE_INDEX, '施工实施流程列表')
