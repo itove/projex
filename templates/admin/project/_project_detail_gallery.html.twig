@@ -14,18 +14,30 @@
                 </div>
                 {% endif %}
                 <div class="carousel-inner h-100">
-                    {% for image in images %}
-                    <div class="carousel-item h-100{% if loop.first %} active{% endif %}">
-                        <img src="/uploads/images/{{ image.fileName }}"
-                             class="project-detail-gallery__image"
-                             alt="{{ image.altText ?? image.caption ?? image.originalName }}">
-                        {% if image.caption %}
-                        <div class="carousel-caption d-none d-md-block project-detail-gallery__caption">
-                            <p class="mb-0 small">{{ image.caption }}</p>
+                    {% if images|length > 0 %}
+                        {% for image in images %}
+                        <div class="carousel-item h-100{% if loop.first %} active{% endif %}">
+                            <img src="/uploads/images/{{ image.fileName }}"
+                                 class="project-detail-gallery__image"
+                                 alt="{{ image.altText ?? image.caption ?? image.originalName }}">
+                            {% if image.caption %}
+                            <div class="carousel-caption d-none d-md-block project-detail-gallery__caption">
+                                <p class="mb-0 small">{{ image.caption }}</p>
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item h-100 active">
+                            <div class="project-detail-gallery__placeholder" role="img" aria-label="还未传入项目图片">
+                                <div class="project-detail-gallery__placeholder-content">
+                                    <i class="fa fa-image project-detail-gallery__placeholder-icon" aria-hidden="true"></i>
+                                    <p class="project-detail-gallery__placeholder-title">还未传入项目图片</p>
+                                    <p class="project-detail-gallery__placeholder-subtitle">请前往编辑页面上传项目图集</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
                 {% if images|length > 1 %}
                 <button class="carousel-control-prev" type="button" data-bs-target="#{{ carouselId }}" data-bs-slide="prev">

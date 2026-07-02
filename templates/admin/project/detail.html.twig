@@ -71,13 +71,11 @@
     {% include 'admin/project/_overdue_alert.html.twig' with {project: entity.instance} %}
 
     {% set projectImages = entity.instance.images %}
-    {% if projectImages|length > 0 %}
-        {% include 'admin/project/_project_detail_gallery.html.twig' with {
-            project: entity.instance,
-            images: projectImages,
-            carouselId: 'projectImagesSlide',
-        } %}
-    {% endif %}
+    {% include 'admin/project/_project_detail_gallery.html.twig' with {
+        project: entity.instance,
+        images: projectImages,
+        carouselId: 'projectImagesSlide',
+    } %}
 
     {# Standard EasyAdmin Detail Fields #}
     {% for field in entity.fields %}
