@@ -21,7 +21,7 @@ class ConstructionPreparation implements LifecycleStageInterface
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    #[ORM\OneToOne(targetEntity: Project::class, inversedBy: 'constructionPreparation')]
+    #[ORM\OneToOne(targetEntity: Project::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: '项目不能为空')]
     private ?Project $project = null;

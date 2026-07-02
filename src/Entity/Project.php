@@ -175,27 +175,9 @@ class Project
     #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
 
-    // Lifecycle Stage Relationships
-    #[ORM\OneToOne(targetEntity: PreliminaryDecision::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?PreliminaryDecision $preliminaryDecision = null;
-
-    #[ORM\OneToOne(targetEntity: ProjectApproval::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?ProjectApproval $projectApproval = null;
-
-    #[ORM\OneToOne(targetEntity: PlanningDesign::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?PlanningDesign $planningDesign = null;
-
-    #[ORM\OneToOne(targetEntity: ConstructionPreparation::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?ConstructionPreparation $constructionPreparation = null;
-
-    #[ORM\OneToOne(targetEntity: ConstructionImplementation::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?ConstructionImplementation $constructionImplementation = null;
-
-    #[ORM\OneToOne(targetEntity: CompletionAcceptance::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?CompletionAcceptance $completionAcceptance = null;
-
-    #[ORM\OneToOne(targetEntity: SettlementAccounts::class, mappedBy: 'project', cascade: ['persist', 'remove'])]
-    private ?SettlementAccounts $settlementAccounts = null;
+    // Lifecycle stage entities (PreliminaryDecision, ProjectApproval, ...) each own a
+    // unidirectional `project` reference; Project itself intentionally holds no
+    // matching property. Use ProjectLifecycleStageRegistry to look one up for a project.
 
     // System Fields
     #[ORM\Column(type: Types::STRING, enumType: ProjectStatus::class)]
@@ -546,118 +528,6 @@ class Project
     public function setIsCoreLocked(bool $isCoreLocked): self
     {
         $this->isCoreLocked = $isCoreLocked;
-        return $this;
-    }
-
-    public function getPreliminaryDecision(): ?PreliminaryDecision
-    {
-        return $this->preliminaryDecision;
-    }
-
-    public function setPreliminaryDecision(?PreliminaryDecision $preliminaryDecision): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($preliminaryDecision !== null && $preliminaryDecision->getProject() !== $this) {
-            $preliminaryDecision->setProject($this);
-        }
-
-        $this->preliminaryDecision = $preliminaryDecision;
-        return $this;
-    }
-
-    public function getProjectApproval(): ?ProjectApproval
-    {
-        return $this->projectApproval;
-    }
-
-    public function setProjectApproval(?ProjectApproval $projectApproval): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($projectApproval !== null && $projectApproval->getProject() !== $this) {
-            $projectApproval->setProject($this);
-        }
-
-        $this->projectApproval = $projectApproval;
-        return $this;
-    }
-
-    public function getPlanningDesign(): ?PlanningDesign
-    {
-        return $this->planningDesign;
-    }
-
-    public function setPlanningDesign(?PlanningDesign $planningDesign): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($planningDesign !== null && $planningDesign->getProject() !== $this) {
-            $planningDesign->setProject($this);
-        }
-
-        $this->planningDesign = $planningDesign;
-        return $this;
-    }
-
-    public function getConstructionPreparation(): ?ConstructionPreparation
-    {
-        return $this->constructionPreparation;
-    }
-
-    public function setConstructionPreparation(?ConstructionPreparation $constructionPreparation): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($constructionPreparation !== null && $constructionPreparation->getProject() !== $this) {
-            $constructionPreparation->setProject($this);
-        }
-
-        $this->constructionPreparation = $constructionPreparation;
-        return $this;
-    }
-
-    public function getConstructionImplementation(): ?ConstructionImplementation
-    {
-        return $this->constructionImplementation;
-    }
-
-    public function setConstructionImplementation(?ConstructionImplementation $constructionImplementation): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($constructionImplementation !== null && $constructionImplementation->getProject() !== $this) {
-            $constructionImplementation->setProject($this);
-        }
-
-        $this->constructionImplementation = $constructionImplementation;
-        return $this;
-    }
-
-    public function getCompletionAcceptance(): ?CompletionAcceptance
-    {
-        return $this->completionAcceptance;
-    }
-
-    public function setCompletionAcceptance(?CompletionAcceptance $completionAcceptance): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($completionAcceptance !== null && $completionAcceptance->getProject() !== $this) {
-            $completionAcceptance->setProject($this);
-        }
-
-        $this->completionAcceptance = $completionAcceptance;
-        return $this;
-    }
-
-    public function getSettlementAccounts(): ?SettlementAccounts
-    {
-        return $this->settlementAccounts;
-    }
-
-    public function setSettlementAccounts(?SettlementAccounts $settlementAccounts): self
-    {
-        // Set the owning side of the relation if necessary
-        if ($settlementAccounts !== null && $settlementAccounts->getProject() !== $this) {
-            $settlementAccounts->setProject($this);
-        }
-
-        $this->settlementAccounts = $settlementAccounts;
         return $this;
     }
 

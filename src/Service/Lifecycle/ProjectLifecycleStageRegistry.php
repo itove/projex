@@ -12,27 +12,31 @@ use App\Entity\PlanningDesign;
 use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
 use App\Entity\ProjectApproval;
+use App\Entity\SettlementAccounts;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Single source of truth for the ordered list of project lifecycle stages.
  *
  * Every consumer that needs to know "how many stages are there", "what
  * order do they come in", "what's stage N called/iconed/routed", or "which
- * Project association backs stage N" should read from this registry
- * instead of hardcoding stage numbers/names.
+ * entity backs stage N" should read from this registry instead of
+ * hardcoding stage numbers/names.
  *
- * Reordering, renaming, or removing a stage is a one-place edit here.
- * Adding a genuinely new stage type still requires a new entity + migration
- * + CRUD controller (its fields are unique), but only one new entry here
- * on top of that - no other file needs to change.
+ * Stage entities are linked to Project unidirectionally (each stage entity
+ * owns a `project` reference; Project itself has no matching property), so
+ * adding, removing, or reordering a stage is a one-place edit here plus a
+ * new entity/migration/CRUD controller for a genuinely new stage - nothing
+ * on Project ever needs to change.
  */
 final class ProjectLifecycleStageRegistry
 {
     /** @var list<LifecycleStageDefinition> */
     private readonly array $stages;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+    ) {
         $this->stages = [
             new LifecycleStageDefinition(
                 key: 'preliminary',
@@ -40,9 +44,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '前期决策中',
                 icon: 'fa-file-alt',
                 route: 'admin_preliminary_decision',
-                projectProperty: 'preliminaryDecision',
+                entityClass: PreliminaryDecision::class,
                 requirementsHint: '需上传项目建议书、可行性研究报告等文档',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getPreliminaryDecision(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof PreliminaryDecision
                     ? $entity->getOrganizingUnit()
                     : null,
@@ -53,9 +56,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '立项中',
                 icon: 'fa-check-square',
                 route: 'admin_project_approval',
-                projectProperty: 'projectApproval',
+                entityClass: ProjectApproval::class,
                 requirementsHint: '需上传立项申请表、立项批复文件等',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getProjectApproval(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ProjectApproval
                     ? $entity->getApprovingAuthority()
                     : null,
@@ -66,9 +68,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '规划与设计中',
                 icon: 'fa-pencil-ruler',
                 route: 'admin_planning_design',
-                projectProperty: 'planningDesign',
+                entityClass: PlanningDesign::class,
                 requirementsHint: '需上传规划审批文件、初步设计、施工图等',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getPlanningDesign(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof PlanningDesign
                     ? $entity->getDesignUnit()
                     : null,
@@ -79,9 +80,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '施工准备中',
                 icon: 'fa-tools',
                 route: 'admin_construction_preparation',
-                projectProperty: 'constructionPreparation',
+                entityClass: ConstructionPreparation::class,
                 requirementsHint: '需上传招标文件、合同、施工许可证等',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getConstructionPreparation(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ConstructionPreparation
                     ? $entity->getConstructionUnit()
                     : null,
@@ -92,9 +92,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '施工实施中',
                 icon: 'fa-hard-hat',
                 route: 'admin_construction_implementation',
-                projectProperty: 'constructionImplementation',
+                entityClass: ConstructionImplementation::class,
                 requirementsHint: '需定期更新施工进度、上传现场照片和验收记录',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getConstructionImplementation(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ConstructionImplementation
                     && $entity->getCurrentProgress() !== null
                         ? $entity->getCurrentProgress() . '%'
@@ -106,9 +105,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '竣工验收中',
                 icon: 'fa-clipboard-check',
                 route: 'admin_completion_acceptance',
-                projectProperty: 'completionAcceptance',
+                entityClass: CompletionAcceptance::class,
                 requirementsHint: '需上传竣工验收报告、专项验收证明等',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getCompletionAcceptance(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof CompletionAcceptance
                     ? ($entity->getAcceptanceDate() !== null ? '已验收' : '验收中')
                     : null,
@@ -119,9 +117,8 @@ final class ProjectLifecycleStageRegistry
                 progressLabel: '竣工结算中',
                 icon: 'fa-calculator',
                 route: 'admin_settlement_accounts',
-                projectProperty: 'settlementAccounts',
+                entityClass: SettlementAccounts::class,
                 requirementsHint: '需上传竣工结算书、决算报告、审计报告等',
-                entityAccessor: static fn (Project $project): ?LifecycleStageInterface => $project->getSettlementAccounts(),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => null, // Simplified for now
             ),
         ];
@@ -163,5 +160,30 @@ final class ProjectLifecycleStageRegistry
         }
 
         return null;
+    }
+
+    /**
+     * Fetch a stage's entity for a given project. Project has no direct
+     * association to stage entities - each stage entity owns a `project`
+     * reference instead - so this is a lookup rather than a property read.
+     * An unpersisted project can't have any stage rows yet.
+     */
+    public function getEntity(Project $project, LifecycleStageDefinition $definition): ?LifecycleStageInterface
+    {
+        if ($project->getId() === null) {
+            return null;
+        }
+
+        /** @var LifecycleStageInterface|null $entity */
+        $entity = $this->entityManager->getRepository($definition->entityClass)->findOneBy(['project' => $project]);
+
+        return $entity;
+    }
+
+    public function findEntity(Project $project, string $key): ?LifecycleStageInterface
+    {
+        $definition = $this->find($key);
+
+        return $definition !== null ? $this->getEntity($project, $definition) : null;
     }
 }

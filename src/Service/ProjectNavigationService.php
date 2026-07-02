@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Controller\Admin\ProjectCrudController;
 use App\Enum\ProjectStatus;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -166,7 +167,7 @@ class ProjectNavigationService
         foreach ($definitions as $index => $definition) {
             $alias = 'nav_stage_' . $index;
             $aliases[] = $alias;
-            $qb->leftJoin(sprintf('%s.%s', $projectAlias, $definition->projectProperty), $alias);
+            $qb->leftJoin($definition->entityClass, $alias, Join::WITH, sprintf('%s.project = %s', $alias, $projectAlias));
         }
 
         $qb->andWhere(sprintf('%s.id IS NOT NULL', $aliases[$stageIndex]));

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\CompletionAcceptance;
+use App\Entity\ConstructionImplementation;
+use App\Entity\ConstructionPreparation;
 use App\Entity\LifecycleStageInterface;
 use App\Entity\Project;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
@@ -37,8 +40,8 @@ class ProjectDisplayService
      */
     public function getProgressPercentage(Project $project): ?int
     {
-        $implementation = $project->getConstructionImplementation();
-        if ($implementation === null) {
+        $implementation = $this->stageRegistry->findEntity($project, 'implementation');
+        if (!$implementation instanceof ConstructionImplementation) {
             return null;
         }
 
@@ -109,8 +112,8 @@ class ProjectDisplayService
      */
     public function getContractorName(Project $project): ?string
     {
-        $preparation = $project->getConstructionPreparation();
-        if ($preparation === null) {
+        $preparation = $this->stageRegistry->findEntity($project, 'preparation');
+        if (!$preparation instanceof ConstructionPreparation) {
             return null;
         }
 
@@ -122,8 +125,8 @@ class ProjectDisplayService
      */
     public function getAcceptanceResult(Project $project): ?string
     {
-        $acceptance = $project->getCompletionAcceptance();
-        if ($acceptance === null) {
+        $acceptance = $this->stageRegistry->findEntity($project, 'acceptance');
+        if (!$acceptance instanceof CompletionAcceptance) {
             return null;
         }
 
@@ -198,7 +201,7 @@ class ProjectDisplayService
         $stages = [];
 
         foreach ($this->stageRegistry->all() as $index => $definition) {
-            $entity = $definition->getEntity($project);
+            $entity = $this->stageRegistry->getEntity($project, $definition);
 
             $stage = [
                 'number' => $index + 1,
@@ -281,7 +284,7 @@ class ProjectDisplayService
     {
         $stages = $this->stageRegistry->all();
         for ($i = count($stages) - 1; $i >= 0; $i--) {
-            if ($stages[$i]->getEntity($project) !== null) {
+            if ($this->stageRegistry->getEntity($project, $stages[$i]) !== null) {
                 return $i;
             }
         }

@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Service\Lifecycle;
 
 use App\Entity\LifecycleStageInterface;
-use App\Entity\Project;
 
 /**
  * Immutable description of a single project lifecycle stage: its display
- * metadata (name/icon/route) plus how to pull its entity and summary info
- * off a Project. This is the only place that needs to change to rename,
- * re-icon, or re-order a stage.
+ * metadata (name/icon/route), which entity class backs it, and how to pull
+ * a one-line summary out of that entity. This is the only place that needs
+ * to change to rename, re-icon, reorder, or add a stage - adding a new
+ * stage never requires touching Project itself.
  */
 final readonly class LifecycleStageDefinition
 {
     /**
-     * @param \Closure(Project): ?LifecycleStageInterface $entityAccessor
+     * @param class-string<LifecycleStageInterface> $entityClass
      * @param \Closure(?LifecycleStageInterface): ?string $infoAccessor
      */
     public function __construct(
@@ -25,16 +25,10 @@ final readonly class LifecycleStageDefinition
         public string $progressLabel,
         public string $icon,
         public string $route,
-        public string $projectProperty,
+        public string $entityClass,
         public string $requirementsHint,
-        private \Closure $entityAccessor,
         private \Closure $infoAccessor,
     ) {
-    }
-
-    public function getEntity(Project $project): ?LifecycleStageInterface
-    {
-        return ($this->entityAccessor)($project);
     }
 
     public function getInfo(?LifecycleStageInterface $entity): ?string

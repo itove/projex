@@ -13,6 +13,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use App\Repository\ProjectRepository;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -100,7 +101,7 @@ class DashboardData
         foreach ($this->stageRegistry->all() as $index => $definition) {
             $alias = 'dash_stage_' . $index;
             $stageAliases[$definition->key] = $alias;
-            $qb->leftJoin(sprintf('p.%s', $definition->projectProperty), $alias);
+            $qb->leftJoin($definition->entityClass, $alias, Join::WITH, sprintf('%s.project = p', $alias));
         }
 
         // Filter by lifecycle stage

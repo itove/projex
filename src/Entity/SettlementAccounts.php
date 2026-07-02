@@ -23,7 +23,7 @@ class SettlementAccounts implements LifecycleStageInterface
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    #[ORM\OneToOne(targetEntity: Project::class, inversedBy: 'settlementAccounts')]
+    #[ORM\OneToOne(targetEntity: Project::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: '所属项目不能为空')]
     private ?Project $project = null;
