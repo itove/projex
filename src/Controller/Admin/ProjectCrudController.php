@@ -83,7 +83,12 @@ class ProjectCrudController extends AbstractCrudController
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->setPaginatorPageSize(20)
             ->setSearchFields(['projectName', 'projectNumber', 'leaderName', 'projectLocation'])
-            ->overrideTemplate('crud/detail', 'admin/project/detail.html.twig');
+            ->setFormThemes([
+                'admin/form/project_images_theme.html.twig',
+                '@EasyAdmin/crud/form_theme.html.twig',
+            ])
+            ->overrideTemplate('crud/detail', 'admin/project/detail.html.twig')
+            ->overrideTemplate('crud/index', 'admin/project/index.html.twig');
     }
 
     public function configureFields(string $pageName): iterable
@@ -92,11 +97,16 @@ class ProjectCrudController extends AbstractCrudController
         $project = $context?->getEntity()?->getInstance();
         $lockCoreFields = $project instanceof Project && $this->lockingService->shouldLockCoreFields($project);
 
-        // Project Basic Info Section
-        yield TextField::new('projectName', '项目名称')
+        $projectNameField = TextField::new('projectName', '项目名称')
             ->setRequired(true)
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields);
+
+        if ($pageName === Crud::PAGE_INDEX) {
+            $projectNameField->setTemplatePath('admin/field/project_name_index.html.twig');
+        }
+
+        yield $projectNameField;
 
         yield TextField::new('projectNumber', '项目编号')
             ->hideOnForm()
@@ -301,6 +311,13 @@ class ProjectCrudController extends AbstractCrudController
             ->setColumns(12)
             ->hideOnIndex();
 
+        yield TextareaField::new('introduction', '项目简介')
+            ->setRequired(false)
+            ->setColumns(12)
+            ->hideOnIndex()
+            ->hideOnDetail()
+            ->setHelp('展示于项目详情页图集右侧');
+
         // Title Image & Slides Section
         yield TextField::new('titleImageFile', '封面图片')
             ->setFormType(\Vich\UploaderBundle\Form\Type\VichImageType::class)
@@ -317,13 +334,16 @@ class ProjectCrudController extends AbstractCrudController
 
         $imagesField = CollectionField::new('images', '项目图集')
             ->setEntryType(ImageType::class)
+            ->setEntryToStringMethod(fn (?object $image) => $image instanceof \App\Entity\Image
+                ? ($image->getCaption() ?: $image->getOriginalName() ?: '图片')
+                : '新图片')
             ->setRequired(false)
             ->allowAdd()
             ->allowDelete()
             ->hideOnIndex()
             ->renderExpanded()
             ->setColumns(12)
-            ->setHelp('项目幻灯片图集，每张图片支持格式: JPEG, PNG, GIF, WebP，最大 10MB');
+            ->setHelp('项目幻灯片图集，每张图片支持格式: JPEG, PNG, GIF, WebP，最大 10MB。点击「删除图片」后需保存表单才会生效。');
 
         if ($pageName === Crud::PAGE_DETAIL) {
             $imagesField->setTemplatePath('admin/field/project_images_lightbox.html.twig');

@@ -1,0 +1,12 @@
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set project = entity.instance %}
+<span class="project-name-cell" title="{{ field.value }}">
+    <span class="project-name-cell__text">{{ field.formattedValue|raw }}</span>
+    {% if project.isOverdue() %}
+        <span class="project-overdue-badge">
+            <i class="fa fa-clock" aria-hidden="true"></i>
+            逾期 {{ project.overdueDays }} 天
+        </span>
+    {% endif %}
+</span>

@@ -278,7 +278,6 @@ class ProjectDisplayService
             'plannedEndDate' => $project->getPlannedEndDate(),
             'totalFiles' => $totalFiles,
             'paymentProgress' => 50,
-            'stageProgress' => 80,
         ];
     }
 

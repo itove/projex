@@ -1,0 +1,7 @@
+{% extends '@!EasyAdmin/crud/index.html.twig' %}
+
+{% block entity_row_attributes %}
+    {% if entity.instance.isOverdue() %}
+        data-project-overdue="1"
+    {% endif %}
+{% endblock %}

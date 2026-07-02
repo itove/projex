@@ -1,52 +1,16 @@
 {# @var project App\Entity\Project #}
-<div class="row g-0 align-items-stretch project-slide-panel" style="min-height: 320px;">
-    <div class="col-md-7 position-relative d-flex align-items-center justify-content-center bg-dark" style="max-height: 350px;">
-        <img src="{{ imageSrc }}"
-             class="img-fluid"
-             style="height: 350px; width: 100%; object-fit: cover;"
-             alt="{{ imageAlt }}">
-        <div class="carousel-caption d-none d-md-block text-start" style="left: 1rem; right: auto; bottom: 1rem; max-width: 70%; background: rgba(0,0,0,0.45); border-radius: 0.5rem; padding: 0.75rem 1.25rem;">
-            <h5 class="mb-1">
-                {% if detailUrl is defined and detailUrl %}
-                    <a href="{{ detailUrl }}" class="text-white text-decoration-none">{{ project.projectName }}</a>
-                {% else %}
-                    {{ project.projectName }}
-                {% endif %}
-            </h5>
-            <p class="mb-0 small">
-                <i class="fas fa-map-marker-alt"></i> {{ project.projectLocation }}
-            </p>
-        </div>
-    </div>
-    <div class="col-md-5 p-4 d-flex flex-column justify-content-center bg-white">
-        <dl class="row small mb-0">
-            <dt class="col-5 text-muted">项目编号</dt>
-            <dd class="col-7">{{ project.projectNumber ?? '—' }}</dd>
-
-            <dt class="col-5 text-muted">项目类型</dt>
-            <dd class="col-7">{{ project.projectType }}</dd>
-
-            <dt class="col-5 text-muted">项目性质</dt>
-            <dd class="col-7">{{ project.projectNature.label() }}</dd>
-
-            <dt class="col-5 text-muted">项目地点</dt>
-            <dd class="col-7">{{ project.projectLocation }}</dd>
-
-            <dt class="col-5 text-muted">项目预算</dt>
-            <dd class="col-7 text-success fw-bold">¥ {{ project.budget|number_format(2, '.', ',') }}</dd>
-
-            <dt class="col-5 text-muted">计划工期</dt>
-            <dd class="col-7">
-                {{ project.plannedStartDate|date('Y-m-d') }}
-                &nbsp;~&nbsp;
-                {{ project.plannedEndDate|date('Y-m-d') }}
-            </dd>
-
-            <dt class="col-5 text-muted">负责人</dt>
-            <dd class="col-7">{{ project.leaderName }}</dd>
-
-            <dt class="col-5 text-muted">资金来源</dt>
-            <dd class="col-7">{{ project.fundingSource.label() }}</dd>
-        </dl>
+<div class="project-slide-panel position-relative">
+    <img src="{{ imageSrc }}"
+         class="project-slide-image__img"
+         alt="{{ imageAlt }}">
+    <div class="project-slide-overlay">
+        <h5 class="project-slide-overlay__title mb-0">
+            {% if detailUrl is defined and detailUrl %}
+                <a href="{{ detailUrl }}" class="text-white text-decoration-none">{{ project.projectName }}</a>
+            {% else %}
+                {{ project.projectName }}
+            {% endif %}
+        </h5>
+        {% include 'admin/project/_project_info_panel.html.twig' with {project: project, layout: 'overlay'} %}
     </div>
 </div>

@@ -1,0 +1,10 @@
+{% extends '@!EasyAdmin/crud/detail.html.twig' %}
+
+{% block detail_fields %}
+    {% include 'admin/file/_preview.html.twig' with {
+        file: entity.instance,
+        preview_type: preview_type|default('unsupported'),
+        office_preview_available: office_preview_available|default(false),
+    } %}
+    {{ parent() }}
+{% endblock %}
