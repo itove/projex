@@ -47,6 +47,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_preliminary_decision',
                 entityClass: PreliminaryDecision::class,
                 requirementsHint: '需上传项目建议书、可行性研究报告等文档',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('preliminary'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof PreliminaryDecision
                     ? $entity->getOrganizingUnit()
                     : null,
@@ -59,6 +60,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_project_approval',
                 entityClass: ProjectApproval::class,
                 requirementsHint: '需上传立项申请表、立项批复文件等',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('approval'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ProjectApproval
                     ? $entity->getApprovingAuthority()
                     : null,
@@ -71,6 +73,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_planning_design',
                 entityClass: PlanningDesign::class,
                 requirementsHint: '需上传规划审批文件、初步设计、施工图等',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('planning'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof PlanningDesign
                     ? $entity->getDesignUnit()
                     : null,
@@ -83,6 +86,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_construction_preparation',
                 entityClass: ConstructionPreparation::class,
                 requirementsHint: '需上传招标文件、合同、施工许可证等',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('preparation'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ConstructionPreparation
                     ? $entity->getConstructionUnit()
                     : null,
@@ -95,6 +99,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_construction_implementation',
                 entityClass: ConstructionImplementation::class,
                 requirementsHint: '需定期更新施工进度、上传现场照片和验收记录',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('implementation'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof ConstructionImplementation
                     && $entity->getCurrentProgress() !== null
                         ? $entity->getCurrentProgress() . '%'
@@ -108,6 +113,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_completion_acceptance',
                 entityClass: CompletionAcceptance::class,
                 requirementsHint: '需上传竣工验收报告、专项验收证明等',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('acceptance'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => $entity instanceof CompletionAcceptance
                     ? ($entity->getAcceptanceDate() !== null ? '已验收' : '验收中')
                     : null,
@@ -120,6 +126,7 @@ final class ProjectLifecycleStageRegistry
                 route: 'admin_settlement_accounts',
                 entityClass: SettlementAccounts::class,
                 requirementsHint: '需上传竣工结算书、决算报告、审计报告等',
+                requiredAttachments: LifecycleStageAttachmentCatalog::forStage('settlement'),
                 infoAccessor: static fn (?LifecycleStageInterface $entity): ?string => null, // Simplified for now
             ),
         ];

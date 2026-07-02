@@ -5,6 +5,14 @@
 {% block main %}
     {{ parent() }}
 
+    {% if attachmentChecklist is defined %}
+        {% include 'admin/lifecycle_stage/_attachment_checklist.html.twig' with {
+            attachmentChecklist: attachmentChecklist,
+            attachmentCompliant: attachmentCompliant|default(false),
+            sectionTitle: '必传附件清单',
+        } %}
+    {% endif %}
+
     {% if taskSummary is defined %}
         {% include 'admin/project/_tasks_section.html.twig' with {
             taskSummary: taskSummary,

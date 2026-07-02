@@ -73,9 +73,9 @@ class ProjectApprovalCrudController extends AbstractLifecycleStageCrudController
             ->setHelp('如：发改投资[2026]123号');
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('立项相关的文件：投资批复、用地批复、环评批复等');
+        foreach ($this->configureFilesFields('立项相关的文件：投资批复、用地批复、环评批复等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

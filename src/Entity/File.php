@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\FileRepository;
+use App\Service\Lifecycle\LifecycleStageAttachmentCatalog;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File as SymfonyFile;
@@ -209,6 +210,15 @@ class File
     {
         $this->category = $category;
         return $this;
+    }
+
+    public function getCategoryLabel(): ?string
+    {
+        if ($this->category === null || $this->category === '') {
+            return null;
+        }
+
+        return LifecycleStageAttachmentCatalog::labelForKey($this->category) ?? $this->category;
     }
 
     public function getPreliminaryDecision(): ?PreliminaryDecision

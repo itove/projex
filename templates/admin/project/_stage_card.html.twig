@@ -177,7 +177,28 @@
                         <strong>登记要求：</strong>
                         {{ stage.requirementsHint }}
                     </small>
+                    {% if stage.attachments is defined and stage.attachments|length > 0 %}
+                        <ul class="mb-0 mt-2 ps-3">
+                            {% for item in stage.attachments %}
+                                <li>
+                                    {{ item.label }}
+                                    {% if item.required %}<span class="text-danger">（必填）</span>{% else %}<span class="text-muted">（选填）</span>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
+            </div>
+        {% elseif stage.attachments is defined and stage.attachments|length > 0 %}
+            <div class="mt-2">
+                <small class="text-muted d-block mb-1">
+                    必传附件：
+                    {% if stage.attachmentsCompliant %}
+                        <span class="text-success">已齐全</span>
+                    {% else %}
+                        <span class="text-warning">尚缺 {{ stage.missingRequiredAttachments }} 项</span>
+                    {% endif %}
+                </small>
             </div>
         {% endif %}
     </div>

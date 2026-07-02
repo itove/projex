@@ -71,9 +71,9 @@ class PreliminaryDecisionCrudController extends AbstractLifecycleStageCrudContro
             ->setColumns(6);
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('前期决策相关的文件：项目建议书、可行性研究报告、审批文件等');
+        foreach ($this->configureFilesFields('前期决策相关的文件：项目建议书、可行性研究报告、审批文件等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

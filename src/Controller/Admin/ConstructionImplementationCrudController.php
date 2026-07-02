@@ -68,9 +68,9 @@ class ConstructionImplementationCrudController extends AbstractLifecycleStageCru
             ->setFormTypeOption('attr', ['min' => 0, 'max' => 100]);
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('施工实施相关的文件：施工日志、检验报告、监理报告等');
+        foreach ($this->configureFilesFields('施工实施相关的文件：施工日志、检验报告、监理报告等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

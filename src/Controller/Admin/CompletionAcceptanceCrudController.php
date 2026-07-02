@@ -56,9 +56,9 @@ class CompletionAcceptanceCrudController extends AbstractLifecycleStageCrudContr
             ->setHelp('项目通过竣工验收的日期');
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('竣工验收相关的文件：竣工报告、验收证书、质量评定报告等');
+        foreach ($this->configureFilesFields('竣工验收相关的文件：竣工报告、验收证书、质量评定报告等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

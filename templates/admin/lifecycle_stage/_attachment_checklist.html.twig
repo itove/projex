@@ -1,0 +1,58 @@
+{# @var attachmentChecklist list<array{key: string, label: string, required: bool, satisfied: bool, allowedExtensions: list<string>, maxSizeMb: int|null}> #}
+<div class="card mb-4" id="stage-attachments">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas fa-paperclip"></i> {{ sectionTitle|default('必传附件') }}
+        </div>
+        {% if attachmentCompliant is defined %}
+            <span class="badge {{ attachmentCompliant ? 'bg-success' : 'bg-warning text-dark' }}">
+                {{ attachmentCompliant ? '必填附件已齐全' : '尚有必填附件未上传' }}
+            </span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if attachmentChecklist|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>文档类型</th>
+                            <th>要求</th>
+                            <th>状态</th>
+                            <th>格式 / 大小</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attachmentChecklist %}
+                            <tr>
+                                <td>{{ item.label }}</td>
+                                <td>
+                                    {% if item.required %}
+                                        <span class="badge bg-danger">必填</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">选填</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.satisfied %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> 已上传</span>
+                                    {% else %}
+                                        <span class="text-muted"><i class="fas fa-times-circle"></i> 未上传</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ item.allowedExtensions|join(', ') }}
+                                        {% if item.maxSizeMb %} / ≤{{ item.maxSizeMb }}MB{% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center mb-0 p-3">暂无附件要求配置。</p>
+        {% endif %}
+    </div>
+</div>

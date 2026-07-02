@@ -108,6 +108,16 @@ class ProjectLifecycleStageRegistryTest extends TestCase
         $this->assertNull($this->registry->stageEnumForEntityClass(\App\Entity\Project::class));
     }
 
+    public function testEachDefinitionHasRequiredAttachments(): void
+    {
+        foreach ($this->registry->all() as $definition) {
+            $this->assertNotEmpty(
+                $definition->requiredAttachments,
+                sprintf('Stage %s should define requiredAttachments', $definition->key)
+            );
+        }
+    }
+
     private function persistedProject(int $id): Project
     {
         $project = new Project();

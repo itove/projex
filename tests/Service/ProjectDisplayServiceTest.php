@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
+use App\Entity\File;
 use App\Entity\CompletionAcceptance;
 use App\Entity\ConstructionImplementation;
 use App\Entity\ConstructionPreparation;
@@ -13,6 +14,7 @@ use App\Entity\Project;
 use App\Entity\ProjectApproval;
 use App\Entity\SettlementAccounts;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use App\Service\Lifecycle\StageAttachmentComplianceService;
 use App\Service\ProjectDisplayService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -38,7 +40,10 @@ class ProjectDisplayServiceTest extends TestCase
     {
         $this->entitiesByClass = [];
         $this->project = $this->persistedProject(1);
-        $this->displayService = new ProjectDisplayService($this->mockRegistry());
+        $this->displayService = new ProjectDisplayService(
+            $this->mockRegistry(),
+            new StageAttachmentComplianceService(),
+        );
     }
 
     public function testFreshProjectHasNoActiveStage(): void
@@ -94,6 +99,31 @@ class ProjectDisplayServiceTest extends TestCase
 
         $this->assertSame('需上传项目建议书、可行性研究报告等文档', $stages[0]['requirementsHint']);
         $this->assertSame('需上传竣工结算书、决算报告、审计报告等', $stages[6]['requirementsHint']);
+    }
+
+    public function testLifecycleStagesExposeAttachmentChecklist(): void
+    {
+        $preliminary = new PreliminaryDecision();
+        $preliminary->addFile((new File())->setCategory('project_proposal'));
+        $this->entitiesByClass[PreliminaryDecision::class] = $preliminary;
+
+        $stages = $this->displayService->getLifecycleStages($this->project);
+        $attachments = $stages[0]['attachments'];
+
+        $this->assertNotEmpty($attachments);
+        $this->assertFalse($stages[0]['attachmentsCompliant']);
+        $this->assertGreaterThan(0, $stages[0]['missingRequiredAttachments']);
+
+        $proposal = null;
+        foreach ($attachments as $item) {
+            if ($item['key'] === 'project_proposal') {
+                $proposal = $item;
+                break;
+            }
+        }
+
+        $this->assertNotNull($proposal);
+        $this->assertTrue($proposal['satisfied']);
     }
 
     public function testOverallProgressAddsPartialCreditWhileImplementing(): void

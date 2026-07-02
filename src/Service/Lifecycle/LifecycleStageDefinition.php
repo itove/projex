@@ -17,6 +17,7 @@ final readonly class LifecycleStageDefinition
 {
     /**
      * @param class-string<LifecycleStageInterface> $entityClass
+     * @param list<LifecycleStageAttachmentRequirement> $requiredAttachments
      * @param \Closure(?LifecycleStageInterface): ?string $infoAccessor
      */
     public function __construct(
@@ -27,6 +28,7 @@ final readonly class LifecycleStageDefinition
         public string $route,
         public string $entityClass,
         public string $requirementsHint,
+        public array $requiredAttachments,
         private \Closure $infoAccessor,
     ) {
     }

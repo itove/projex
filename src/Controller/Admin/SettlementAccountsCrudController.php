@@ -56,9 +56,9 @@ class SettlementAccountsCrudController extends AbstractLifecycleStageCrudControl
             ->setHelp('项目工程结算完成的日期');
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('结算相关的文件：结算书、审核报告、支付凭证等');
+        foreach ($this->configureFilesFields('结算相关的文件：结算书、审核报告、支付凭证等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

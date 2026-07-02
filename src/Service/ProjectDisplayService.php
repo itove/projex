@@ -10,6 +10,7 @@ use App\Entity\ConstructionPreparation;
 use App\Entity\LifecycleStageInterface;
 use App\Entity\Project;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use App\Service\Lifecycle\StageAttachmentComplianceService;
 
 /**
  * Service to calculate derived display fields for projects
@@ -19,6 +20,7 @@ class ProjectDisplayService
 {
     public function __construct(
         private readonly ProjectLifecycleStageRegistry $stageRegistry,
+        private readonly StageAttachmentComplianceService $attachmentComplianceService,
     ) {
     }
 
@@ -213,6 +215,9 @@ class ProjectDisplayService
                 'status' => $this->getStageStatus($entity),
                 'info' => $definition->getInfo($entity),
                 'requirementsHint' => $definition->requirementsHint,
+                'attachments' => $this->attachmentComplianceService->buildChecklist($definition, $entity),
+                'attachmentsCompliant' => $this->attachmentComplianceService->isCompliant($definition, $entity),
+                'missingRequiredAttachments' => $this->attachmentComplianceService->countMissingRequired($definition, $entity),
             ];
 
             if ($definition->key === 'implementation') {

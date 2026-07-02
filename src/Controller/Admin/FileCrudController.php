@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\File;
+use App\Entity\LifecycleStageInterface;
+use App\Service\Lifecycle\LifecycleStageAttachmentCatalog;
+use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -17,7 +20,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Vich\UploaderBundle\Storage\StorageInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -30,7 +33,8 @@ class FileCrudController extends AbstractCrudController
 {
     public function __construct(
         private StorageInterface $storage,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private ProjectLifecycleStageRegistry $stageRegistry,
     ) {
     }
 
@@ -144,10 +148,14 @@ class FileCrudController extends AbstractCrudController
             ->onlyOnDetail()
             ->setColumns(4);
 
-        // yield TextField::new('category', '分类')
-        //     ->setRequired(false)
-        //     ->setColumns(6)
-        //     ->setHelp('例如: 合同文件、技术文档、财务报表等');
+        yield ChoiceField::new('category', '文档类型')
+            ->setChoices($this->categoryChoices())
+            ->onlyOnForms()
+            ->setRequired(false)
+            ->setColumns(6)
+            ->formatValue(static fn (?string $value): string => $value !== null && $value !== ''
+                ? (LifecycleStageAttachmentCatalog::labelForKey($value) ?? $value)
+                : '—');
 
         yield TextareaField::new('description', '描述')
             ->setRequired(false)
@@ -185,5 +193,29 @@ class FileCrudController extends AbstractCrudController
             ->add(TextFilter::new('category', '分类'))
             ->add(TextFilter::new('mimeType', '文件类型'))
             ->add(DateTimeFilter::new('createdAt', '上传时间'));
+    }
+
+    /**
+     * When embedded in a lifecycle stage form, limit category choices to that
+     * stage's attachment catalog. Standalone file admin keeps the merged list.
+     *
+     * @return array<string, string>
+     */
+    private function categoryChoices(): array
+    {
+        $context = $this->getContext();
+        if ($context === null) {
+            return LifecycleStageAttachmentCatalog::allChoiceMap();
+        }
+
+        $entity = $context->getEntity()->getInstance();
+        if ($entity instanceof LifecycleStageInterface) {
+            $definition = $this->stageRegistry->findByEntityClass($entity::class);
+            if ($definition !== null) {
+                return LifecycleStageAttachmentCatalog::choiceMapForStage($definition->key);
+            }
+        }
+
+        return LifecycleStageAttachmentCatalog::allChoiceMap();
     }
 }

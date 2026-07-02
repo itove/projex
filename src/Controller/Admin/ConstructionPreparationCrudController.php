@@ -73,9 +73,9 @@ class ConstructionPreparationCrudController extends AbstractLifecycleStageCrudCo
             ->setHelp('建设工程施工许可证编号');
 
         // Files and Images
-        yield CollectionField::new('files', '附件文件')
-            ->setTemplatePath('admin/field/file_collection.html.twig')
-            ->setHelp('施工准备相关的文件：施工许可证、施工合同、施工方案等');
+        foreach ($this->configureFilesFields('施工准备相关的文件：施工许可证、施工合同、施工方案等') as $field) {
+            yield $field;
+        }
 
         yield CollectionField::new('images', '附件图片')
             ->onlyOnDetail()

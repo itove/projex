@@ -11,6 +11,9 @@
                     {{ file.originalName }}
                     <small class="text-muted">({{ file.fileSizeFormatted }})</small>
                 </a>
+                {% if file.categoryLabel %}
+                    <br><small class="text-muted">{{ file.categoryLabel }}</small>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
