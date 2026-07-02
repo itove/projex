@@ -157,14 +157,14 @@ class FileCrudController extends AbstractCrudController
             ->setChoices($this->categoryChoices())
             ->onlyOnForms()
             ->setRequired(false)
-            ->setColumns(6)
+            // ->setColumns(6)
             ->formatValue(static fn (?string $value): string => $value !== null && $value !== ''
                 ? (LifecycleStageAttachmentCatalog::labelForKey($value) ?? $value)
                 : '—');
 
         yield TextareaField::new('description', '描述')
             ->setRequired(false)
-            // ->setColumns(12)
+            ->setColumns(6)
             ->hideOnIndex();
 
         yield DateTimeField::new('createdAt', '上传时间')

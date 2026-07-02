@@ -67,6 +67,7 @@ abstract class AbstractLifecycleStageCrudController extends AbstractOrgScopedLif
             ->renderExpanded()
             ->setEntryIsComplex(true)
             ->setRequired(false)
+            ->setColumns(12)
             ->setHelp($help);
 
         $readOnlyField = CollectionField::new('files', '附件文件')
