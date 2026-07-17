@@ -101,6 +101,11 @@ class Project
     )]
     private ?\DateTimeImmutable $plannedEndDate = null;
 
+    // Periodic progress reporting cadence, in days. Null disables reporting/overdue-tracking for this project.
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Assert\Positive(message: '填报周期必须大于 0 天')]
+    private ?int $progressReportIntervalDays = null;
+
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: '项目目的不能为空')]
     private ?string $purpose = null;
@@ -178,6 +183,9 @@ class Project
     #[ORM\OneToMany(targetEntity: ProjectTask::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
 
+    #[ORM\OneToMany(targetEntity: ProjectProgressReport::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $progressReports;
+
     // Lifecycle stage entities (PreliminaryDecision, ProjectApproval, ...) each own a
     // unidirectional `project` reference; Project itself intentionally holds no
     // matching property. Use ProjectLifecycleStageRegistry to look one up for a project.
@@ -199,6 +207,7 @@ class Project
     {
         $this->images = new ArrayCollection();
         $this->tasks = new ArrayCollection();
+        $this->progressReports = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -377,6 +386,17 @@ class Project
     public function setPlannedEndDate(\DateTimeImmutable $plannedEndDate): self
     {
         $this->plannedEndDate = $plannedEndDate;
+        return $this;
+    }
+
+    public function getProgressReportIntervalDays(): ?int
+    {
+        return $this->progressReportIntervalDays;
+    }
+
+    public function setProgressReportIntervalDays(?int $progressReportIntervalDays): self
+    {
+        $this->progressReportIntervalDays = $progressReportIntervalDays;
         return $this;
     }
 
@@ -617,6 +637,84 @@ class Project
         }
 
         return $this;
+    }
+
+    public function getProgressReports(): Collection
+    {
+        return $this->progressReports;
+    }
+
+    public function addProgressReport(ProjectProgressReport $report): self
+    {
+        if (!$this->progressReports->contains($report)) {
+            $this->progressReports->add($report);
+            $report->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProgressReport(ProjectProgressReport $report): self
+    {
+        if ($this->progressReports->removeElement($report)) {
+            if ($report->getProject() === $this) {
+                $report->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Compute the progress-reporting period that is currently owed a report,
+     * based on `progressReportIntervalDays` and an anchor date (planned
+     * start date, falling back to creation date). Returns null when
+     * reporting/overdue tracking is disabled for this project (no interval
+     * configured).
+     *
+     * This is the most recently *completed* interval as of `$today` (or the
+     * very first, not-yet-due interval, if none has completed yet) - never
+     * anything older. Earlier missed periods are deliberately not
+     * surfaced/accumulated, per product requirement: once a new interval
+     * completes, the previous one is forgotten and only the newly-completed
+     * one is checked.
+     *
+     * @return array{start: \DateTimeImmutable, due: \DateTimeImmutable}|null
+     */
+    public function getCurrentReportingPeriod(?\DateTimeImmutable $today = null): ?array
+    {
+        if ($this->progressReportIntervalDays === null || $this->progressReportIntervalDays <= 0) {
+            return null;
+        }
+
+        $anchorDate = $this->plannedStartDate ?? $this->createdAt;
+        if ($anchorDate === null) {
+            return null;
+        }
+
+        $today ??= new \DateTimeImmutable('today', new \DateTimeZone('Asia/Shanghai'));
+
+        // Doctrine hydrates date/datetime columns at midnight in PHP's
+        // default timezone (often UTC), while $today is anchored to
+        // Asia/Shanghai above. Diffing across mismatched timezones can lose
+        // up to a day, silently shifting the whole period back by one
+        // interval - so re-anchor using only the calendar date, in $today's
+        // timezone, before doing any day-based arithmetic.
+        $anchor = new \DateTimeImmutable($anchorDate->format('Y-m-d'), $today->getTimezone());
+        $intervalDays = $this->progressReportIntervalDays;
+
+        $completedIntervals = $today > $anchor ? intdiv($anchor->diff($today)->days, $intervalDays) : 0;
+
+        // completedIntervals counts how many full intervals have elapsed, so
+        // the most recently *completed* one is index (completedIntervals - 1);
+        // while still inside the very first interval, fall back to it (not
+        // yet due, so the overdue check below will simply be false).
+        $periodIndex = max($completedIntervals - 1, 0);
+
+        $periodStart = $anchor->modify(sprintf('+%d days', $periodIndex * $intervalDays));
+        $periodDue = $periodStart->modify(sprintf('+%d days', $intervalDays));
+
+        return ['start' => $periodStart, 'due' => $periodDue];
     }
 
     public function removeTask(ProjectTask $task): self

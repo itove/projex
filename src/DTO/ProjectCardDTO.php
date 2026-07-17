@@ -27,6 +27,7 @@ class ProjectCardDTO
     public readonly string $statusLabel;
     public readonly string $statusBadgeClass;
     public readonly bool $isClosed;
+    public readonly bool $hasOverdueProgressReport;
 
     // Key personnel fields
     public readonly string $leaderName;
@@ -63,6 +64,7 @@ class ProjectCardDTO
         $this->statusLabel = $project->getStatus()->label();
         $this->statusBadgeClass = $displayService->getStatusBadgeClass($project);
         $this->isClosed = $displayService->isProjectClosed($project);
+        $this->hasOverdueProgressReport = $displayService->isProgressReportOverdue($project);
 
         $this->leaderName = $project->getLeaderName() ?? '';
         $this->leaderPhone = $displayService->maskPhoneNumber($project->getLeaderPhone() ?? '');

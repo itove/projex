@@ -16,6 +16,7 @@ use App\Service\ProjectDisplayService;
 use App\Service\ProjectLockingService;
 use App\Service\ProjectNavigationService;
 use App\Service\ProjectNumberGenerator;
+use App\Service\ProjectProgressReportService;
 use App\Service\ProjectSpreadsheetImportService;
 use App\Service\ProjectTaskService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -63,6 +65,7 @@ class ProjectCrudController extends AbstractCrudController
         private readonly OrgAccessService $orgAccessService,
         private readonly ProjectNavigationService $projectNavigationService,
         private readonly ProjectTaskService $projectTaskService,
+        private readonly ProjectProgressReportService $progressReportService,
     ) {
     }
 
@@ -226,6 +229,12 @@ class ProjectCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setFormTypeOption('disabled', $lockCoreFields)
             ->hideOnIndex();
+
+        yield IntegerField::new('progressReportIntervalDays', '进度填报周期（天）')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex()
+            ->setHelp('每隔多少天需要填报一次项目进度，留空则不启用进度填报提醒');
 
         yield TextField::new('leader', '负责人')
             ->hideOnForm();
@@ -625,6 +634,7 @@ class ProjectCrudController extends AbstractCrudController
             ));
             $responseParameters->set('summary', $summary);
             $responseParameters->set('taskSummary', $this->projectTaskService->getProjectTaskSummary($project));
+            $responseParameters->set('progressReportSummary', $this->progressReportService->getProjectProgressReportSummary($project));
         }
 
         return $responseParameters;

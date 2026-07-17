@@ -21,7 +21,18 @@ class ProjectDisplayService
     public function __construct(
         private readonly ProjectLifecycleStageRegistry $stageRegistry,
         private readonly StageAttachmentComplianceService $attachmentComplianceService,
+        private readonly ProjectProgressReportService $progressReportService,
     ) {
+    }
+
+    /**
+     * Whether the project's current progress-reporting period is overdue
+     * (cadence configured, current period's due date passed, and no report
+     * has been filed for that period yet).
+     */
+    public function isProgressReportOverdue(Project $project): bool
+    {
+        return $this->progressReportService->isReportOverdue($project);
     }
 
     /**

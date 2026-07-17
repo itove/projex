@@ -4,7 +4,14 @@
         {# Card Header with Status Badge #}
         <div class="card-header d-flex justify-content-between align-items-center">
             <small class="text-muted">{{ card.projectNumber }}</small>
-            <span class="badge {{ card.statusBadgeClass }}">{{ card.statusLabel }}</span>
+            <div class="d-flex gap-1">
+                {% if card.hasOverdueProgressReport %}
+                    <span class="badge bg-danger" title="本期进度报告逾期未填报">
+                        <i class="fa fa-exclamation-triangle"></i> 进度逾期
+                    </span>
+                {% endif %}
+                <span class="badge {{ card.statusBadgeClass }}">{{ card.statusLabel }}</span>
+            </div>
         </div>
 
         <div class="card-body">

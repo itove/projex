@@ -69,6 +69,9 @@
 
 {% block main %}
     {% include 'admin/project/_overdue_alert.html.twig' with {project: entity.instance} %}
+    {% if progressReportSummary is defined %}
+        {% include 'admin/project/_progress_report_alert.html.twig' with {progressReportSummary: progressReportSummary} %}
+    {% endif %}
 
     {% set projectImages = entity.instance.images %}
     {% include 'admin/project/_project_detail_gallery.html.twig' with {
@@ -90,6 +93,13 @@
     {% if taskSummary is defined %}
         {% include 'admin/project/_tasks_section.html.twig' with {
             taskSummary: taskSummary
+        } %}
+    {% endif %}
+
+    {# Project Progress Reports Section #}
+    {% if progressReportSummary is defined %}
+        {% include 'admin/project/_progress_reports_section.html.twig' with {
+            progressReportSummary: progressReportSummary
         } %}
     {% endif %}
 

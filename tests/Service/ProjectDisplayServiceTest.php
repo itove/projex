@@ -16,6 +16,7 @@ use App\Entity\SettlementAccounts;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use App\Service\Lifecycle\StageAttachmentComplianceService;
 use App\Service\ProjectDisplayService;
+use App\Service\ProjectProgressReportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\TestCase;
@@ -36,13 +37,17 @@ class ProjectDisplayServiceTest extends TestCase
 
     private ProjectDisplayService $displayService;
 
+    private ProjectProgressReportService $progressReportService;
+
     protected function setUp(): void
     {
         $this->entitiesByClass = [];
         $this->project = $this->persistedProject(1);
+        $this->progressReportService = $this->createMock(ProjectProgressReportService::class);
         $this->displayService = new ProjectDisplayService(
             $this->mockRegistry(),
             new StageAttachmentComplianceService(),
+            $this->progressReportService,
         );
     }
 
@@ -156,6 +161,16 @@ class ProjectDisplayServiceTest extends TestCase
     {
         $this->assertSame(0, $this->displayService->getStageFileCount(null));
         $this->assertSame(0, $this->displayService->getStageFileCount(new PreliminaryDecision()));
+    }
+
+    public function testIsProgressReportOverdueDelegatesToProgressReportService(): void
+    {
+        $this->progressReportService->expects($this->once())
+            ->method('isReportOverdue')
+            ->with($this->project)
+            ->willReturn(true);
+
+        $this->assertTrue($this->displayService->isProgressReportOverdue($this->project));
     }
 
     private function mockRegistry(): ProjectLifecycleStageRegistry
