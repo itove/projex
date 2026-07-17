@@ -6,6 +6,7 @@ namespace App\Tests\Service;
 
 use App\Entity\Project;
 use App\Entity\ProjectProgressReport;
+use App\Enum\ProjectProgressReportInterval;
 use App\Repository\ProjectProgressReportRepository;
 use App\Service\ProjectProgressReportService;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -30,92 +31,96 @@ final class ProjectProgressReportServiceTest extends KernelTestCase
 
     public function testGetCurrentPeriodRangeIsNullWhenIntervalNotConfigured(): void
     {
-        $project = $this->createProject(null, '2026-01-01');
+        $project = $this->createProject(null);
 
         $this->assertNull($this->service->getCurrentPeriodRange($project, new \DateTimeImmutable('2026-03-01')));
     }
 
-    public function testGetCurrentPeriodRangeComputesFromAnchorAndInterval(): void
+    public function testGetCurrentPeriodRangeForWeek(): void
     {
-        $project = $this->createProject(7, '2026-01-01');
+        $project = $this->createProject(ProjectProgressReportInterval::WEEK);
 
-        // 20 days after anchor = 2 full 7-day intervals completed (periods
-        // [01-01,01-08) and [01-08,01-15)); the most recently *completed*
-        // one - [01-08,01-15) - is the one currently owed a report.
-        $period = $this->service->getCurrentPeriodRange($project, new \DateTimeImmutable('2026-01-21'));
+        $period = $this->service->getCurrentPeriodRange($project, new \DateTimeImmutable('2026-07-16'));
 
         $this->assertNotNull($period);
-        $this->assertSame('2026-01-08', $period['start']->format('Y-m-d'));
-        $this->assertSame('2026-01-15', $period['due']->format('Y-m-d'));
+        $this->assertSame('2026-07-13', $period['start']->format('Y-m-d'));
+        $this->assertSame('2026-07-19', $period['due']->format('Y-m-d'));
+    }
+
+    public function testGetCurrentPeriodRangeForMonth(): void
+    {
+        $project = $this->createProject(ProjectProgressReportInterval::MONTH);
+
+        $period = $this->service->getCurrentPeriodRange($project, new \DateTimeImmutable('2026-07-16'));
+
+        $this->assertNotNull($period);
+        $this->assertSame('2026-07-01', $period['start']->format('Y-m-d'));
+        $this->assertSame('2026-07-31', $period['due']->format('Y-m-d'));
     }
 
     public function testIsReportOverdueIsFalseWhenIntervalNotConfigured(): void
     {
-        $project = $this->createProject(null, '2026-01-01');
+        $project = $this->createProject(null);
 
         $this->repository->expects($this->never())->method('findForPeriod');
 
         $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-06-01')));
     }
 
-    public function testIsReportOverdueIsFalseBeforeCurrentPeriodDueDate(): void
+    public function testIsReportOverdueIsFalseBeforePeriodDueDate(): void
     {
-        $project = $this->createProject(7, '2026-01-01');
+        $project = $this->createProject(ProjectProgressReportInterval::WEEK);
 
         $this->repository->expects($this->never())->method('findForPeriod');
 
-        // Still within the first 7-day period (due 2026-01-08) - not overdue yet.
-        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-01-05')));
+        // Wednesday mid-week — due is Sunday, not overdue yet
+        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-07-15')));
     }
 
-    public function testIsReportOverdueIsTrueWhenCurrentPeriodPastDueWithNoReport(): void
+    public function testIsReportOverdueIsTrueOnDueDateWithNoReport(): void
     {
-        $project = $this->createProject(7, '2026-01-01');
+        $project = $this->createProject(ProjectProgressReportInterval::WEEK);
 
         $this->repository->expects($this->once())
             ->method('findForPeriod')
-            ->with($project, $this->callback(fn (\DateTimeImmutable $d) => $d->format('Y-m-d') === '2026-01-01'))
+            ->with($project, $this->callback(fn (\DateTimeImmutable $d) => $d->format('Y-m-d') === '2026-07-13'))
             ->willReturn(null);
 
-        $this->assertTrue($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-01-10')));
+        // Sunday 2026-07-19 = due date of the current week
+        $this->assertTrue($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-07-19')));
     }
 
     public function testIsReportOverdueIsFalseWhenCurrentPeriodAlreadyReported(): void
     {
-        $project = $this->createProject(7, '2026-01-01');
+        $project = $this->createProject(ProjectProgressReportInterval::WEEK);
 
         $this->repository->expects($this->once())
             ->method('findForPeriod')
             ->willReturn(new ProjectProgressReport());
 
-        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-01-10')));
+        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-07-19')));
     }
 
     /**
-     * Only the *current* (most recently completed) period is ever checked -
-     * a report missing for an earlier period must not make a project that
-     * is current on its filing appear overdue.
+     * Once today rolls into the next week, only that week is checked —
+     * a missing report for the previous week is ignored.
      */
-    public function testEarlierMissedPeriodsDoNotCauseOverdueOnceCurrentPeriodIsFiled(): void
+    public function testEarlierMissedPeriodsDoNotCauseOverdueInNextWeek(): void
     {
-        $project = $this->createProject(7, '2026-01-01');
+        $project = $this->createProject(ProjectProgressReportInterval::WEEK);
 
-        // As of 2026-01-22, three 7-day intervals have completed; the
-        // period currently owed a report is [01-15, 01-22) - period
-        // [01-01, 01-08) was never reported, but that's irrelevant/ignored.
-        $this->repository->expects($this->once())
-            ->method('findForPeriod')
-            ->with($project, $this->callback(fn (\DateTimeImmutable $d) => $d->format('Y-m-d') === '2026-01-15'))
-            ->willReturn(new ProjectProgressReport());
+        // Monday 2026-07-20 starts a new week; previous week (07-13..07-19)
+        // was never reported, but we only look up the new week's start.
+        $this->repository->expects($this->never())->method('findForPeriod');
 
-        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-01-22')));
+        // Mid next week, before due — not overdue for the new period
+        $this->assertFalse($this->service->isReportOverdue($project, new \DateTimeImmutable('2026-07-22')));
     }
 
-    private function createProject(?int $intervalDays, string $plannedStartDate): Project
+    private function createProject(?ProjectProgressReportInterval $interval): Project
     {
         $project = new Project();
-        $project->setProgressReportIntervalDays($intervalDays);
-        $project->setPlannedStartDate(new \DateTimeImmutable($plannedStartDate));
+        $project->setProgressReportInterval($interval);
 
         return $project;
     }

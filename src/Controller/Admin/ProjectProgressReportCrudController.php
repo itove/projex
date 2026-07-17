@@ -8,6 +8,7 @@ use App\Entity\Project;
 use App\Entity\ProjectProgressReport;
 use App\Entity\User;
 use App\Enum\ProjectProgressReportStatus;
+use App\Exception\MissingProgressReportIntervalException;
 use App\Repository\ProjectRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Service\OrgAccessService;
@@ -36,7 +37,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProjectProgressReportCrudController extends AbstractOrgScopedLifecycleCrudController
 {
@@ -215,12 +215,13 @@ class ProjectProgressReportCrudController extends AbstractOrgScopedLifecycleCrud
 
                 $period = $this->progressReportService->getCurrentPeriodRange($project);
                 if ($period === null) {
-                    $this->addFlash('error', '该项目未设置进度填报周期，请先在项目信息中配置「进度填报周期（天）」。');
+                    $this->addFlash('error', '该项目未设置进度填报周期，请先在项目信息中配置「进度填报周期」（每周/每月）。');
 
                     return $this->redirect(
                         $this->adminUrlGenerator
+                            ->unsetAll()
                             ->setController(ProjectCrudController::class)
-                            ->setAction(Action::DETAIL)
+                            ->setAction(Action::EDIT)
                             ->setEntityId($project->getId())
                             ->generateUrl()
                     );
@@ -246,9 +247,28 @@ class ProjectProgressReportCrudController extends AbstractOrgScopedLifecycleCrud
         // picked from the generic "new" form's dropdown never gets its
         // period pre-computed before validation runs, and concurrent
         // submissions can still race past both checks. Catch the resulting
-        // DB-level unique violation here instead of surfacing a raw SQL error.
+        // DB-level unique violation / missing-interval case here instead of
+        // surfacing a raw error page.
         try {
             return parent::new($context);
+        } catch (MissingProgressReportIntervalException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            $project = $exception->getProject();
+            if ($project instanceof Project && $project->getId() !== null) {
+                return $this->redirect(
+                    $this->adminUrlGenerator
+                        ->unsetAll()
+                        ->setController(ProjectCrudController::class)
+                        ->setAction(Action::EDIT)
+                        ->setEntityId($project->getId())
+                        ->generateUrl()
+                );
+            }
+
+            return $this->redirect(
+                $this->adminUrlGenerator->unsetAll()->setController(self::class)->setAction(Action::INDEX)->generateUrl()
+            );
         } catch (UniqueConstraintViolationException) {
             $this->addFlash('error', '本期进度报告已存在，请勿重复填报。');
 
@@ -269,7 +289,7 @@ class ProjectProgressReportCrudController extends AbstractOrgScopedLifecycleCrud
             }
 
             if ($entityInstance->getPeriodStartDate() === null) {
-                throw new BadRequestHttpException('该项目未设置进度填报周期，请先在项目信息中配置「进度填报周期（天）」。');
+                throw new MissingProgressReportIntervalException($project);
             }
 
             $user = $this->getUser();

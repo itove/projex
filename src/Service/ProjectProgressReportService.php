@@ -13,8 +13,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 /**
  * Encapsulates periodic progress-report lookups and the current-period-only
- * overdue rule: a project is only ever considered overdue for the period it
- * is currently in - earlier missed periods are not tracked/surfaced.
+ * overdue rule: a project is only ever considered overdue for the calendar
+ * week/month it is currently in - earlier missed periods are not tracked.
  */
 class ProjectProgressReportService
 {

@@ -10,6 +10,7 @@ use App\Entity\ProjectType;
 use App\Entity\User;
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
+use App\Enum\ProjectProgressReportInterval;
 use App\Enum\ProjectStatus;
 use App\Service\OrgAccessService;
 use App\Service\ProjectDisplayService;
@@ -38,7 +39,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -230,11 +230,16 @@ class ProjectCrudController extends AbstractCrudController
             ->setFormTypeOption('disabled', $lockCoreFields)
             ->hideOnIndex();
 
-        yield IntegerField::new('progressReportIntervalDays', '进度填报周期（天）')
+        yield ChoiceField::new('progressReportInterval', '进度填报周期')
+            ->setChoices(array_combine(
+                array_map(static fn (ProjectProgressReportInterval $interval) => $interval->label(), ProjectProgressReportInterval::cases()),
+                ProjectProgressReportInterval::cases()
+            ))
             ->setRequired(false)
             ->setColumns(6)
             ->hideOnIndex()
-            ->setHelp('每隔多少天需要填报一次项目进度，留空则不启用进度填报提醒');
+            ->formatValue(static fn (?ProjectProgressReportInterval $value) => $value?->label() ?? '—')
+            ->setHelp('选择每周或每月填报项目进度，留空则不启用进度填报提醒');
 
         yield TextField::new('leader', '负责人')
             ->hideOnForm();

@@ -15,7 +15,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'project_progress_report')]
 #[ORM\UniqueConstraint(name: 'uniq_progress_report_project_period', columns: ['project_id', 'period_start_date'])]
 #[ORM\Index(columns: ['project_id'], name: 'idx_progress_report_project')]
-#[UniqueEntity(fields: ['project', 'periodStartDate'], message: '本期（{{ value }}）的进度报告已存在，请勿重复填报。', ignoreNull: false)]
+#[UniqueEntity(
+    fields: ['project', 'periodStartDate'],
+    message: '本期进度报告已存在，请勿重复填报。',
+    errorPath: 'project',
+    ignoreNull: false,
+)]
 #[ORM\HasLifecycleCallbacks]
 class ProjectProgressReport
 {
@@ -29,7 +34,7 @@ class ProjectProgressReport
     #[Assert\NotNull(message: '所属项目不能为空')]
     private ?Project $project = null;
 
-    // System-computed from Project::getCurrentReportingPeriod() - never edited directly by users.
+    // System-computed from Project::getCurrentReportingPeriod() (calendar week/month containing today) - never edited directly by users.
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $periodStartDate = null;
 

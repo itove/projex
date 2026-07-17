@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Enum\FundingSource;
 use App\Enum\ProjectNature;
+use App\Enum\ProjectProgressReportInterval;
 use App\Enum\ProjectStatus;
 use App\Repository\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -101,10 +102,9 @@ class Project
     )]
     private ?\DateTimeImmutable $plannedEndDate = null;
 
-    // Periodic progress reporting cadence, in days. Null disables reporting/overdue-tracking for this project.
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    #[Assert\Positive(message: '填报周期必须大于 0 天')]
-    private ?int $progressReportIntervalDays = null;
+    // Periodic progress reporting cadence (week/month). Null disables reporting/overdue-tracking for this project.
+    #[ORM\Column(type: Types::STRING, enumType: ProjectProgressReportInterval::class, nullable: true)]
+    private ?ProjectProgressReportInterval $progressReportInterval = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: '项目目的不能为空')]
@@ -389,14 +389,15 @@ class Project
         return $this;
     }
 
-    public function getProgressReportIntervalDays(): ?int
+    public function getProgressReportInterval(): ?ProjectProgressReportInterval
     {
-        return $this->progressReportIntervalDays;
+        return $this->progressReportInterval;
     }
 
-    public function setProgressReportIntervalDays(?int $progressReportIntervalDays): self
+    public function setProgressReportInterval(?ProjectProgressReportInterval $progressReportInterval): self
     {
-        $this->progressReportIntervalDays = $progressReportIntervalDays;
+        $this->progressReportInterval = $progressReportInterval;
+
         return $this;
     }
 
@@ -666,55 +667,55 @@ class Project
     }
 
     /**
-     * Compute the progress-reporting period that is currently owed a report,
-     * based on `progressReportIntervalDays` and an anchor date (planned
-     * start date, falling back to creation date). Returns null when
-     * reporting/overdue tracking is disabled for this project (no interval
-     * configured).
+     * Compute the in-progress calendar reporting period containing `$today`
+     * (week = Mon–Sun, month = 1st–last day). Submissions always attach to
+     * this current period. Returns null when reporting is disabled.
      *
-     * This is the most recently *completed* interval as of `$today` (or the
-     * very first, not-yet-due interval, if none has completed yet) - never
-     * anything older. Earlier missed periods are deliberately not
-     * surfaced/accumulated, per product requirement: once a new interval
-     * completes, the previous one is forgotten and only the newly-completed
-     * one is checked.
+     * Overdue tracking only cares about this same period: once `$today`
+     * rolls into the next week/month, any miss from the previous period
+     * is forgotten.
      *
      * @return array{start: \DateTimeImmutable, due: \DateTimeImmutable}|null
      */
     public function getCurrentReportingPeriod(?\DateTimeImmutable $today = null): ?array
     {
-        if ($this->progressReportIntervalDays === null || $this->progressReportIntervalDays <= 0) {
-            return null;
-        }
-
-        $anchorDate = $this->plannedStartDate ?? $this->createdAt;
-        if ($anchorDate === null) {
+        if ($this->progressReportInterval === null) {
             return null;
         }
 
         $today ??= new \DateTimeImmutable('today', new \DateTimeZone('Asia/Shanghai'));
+        // Normalize to a calendar date in $today's timezone so Doctrine's
+        // UTC-midnight DATE hydration cannot shift boundaries.
+        $today = new \DateTimeImmutable($today->format('Y-m-d'), $today->getTimezone());
 
-        // Doctrine hydrates date/datetime columns at midnight in PHP's
-        // default timezone (often UTC), while $today is anchored to
-        // Asia/Shanghai above. Diffing across mismatched timezones can lose
-        // up to a day, silently shifting the whole period back by one
-        // interval - so re-anchor using only the calendar date, in $today's
-        // timezone, before doing any day-based arithmetic.
-        $anchor = new \DateTimeImmutable($anchorDate->format('Y-m-d'), $today->getTimezone());
-        $intervalDays = $this->progressReportIntervalDays;
+        return match ($this->progressReportInterval) {
+            ProjectProgressReportInterval::WEEK => $this->calendarWeekPeriod($today),
+            ProjectProgressReportInterval::MONTH => $this->calendarMonthPeriod($today),
+        };
+    }
 
-        $completedIntervals = $today > $anchor ? intdiv($anchor->diff($today)->days, $intervalDays) : 0;
+    /**
+     * @return array{start: \DateTimeImmutable, due: \DateTimeImmutable}
+     */
+    private function calendarWeekPeriod(\DateTimeImmutable $today): array
+    {
+        // ISO-8601: Monday = 1 … Sunday = 7
+        $dayOfWeek = (int) $today->format('N');
+        $start = $today->modify(sprintf('-%d days', $dayOfWeek - 1));
+        $due = $start->modify('+6 days');
 
-        // completedIntervals counts how many full intervals have elapsed, so
-        // the most recently *completed* one is index (completedIntervals - 1);
-        // while still inside the very first interval, fall back to it (not
-        // yet due, so the overdue check below will simply be false).
-        $periodIndex = max($completedIntervals - 1, 0);
+        return ['start' => $start, 'due' => $due];
+    }
 
-        $periodStart = $anchor->modify(sprintf('+%d days', $periodIndex * $intervalDays));
-        $periodDue = $periodStart->modify(sprintf('+%d days', $intervalDays));
+    /**
+     * @return array{start: \DateTimeImmutable, due: \DateTimeImmutable}
+     */
+    private function calendarMonthPeriod(\DateTimeImmutable $today): array
+    {
+        $start = $today->modify('first day of this month');
+        $due = $today->modify('last day of this month');
 
-        return ['start' => $periodStart, 'due' => $periodDue];
+        return ['start' => $start, 'due' => $due];
     }
 
     public function removeTask(ProjectTask $task): self
