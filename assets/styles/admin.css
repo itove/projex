@@ -1,59 +1,8 @@
 /* Custom EasyAdmin styles */
 
-/* 项目逾期提醒 */
+/* 项目逾期提醒：列表仅行背景标红 */
 .datagrid tbody tr[data-project-overdue="1"] > td {
-    background: linear-gradient(90deg, #fff6f6 0%, #ffeded 100%) !important;
-    color: #9b1c1c;
-    border-top: 1px solid #ffe0e0;
-    border-bottom: 1px solid #ffe0e0;
-    transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.datagrid tbody tr[data-project-overdue="1"] > td:first-child {
-    box-shadow: inset 4px 0 0 #e03131;
-}
-
-.datagrid tbody tr[data-project-overdue="1"]:hover > td {
-    background: linear-gradient(90deg, #ffeded 0%, #ffe0e0 100%) !important;
-}
-
-.datagrid tbody tr[data-project-overdue="1"] td a {
-    color: #c22525;
-    font-weight: 500;
-}
-
-.datagrid tbody tr[data-project-overdue="1"] td a:hover {
-    color: #a61e1e;
-}
-
-.project-name-cell {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.project-name-cell__text {
-    font-weight: 500;
-}
-
-.project-overdue-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    line-height: 1.4;
-    color: #c22525;
-    background: rgba(224, 49, 49, 0.1);
-    border: 1px solid rgba(224, 49, 49, 0.25);
-    white-space: nowrap;
-}
-
-.project-overdue-badge .fa {
-    font-size: 0.68rem;
+    background: #ffeded !important;
 }
 
 .project-overdue-alert {
