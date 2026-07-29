@@ -84,6 +84,39 @@ class Project
     #[Assert\Length(max: 255, maxMessage: '邮箱地址不能超过 {{ limit }} 个字符')]
     private ?string $leaderEmail = null;
 
+    // Participating units
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: '监理单位不能超过 {{ limit }} 个字符')]
+    private ?string $supervisionUnit = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: '监理单位负责人不能超过 {{ limit }} 个字符')]
+    private ?string $supervisionUnitLeader = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: '施工单位不能超过 {{ limit }} 个字符')]
+    private ?string $constructionUnit = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: '施工单位负责人不能超过 {{ limit }} 个字符')]
+    private ?string $constructionUnitLeader = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: '审计单位不能超过 {{ limit }} 个字符')]
+    private ?string $auditUnit = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: '审计单位负责人不能超过 {{ limit }} 个字符')]
+    private ?string $auditUnitLeader = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: '建设单位不能超过 {{ limit }} 个字符')]
+    private ?string $buildingUnit = null;
+
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: '建设单位负责人不能超过 {{ limit }} 个字符')]
+    private ?string $buildingUnitLeader = null;
+
     // Project Parameters
     #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 2)]
     #[Assert\NotBlank(message: '项目预算不能为空')]
@@ -353,6 +386,94 @@ class Project
     public function setLeaderEmail(?string $leaderEmail): self
     {
         $this->leaderEmail = $leaderEmail;
+        return $this;
+    }
+
+    public function getSupervisionUnit(): ?string
+    {
+        return $this->supervisionUnit;
+    }
+
+    public function setSupervisionUnit(?string $supervisionUnit): self
+    {
+        $this->supervisionUnit = $supervisionUnit;
+        return $this;
+    }
+
+    public function getSupervisionUnitLeader(): ?string
+    {
+        return $this->supervisionUnitLeader;
+    }
+
+    public function setSupervisionUnitLeader(?string $supervisionUnitLeader): self
+    {
+        $this->supervisionUnitLeader = $supervisionUnitLeader;
+        return $this;
+    }
+
+    public function getConstructionUnit(): ?string
+    {
+        return $this->constructionUnit;
+    }
+
+    public function setConstructionUnit(?string $constructionUnit): self
+    {
+        $this->constructionUnit = $constructionUnit;
+        return $this;
+    }
+
+    public function getConstructionUnitLeader(): ?string
+    {
+        return $this->constructionUnitLeader;
+    }
+
+    public function setConstructionUnitLeader(?string $constructionUnitLeader): self
+    {
+        $this->constructionUnitLeader = $constructionUnitLeader;
+        return $this;
+    }
+
+    public function getAuditUnit(): ?string
+    {
+        return $this->auditUnit;
+    }
+
+    public function setAuditUnit(?string $auditUnit): self
+    {
+        $this->auditUnit = $auditUnit;
+        return $this;
+    }
+
+    public function getAuditUnitLeader(): ?string
+    {
+        return $this->auditUnitLeader;
+    }
+
+    public function setAuditUnitLeader(?string $auditUnitLeader): self
+    {
+        $this->auditUnitLeader = $auditUnitLeader;
+        return $this;
+    }
+
+    public function getBuildingUnit(): ?string
+    {
+        return $this->buildingUnit;
+    }
+
+    public function setBuildingUnit(?string $buildingUnit): self
+    {
+        $this->buildingUnit = $buildingUnit;
+        return $this;
+    }
+
+    public function getBuildingUnitLeader(): ?string
+    {
+        return $this->buildingUnitLeader;
+    }
+
+    public function setBuildingUnitLeader(?string $buildingUnitLeader): self
+    {
+        $this->buildingUnitLeader = $buildingUnitLeader;
         return $this;
     }
 
