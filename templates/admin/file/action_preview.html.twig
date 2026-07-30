@@ -1,0 +1,13 @@
+{% set file = entity.instance %}
+<a
+    class="action-{{ action.name }} js-file-preview-open"
+    href="javascript:void(0)"
+    role="button"
+    data-file-name="{{ (file.originalName ?? file.fileName ?? '文件预览')|e('html_attr') }}"
+    data-modal-url="{{ path('admin_file_modal_preview', {fileId: entity.primaryKeyValue}) }}"
+    data-download-url="{{ path('admin_file_download', {fileId: entity.primaryKeyValue}) }}"
+    title="预览"
+>
+    <i class="fa fa-eye"></i>
+    <span class="action-label">预览</span>
+</a>

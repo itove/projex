@@ -1,0 +1,177 @@
+{% extends '@!EasyAdmin/crud/index.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        #filePreviewModal .file-preview-modal-dialog { width:min(1280px,96vw)!important; max-width:96vw!important; height:92vh!important; margin:1.5vh auto!important; }
+        #filePreviewModal .modal-content { height:100%!important; display:flex!important; flex-direction:column!important; overflow:hidden!important; }
+        #filePreviewModal .modal-body, #filePreviewModalContent { position:relative!important; flex:1 1 auto!important; min-height:0!important; overflow:hidden!important; padding:0!important; }
+    </style>
+{% endblock %}
+
+{% block entity_actions %}
+    {# Dropdown mode skips action.templatePath; render preview with data-* attrs ourselves. #}
+    <td class="actions {{ ea.crud.showEntityActionsAsDropdown ? 'actions-as-dropdown' }}">
+        {% if entity.actions.count > 0 %}
+            {% if ea.crud.showEntityActionsAsDropdown %}
+                {% set hasAnyActionWithIcon = entity.actions|filter(item => item.isActionGroup ? false : item.icon is not null)|length > 0 %}
+                {% set file = entity.instance %}
+                <twig:ea:ActionMenu class="dropdown-actions">
+                    <twig:ea:ActionMenu:Button withoutDropdownToggleMarker>
+                        <twig:ea:Icon name="internal:dots-horizontal" />
+                    </twig:ea:ActionMenu:Button>
+
+                    <twig:ea:ActionMenu:Overlay>
+                        <twig:ea:ActionMenu:ActionList hasSubmenus="{{ entity.actions|filter(item => item.isActionGroup)|length > 0 }}">
+                            {% for item in entity.actions %}
+                                {% if item.isActionGroup %}
+                                    <twig:ea:ActionMenu:ActionList:ItemGroup
+                                        group="{{ item }}"
+                                        showBlankIcons="{{ hasAnyActionWithIcon }}"
+                                        entity="{{ entity }}" />
+                                {% elseif item.name == 'previewModal' %}
+                                    <li>
+                                        <a
+                                            class="dropdown-item action-previewModal js-file-preview-open"
+                                            href="#"
+                                            role="button"
+                                            data-file-name="{{ (file.originalName ?? file.fileName ?? '文件预览')|e('html_attr') }}"
+                                            data-modal-url="{{ path('admin_file_modal_preview', {fileId: entity.primaryKeyValue}) }}"
+                                            data-download-url="{{ path('admin_file_download', {fileId: entity.primaryKeyValue}) }}"
+                                            title="预览"
+                                        >
+                                            <i class="fa fa-eye action-icon"></i>
+                                            <span class="action-label">预览</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    {% set item_html_attributes = item.htmlAttributes %}
+                                    {% if item.displayableConfirmationMessage is not null %}
+                                        {% set item_html_attributes = item_html_attributes|merge({
+                                            'data-action-confirmation-message': item.displayableConfirmationMessage|trans,
+                                        }) %}
+                                    {% endif %}
+                                    {% if item.hasConfirmation %}
+                                        {% set item_html_attributes = item_html_attributes|merge({
+                                            'data-action-entity-name': ea.crud.entityLabelInSingular|default('')|trans,
+                                            'data-action-entity-id': entity.primaryKeyValueAsString|default(''),
+                                        }) %}
+                                        {% if item.confirmationButtonLabel is not null %}
+                                            {% set item_html_attributes = item_html_attributes|merge({
+                                                'data-action-confirmation-button': item.confirmationButtonLabel|trans,
+                                            }) %}
+                                        {% endif %}
+                                    {% endif %}
+                                    <twig:ea:ActionMenu:ActionList:Item
+                                        class="{{ item.cssClass }} dropdown-item-variant-{{ item.variant.value }}" url="{{ item.linkUrl }}"
+                                        icon="{{ item.icon }}" icon:class="action-icon"
+                                        htmlAttributes="{{ item_html_attributes }}"
+                                        renderAsForm="{{ item.isRenderedAsForm }}"
+                                        label="{{ item.label|trans }}" label:class="action-label" renderLabelRaw
+                                        showBlankIcons="{{ hasAnyActionWithIcon }}" />
+                                {% endif %}
+                            {% endfor %}
+                        </twig:ea:ActionMenu:ActionList>
+                    </twig:ea:ActionMenu:Overlay>
+                </twig:ea:ActionMenu>
+            {% else %}
+                {% for action in entity.actions %}
+                    {% if action.isActionGroup %}
+                        {{ include(action.templatePath, {group: action, entity: entity}, with_context: false) }}
+                    {% else %}
+                        {{ include(action.templatePath, {action: action, entity: entity, isIncludedInDropdown: false}, with_context: false) }}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    </td>
+{% endblock %}
+
+{% block main %}
+    {{ parent() }}
+    <div class="modal fade" id="filePreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl file-preview-modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-truncate" id="filePreviewModalLabel">文件预览</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body p-0" id="filePreviewModalContent"></div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-outline-secondary" id="filePreviewModalOpen" target="_blank" rel="noopener">新窗口打开</a>
+                    <a href="#" class="btn btn-primary" id="filePreviewModalDownload"><i class="fa fa-download"></i> 下载</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const modalEl = document.getElementById('filePreviewModal');
+            if (!modalEl) return;
+
+            function getBootstrapModal() {
+                const bs = window.bootstrap;
+                if (!bs || !bs.Modal) {
+                    return null;
+                }
+                return bs.Modal.getOrCreateInstance(modalEl);
+            }
+
+            const titleEl = document.getElementById('filePreviewModalLabel');
+            const contentEl = document.getElementById('filePreviewModalContent');
+            const downloadBtn = document.getElementById('filePreviewModalDownload');
+            const openBtn = document.getElementById('filePreviewModalOpen');
+
+            document.addEventListener('click', function (event) {
+                const trigger = event.target.closest('.js-file-preview-open');
+                if (!trigger) return;
+                event.preventDefault();
+                event.stopPropagation();
+
+                const modalUrl = trigger.getAttribute('data-modal-url');
+                if (!modalUrl) {
+                    console.warn('[FilePreview] missing data-modal-url');
+                    return;
+                }
+
+                const modal = getBootstrapModal();
+                if (!modal) {
+                    window.open(modalUrl, '_blank');
+                    return;
+                }
+
+                titleEl.textContent = trigger.getAttribute('data-file-name') || '文件预览';
+                downloadBtn.href = trigger.getAttribute('data-download-url') || '#';
+                openBtn.href = '#';
+                openBtn.classList.add('disabled');
+                contentEl.innerHTML = '<div class="p-4 text-center text-muted">加载中…</div>';
+                modal.show();
+
+                fetch(modalUrl, {
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('failed');
+                        const openUrl = response.headers.get('X-File-Open-Url');
+                        if (openUrl) {
+                            openBtn.href = openUrl;
+                            openBtn.classList.remove('disabled');
+                        }
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        contentEl.innerHTML = html;
+                    })
+                    .catch(function () {
+                        contentEl.innerHTML = '<div class="p-4 text-center text-danger">预览加载失败</div>';
+                    });
+            });
+        })();
+    </script>
+{% endblock %}

@@ -375,8 +375,15 @@ body {
   background: #f8f9fa;
 }
 
-.file-preview-frame--text {
+.file-preview-frame--text,
+.file-preview-frame--office,
+.file-preview-frame--file-viewer {
   background: #fff;
+}
+
+.file-preview-frame--file-viewer {
+  height: min(85vh, 900px);
+  background: #edf1f5;
 }
 
 .file-preview-image-wrap {

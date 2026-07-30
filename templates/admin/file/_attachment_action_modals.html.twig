@@ -1,0 +1,298 @@
+{# Choice + preview modals for lifecycle / attachment file links (.js-attachment-file-open) #}
+<style>
+    #attachmentChoiceModal .attachment-choice-dialog {
+        max-width: 420px;
+    }
+    #attachmentChoiceModal .modal-content {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+        overflow: hidden;
+    }
+    #attachmentChoiceModal .modal-header {
+        border-bottom: 0;
+        padding: 1rem 1.15rem 0.25rem;
+    }
+    #attachmentChoiceModal .modal-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #334155;
+    }
+    #attachmentChoiceModal .modal-body {
+        padding: 0.5rem 1.15rem 1.25rem;
+    }
+    #attachmentChoiceModal .attachment-choice-file {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.85rem 0.95rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        background: #f1f5f9;
+    }
+    #attachmentChoiceModal .attachment-choice-file-icon {
+        flex: 0 0 auto;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #fff;
+        background: #64748b;
+    }
+    #attachmentChoiceModal .attachment-choice-file-icon.is-pdf { background: #dc2626; }
+    #attachmentChoiceModal .attachment-choice-file-icon.is-doc,
+    #attachmentChoiceModal .attachment-choice-file-icon.is-docx { background: #2563eb; }
+    #attachmentChoiceModal .attachment-choice-file-icon.is-xls,
+    #attachmentChoiceModal .attachment-choice-file-icon.is-xlsx,
+    #attachmentChoiceModal .attachment-choice-file-icon.is-csv { background: #16a34a; }
+    #attachmentChoiceModal .attachment-choice-file-meta {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+    #attachmentChoiceModal .attachment-choice-file-name {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.35;
+        word-break: break-all;
+    }
+    #attachmentChoiceModal .attachment-choice-file-hint {
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    #attachmentChoiceModal .attachment-choice-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    #attachmentChoiceModal .attachment-choice-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-height: 5.25rem;
+        padding: 0.85rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #334155;
+        text-align: center;
+        transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    #attachmentChoiceModal .attachment-choice-action:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+        transform: translateY(-1px);
+    }
+    #attachmentChoiceModal .attachment-choice-action:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+    #attachmentChoiceModal .attachment-choice-action.is-primary {
+        border-color: #93c5fd;
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+    #attachmentChoiceModal .attachment-choice-action.is-primary:hover {
+        border-color: #60a5fa;
+        background: #dbeafe;
+    }
+    #attachmentChoiceModal .attachment-choice-action i {
+        font-size: 1.25rem;
+    }
+    #attachmentChoiceModal .attachment-choice-action-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    #attachmentChoiceModal .attachment-choice-action-desc {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        line-height: 1.2;
+    }
+
+    #attachmentPreviewModal .attachment-preview-dialog {
+        width: min(1280px, 96vw) !important;
+        max-width: 96vw !important;
+        height: 92vh !important;
+        margin: 1.5vh auto !important;
+    }
+    #attachmentPreviewModal .modal-content {
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    #attachmentPreviewModal .modal-body,
+    #attachmentPreviewModalContent {
+        position: relative !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+</style>
+
+<div class="modal fade" id="attachmentChoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered attachment-choice-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attachmentChoiceModalLabel">打开附件</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="attachment-choice-file">
+                    <span class="attachment-choice-file-icon" id="attachmentChoiceFileExt">FILE</span>
+                    <div class="attachment-choice-file-meta">
+                        <p class="attachment-choice-file-name" id="attachmentChoiceFileName"></p>
+                        <p class="attachment-choice-file-hint">选择预览或下载到本地</p>
+                    </div>
+                </div>
+                <div class="attachment-choice-actions">
+                    <button type="button" class="attachment-choice-action is-primary" id="attachmentChoicePreview">
+                        <i class="fa fa-eye" aria-hidden="true"></i>
+                        <span class="attachment-choice-action-title">预览</span>
+                        <span class="attachment-choice-action-desc">在线查看内容</span>
+                    </button>
+                    <button type="button" class="attachment-choice-action" id="attachmentChoiceDownload">
+                        <i class="fa fa-download" aria-hidden="true"></i>
+                        <span class="attachment-choice-action-title">下载</span>
+                        <span class="attachment-choice-action-desc">保存到本地</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="attachmentPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl attachment-preview-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-truncate" id="attachmentPreviewModalLabel">文件预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body p-0" id="attachmentPreviewModalContent"></div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-secondary" id="attachmentPreviewOpen" target="_blank" rel="noopener">新窗口打开</a>
+                <a href="#" class="btn btn-primary" id="attachmentPreviewDownload"><i class="fa fa-download"></i> 下载</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    if (window.__projexAttachmentActionsBound) {
+        return;
+    }
+    window.__projexAttachmentActionsBound = true;
+
+    const choiceEl = document.getElementById('attachmentChoiceModal');
+    const previewEl = document.getElementById('attachmentPreviewModal');
+    if (!choiceEl || !previewEl || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    const choiceModal = bootstrap.Modal.getOrCreateInstance(choiceEl);
+    const previewModal = bootstrap.Modal.getOrCreateInstance(previewEl);
+    const choiceName = document.getElementById('attachmentChoiceFileName');
+    const choiceExt = document.getElementById('attachmentChoiceFileExt');
+    const previewTitle = document.getElementById('attachmentPreviewModalLabel');
+    const previewContent = document.getElementById('attachmentPreviewModalContent');
+    const previewOpen = document.getElementById('attachmentPreviewOpen');
+    const previewDownload = document.getElementById('attachmentPreviewDownload');
+    const btnPreview = document.getElementById('attachmentChoicePreview');
+    const btnDownload = document.getElementById('attachmentChoiceDownload');
+
+    let current = { name: '', downloadUrl: '', modalUrl: '' };
+
+    function getExtension(filename) {
+        const base = String(filename || '').split(/[\\/]/).pop() || '';
+        const dot = base.lastIndexOf('.');
+        if (dot <= 0 || dot === base.length - 1) {
+            return '';
+        }
+        return base.slice(dot + 1).toLowerCase();
+    }
+
+    function updateFileBadge(filename) {
+        const ext = getExtension(filename);
+        choiceExt.className = 'attachment-choice-file-icon';
+        if (ext) {
+            choiceExt.textContent = ext.length > 4 ? ext.slice(0, 4) : ext;
+            choiceExt.classList.add('is-' + ext);
+        } else {
+            choiceExt.textContent = 'FILE';
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('.js-attachment-file-open');
+        if (!trigger) {
+            return;
+        }
+        event.preventDefault();
+        current = {
+            name: trigger.getAttribute('data-file-name') || '附件',
+            downloadUrl: trigger.getAttribute('data-download-url') || '#',
+            modalUrl: trigger.getAttribute('data-modal-url') || '',
+        };
+        choiceName.textContent = current.name;
+        updateFileBadge(current.name);
+        choiceModal.show();
+    });
+
+    btnDownload.addEventListener('click', function () {
+        choiceModal.hide();
+        if (current.downloadUrl && current.downloadUrl !== '#') {
+            window.location.href = current.downloadUrl;
+        }
+    });
+
+    btnPreview.addEventListener('click', function () {
+        choiceModal.hide();
+        if (!current.modalUrl) {
+            return;
+        }
+        previewTitle.textContent = current.name || '文件预览';
+        previewDownload.href = current.downloadUrl || '#';
+        previewOpen.href = '#';
+        previewOpen.classList.add('disabled');
+        previewContent.innerHTML = '<div class="p-4 text-center text-muted">加载中…</div>';
+        previewModal.show();
+
+        fetch(current.modalUrl, {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('failed');
+                }
+                const openUrl = response.headers.get('X-File-Open-Url');
+                if (openUrl) {
+                    previewOpen.href = openUrl;
+                    previewOpen.classList.remove('disabled');
+                }
+                return response.text();
+            })
+            .then(function (html) {
+                previewContent.innerHTML = html;
+            })
+            .catch(function () {
+                previewContent.innerHTML = '<div class="p-4 text-center text-danger">预览加载失败，请尝试下载原文件</div>';
+            });
+    });
+})();
+</script>

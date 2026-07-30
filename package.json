@@ -1,0 +1,21 @@
+﻿{
+  "name": "projex-file-viewer",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "File Viewer (PDF / Word / Excel only) for Symfony admin",
+  "scripts": {
+    "dev:viewer": "vite",
+    "build:viewer": "vite build"
+  },
+  "dependencies": {
+    "@file-viewer/renderer-pdf": "2.2.4",
+    "@file-viewer/renderer-spreadsheet": "2.2.4",
+    "@file-viewer/renderer-word": "2.2.4",
+    "@file-viewer/web": "2.2.4"
+  },
+  "devDependencies": {
+    "@file-viewer/vite-plugin": "2.2.4",
+    "vite": "^6.4.3"
+  }
+}

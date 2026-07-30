@@ -32,6 +32,7 @@ abstract class AbstractLifecycleStageCrudController extends AbstractOrgScopedLif
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
+            ->overrideTemplate('crud/index', 'admin/lifecycle_stage/index.html.twig')
             ->overrideTemplate('crud/detail', 'admin/lifecycle_stage/detail.html.twig');
     }
 

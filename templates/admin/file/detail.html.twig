@@ -4,6 +4,8 @@
     {% include 'admin/file/_preview.html.twig' with {
         file: entity.instance,
         preview_type: preview_type|default('unsupported'),
+        file_viewer_available: file_viewer_available|default(false),
+        file_viewer_built: file_viewer_built|default(false),
         office_preview_available: office_preview_available|default(false),
     } %}
     {{ parent() }}

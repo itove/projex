@@ -8,6 +8,7 @@ use App\Entity\File;
 use App\Entity\LifecycleStageInterface;
 use App\Service\FilePreviewRenderService;
 use App\Service\FilePreviewService;
+use App\Service\FileViewerService;
 use App\Service\Lifecycle\LifecycleStageAttachmentCatalog;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,7 @@ class FileCrudController extends AbstractCrudController
         private readonly ProjectLifecycleStageRegistry $stageRegistry,
         private readonly FilePreviewService $filePreviewService,
         private readonly FilePreviewRenderService $filePreviewRenderService,
+        private readonly FileViewerService $fileViewerService,
     ) {
     }
 
@@ -96,6 +98,65 @@ class FileCrudController extends AbstractCrudController
         return new Response($html);
     }
 
+    #[Route('/admin/file/viewer/{fileId}', name: 'admin_file_viewer')]
+    public function fileViewer(int $fileId): Response
+    {
+        $file = $this->findFileOrFail($fileId);
+        $this->resolveFilePath($file);
+
+        if (!$this->fileViewerService->supports($file)) {
+            throw $this->createNotFoundException('File Viewer does not support this file type.');
+        }
+
+        if (!$this->fileViewerService->isBuilt()) {
+            return $this->render('admin/file/file_viewer_missing.html.twig', [
+                'file' => $file,
+                'downloadUrl' => $this->generateUrl('admin_file_download', ['fileId' => $fileId]),
+            ]);
+        }
+
+        return $this->render('admin/file/file_viewer.html.twig', [
+            'file' => $file,
+            'extension' => $this->filePreviewService->getExtension($file),
+            'inlineUrl' => $this->generateUrl('admin_file_inline', ['fileId' => $fileId]),
+            'downloadUrl' => $this->generateUrl('admin_file_download', ['fileId' => $fileId]),
+            'entrypointScript' => $this->fileViewerService->getEntrypointScriptPath(),
+            'entrypointCss' => $this->fileViewerService->getEntrypointCssPaths(),
+        ]);
+    }
+
+    #[Route('/admin/file/modal-preview/{fileId}', name: 'admin_file_modal_preview')]
+    public function modalPreview(int $fileId): Response
+    {
+        $file = $this->findFileOrFail($fileId);
+        $flags = $this->buildPreviewFlags($file);
+
+        $response = $this->render(
+            'admin/file/_preview_modal_body.html.twig',
+            array_merge(['file' => $file], $flags)
+        );
+
+        $openUrl = match (true) {
+            $flags['file_viewer_available'] => $this->generateUrl('admin_file_viewer', ['fileId' => $fileId]),
+            \in_array($flags['preview_type'], [
+                FilePreviewService::TYPE_PDF,
+                FilePreviewService::TYPE_IMAGE,
+                FilePreviewService::TYPE_TEXT,
+                FilePreviewService::TYPE_VIDEO,
+                FilePreviewService::TYPE_AUDIO,
+            ], true) => $this->generateUrl('admin_file_inline', ['fileId' => $fileId]),
+            $flags['preview_type'] === FilePreviewService::TYPE_OFFICE && $flags['office_preview_available']
+                => $this->generateUrl('admin_file_preview', ['fileId' => $fileId]),
+            default => null,
+        };
+
+        if ($openUrl !== null) {
+            $response->headers->set('X-File-Open-Url', $openUrl);
+        }
+
+        return $response;
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
@@ -108,6 +169,7 @@ class FileCrudController extends AbstractCrudController
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->setPaginatorPageSize(20)
             ->setSearchFields(['originalName', 'fileName', 'description', 'category'])
+            ->overrideTemplate('crud/index', 'admin/file/index.html.twig')
             ->overrideTemplate('crud/detail', 'admin/file/detail.html.twig');
     }
 
@@ -171,13 +233,23 @@ class FileCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         $downloadAction = Action::new('download', '下载', 'fa fa-download')
-            ->linkToUrl(fn (File $file) => $this->generateUrl('admin_file_download', ['fileId' => $file->getId()]))
-            ->setCssClass('btn btn-primary')
-            ->displayAsButton();
+            ->linkToUrl(fn (File $file) => $this->generateUrl('admin_file_download', ['fileId' => $file->getId()]));
+
+        $previewAction = Action::new('previewModal', '预览', 'fa fa-eye')
+            ->linkToUrl('javascript:void(0)')
+            ->setCssClass('js-file-preview-open')
+            ->setTemplatePath('admin/file/action_preview.html.twig');
 
         return $actions
-            ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_DETAIL, $downloadAction)
+            ->add(Crud::PAGE_INDEX, $downloadAction)
+            ->add(Crud::PAGE_INDEX, $previewAction)
+            ->add(
+                Crud::PAGE_DETAIL,
+                Action::new('download', '下载', 'fa fa-download')
+                    ->linkToUrl(fn (File $file) => $this->generateUrl('admin_file_download', ['fileId' => $file->getId()]))
+                    ->setCssClass('btn btn-primary')
+                    ->displayAsButton()
+            )
             ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }
 
@@ -196,13 +268,33 @@ class FileCrudController extends AbstractCrudController
             $file = $entity->getInstance();
 
             if ($file instanceof File) {
-                $previewType = $this->filePreviewService->getPreviewType($file);
-                $responseParameters->set('preview_type', $previewType);
-                $responseParameters->set('office_preview_available', $this->filePreviewRenderService->canRenderHtml($file));
+                foreach ($this->buildPreviewFlags($file) as $key => $value) {
+                    $responseParameters->set($key, $value);
+                }
             }
         }
 
         return $responseParameters;
+    }
+
+    /**
+     * @return array{
+     *     preview_type: string,
+     *     file_viewer_available: bool,
+     *     file_viewer_built: bool,
+     *     office_preview_available: bool
+     * }
+     */
+    private function buildPreviewFlags(File $file): array
+    {
+        $built = $this->fileViewerService->isBuilt();
+
+        return [
+            'preview_type' => $this->filePreviewService->getPreviewType($file),
+            'file_viewer_available' => $this->fileViewerService->supports($file) && $built,
+            'file_viewer_built' => $built,
+            'office_preview_available' => $this->filePreviewRenderService->canRenderHtml($file),
+        ];
     }
 
     /**
