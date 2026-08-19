@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Org;
 use App\Entity\User;
+use App\Controller\Admin\Trait\SystemAdminOnlyCrudTrait;
 use App\Service\OrgAccessService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -24,6 +25,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 
 class OrgCrudController extends AbstractCrudController
 {
+    use SystemAdminOnlyCrudTrait;
+
     public function __construct(
         private readonly OrgAccessService $orgAccessService,
     ) {
@@ -65,7 +68,9 @@ class OrgCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions->add(Crud::PAGE_INDEX, Action::DETAIL);
+        return $this->restrictActionsToSystemAdmin(
+            $actions->add(Crud::PAGE_INDEX, Action::DETAIL)
+        );
     }
 
     public function createIndexQueryBuilder(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Permission;
+use App\Controller\Admin\Trait\SystemAdminOnlyCrudTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -17,6 +18,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 
 class PermissionCrudController extends AbstractCrudController
 {
+    use SystemAdminOnlyCrudTrait;
+
     public static function getEntityFqcn(): string
     {
         return Permission::class;
@@ -47,6 +50,8 @@ class PermissionCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions->add(Crud::PAGE_INDEX, Action::DETAIL);
+        return $this->restrictActionsToSystemAdmin(
+            $actions->add(Crud::PAGE_INDEX, Action::DETAIL)
+        );
     }
 }
