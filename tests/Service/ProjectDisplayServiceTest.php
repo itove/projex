@@ -13,6 +13,7 @@ use App\Entity\PreliminaryDecision;
 use App\Entity\Project;
 use App\Entity\ProjectApproval;
 use App\Entity\SettlementAccounts;
+use App\Service\Lifecycle\LifecycleStageAttachmentCatalog;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
 use App\Service\Lifecycle\StageAttachmentComplianceService;
 use App\Service\ProjectDisplayService;
@@ -131,6 +132,36 @@ class ProjectDisplayServiceTest extends TestCase
         $this->assertTrue($proposal['satisfied']);
     }
 
+    public function testCanStartNextStageOnlyAfterPreviousRequiredAttachmentsAreComplete(): void
+    {
+        $stages = $this->displayService->getLifecycleStages($this->project);
+        $this->assertTrue($stages[0]['canStart']);
+        $this->assertFalse($stages[1]['canStart']);
+
+        $preliminary = new PreliminaryDecision();
+        $this->entitiesByClass[PreliminaryDecision::class] = $preliminary;
+
+        $stages = $this->displayService->getLifecycleStages($this->project);
+        $this->assertFalse($stages[0]['attachmentsCompliant']);
+        $this->assertFalse($stages[1]['canStart']);
+
+        $this->attachRequiredFiles($preliminary, 'preliminary');
+
+        $stages = $this->displayService->getLifecycleStages($this->project);
+        $this->assertTrue($stages[0]['attachmentsCompliant']);
+        $this->assertTrue($stages[1]['canStart']);
+        $this->assertFalse($stages[2]['canStart']);
+
+        $this->assertNull($this->displayService->previousStageStartBlockReason($this->project, ProjectApproval::class));
+
+        $this->entitiesByClass[PreliminaryDecision::class] = new PreliminaryDecision();
+        $reason = $this->displayService->previousStageStartBlockReason($this->project, ProjectApproval::class);
+        $this->assertNotNull($reason);
+        $this->assertStringContainsString('前期决策', $reason);
+        $this->assertTrue($this->displayService->canStartStage($this->project, PreliminaryDecision::class));
+        $this->assertFalse($this->displayService->canStartStage($this->project, ProjectApproval::class));
+    }
+
     public function testOverallProgressAddsPartialCreditWhileImplementing(): void
     {
         $this->entitiesByClass[PreliminaryDecision::class] = new PreliminaryDecision();
@@ -206,5 +237,14 @@ class ProjectDisplayServiceTest extends TestCase
         $reflection->setValue($project, $id);
 
         return $project;
+    }
+
+    private function attachRequiredFiles(PreliminaryDecision $stage, string $stageKey): void
+    {
+        foreach (LifecycleStageAttachmentCatalog::forStage($stageKey) as $requirement) {
+            if ($requirement->required) {
+                $stage->addFile((new File())->setCategory($requirement->key));
+            }
+        }
     }
 }

@@ -85,6 +85,10 @@ class ProjectNavigationService
             ]);
         }
 
+        if (($stage['canStart'] ?? true) === false) {
+            return $this->projectDetailAnchor('lifecycle-stages');
+        }
+
         return $this->urlGenerator->generate($route . '_new') . '?project=' . $projectId;
     }
 

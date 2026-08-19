@@ -66,6 +66,20 @@ class ProjectLifecycleStageRegistryTest extends TestCase
         $this->assertNull($this->registry->indexOf('does_not_exist'));
     }
 
+    public function testPreviousReturnsThePrecedingDefinition(): void
+    {
+        $preliminary = $this->registry->find('preliminary');
+        $approval = $this->registry->find('approval');
+        $settlement = $this->registry->find('settlement');
+
+        $this->assertNotNull($preliminary);
+        $this->assertNotNull($approval);
+        $this->assertNotNull($settlement);
+        $this->assertNull($this->registry->previous($preliminary));
+        $this->assertSame('preliminary', $this->registry->previous($approval)?->key);
+        $this->assertSame('acceptance', $this->registry->previous($settlement)?->key);
+    }
+
     public function testUnpersistedProjectHasNoStageEntitiesWithoutQuerying(): void
     {
         $project = new Project();

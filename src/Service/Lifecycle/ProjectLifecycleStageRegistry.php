@@ -171,6 +171,19 @@ final class ProjectLifecycleStageRegistry
     }
 
     /**
+     * The stage immediately before $definition, or null for the first stage.
+     */
+    public function previous(LifecycleStageDefinition $definition): ?LifecycleStageDefinition
+    {
+        $index = $this->indexOf($definition->key);
+        if ($index === null || $index === 0) {
+            return null;
+        }
+
+        return $this->stages[$index - 1];
+    }
+
+    /**
      * @param class-string $entityClass
      */
     public function findByEntityClass(string $entityClass): ?LifecycleStageDefinition
