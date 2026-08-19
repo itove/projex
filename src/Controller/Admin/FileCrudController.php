@@ -6,18 +6,26 @@ namespace App\Controller\Admin;
 
 use App\Entity\File;
 use App\Entity\LifecycleStageInterface;
+use App\Entity\User;
 use App\Service\FilePreviewRenderService;
 use App\Service\FilePreviewService;
 use App\Service\FileViewerService;
 use App\Service\Lifecycle\LifecycleStageAttachmentCatalog;
 use App\Service\Lifecycle\ProjectLifecycleStageRegistry;
+use App\Service\OrgAccessService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -41,6 +49,7 @@ class FileCrudController extends AbstractCrudController
         private readonly FilePreviewService $filePreviewService,
         private readonly FilePreviewRenderService $filePreviewRenderService,
         private readonly FileViewerService $fileViewerService,
+        private readonly OrgAccessService $orgAccessService,
     ) {
     }
 
@@ -261,6 +270,43 @@ class FileCrudController extends AbstractCrudController
             ->add(DateTimeFilter::new('createdAt', '上传时间'));
     }
 
+    public function createIndexQueryBuilder(
+        SearchDto $searchDto,
+        EntityDto $entityDto,
+        FieldCollection $fields,
+        FilterCollection $filters,
+    ): QueryBuilder {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $this->orgAccessService->applyLifecycleAttachmentOrgScope($qb, $user, 'entity', false);
+        }
+
+        return $qb;
+    }
+
+    public function detail(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::detail($context);
+    }
+
+    public function edit(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::edit($context);
+    }
+
+    public function delete(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::delete($context);
+    }
+
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
         if (Crud::PAGE_DETAIL === $responseParameters->get('pageName')) {
@@ -329,7 +375,21 @@ class FileCrudController extends AbstractCrudController
             throw $this->createNotFoundException('File not found');
         }
 
+        $this->denyUnlessCanViewAttachment($file);
+
         return $file;
+    }
+
+    private function denyUnlessCanViewAttachment(?object $entity): void
+    {
+        if (!$entity instanceof File) {
+            return;
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof User || !$this->orgAccessService->canViewLifecycleAttachment($user, $entity)) {
+            throw $this->createAccessDeniedException('无权访问该文件。');
+        }
     }
 
     private function resolveFilePath(File $file): string
