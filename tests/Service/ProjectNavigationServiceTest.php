@@ -121,6 +121,17 @@ class ProjectNavigationServiceTest extends KernelTestCase
         $this->assertStringContainsString('project=123', $enriched[1]['url']);
     }
 
+    public function testStageUrlAnchorsWhenNextStageCannotStart(): void
+    {
+        $url = $this->navigationService->stageUrl([
+            'route' => 'admin_project_approval',
+            'entity' => null,
+            'canStart' => false,
+        ], 123);
+
+        $this->assertSame('#lifecycle-stages', $url);
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();

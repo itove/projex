@@ -1,15 +1,22 @@
 {# @var file App\Entity\File #}
 {% set previewType = preview_type|default('unsupported') %}
+{% set fileViewerAvailable = file_viewer_available|default(false) %}
+{% set fileViewerBuilt = file_viewer_built|default(false) %}
+{% set officePreviewAvailable = office_preview_available|default(false) %}
 {% set inlineUrl = path('admin_file_inline', {fileId: file.id}) %}
 {% set previewUrl = path('admin_file_preview', {fileId: file.id}) %}
+{% set viewerUrl = path('admin_file_viewer', {fileId: file.id}) %}
 {% set downloadUrl = path('admin_file_download', {fileId: file.id}) %}
-{% set officePreviewAvailable = office_preview_available|default(false) %}
 
 <div class="card mb-4 file-preview-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="fa fa-eye me-1"></i> 文档预览</span>
         <div class="d-flex gap-2">
-            {% if previewType == 'office' and officePreviewAvailable %}
+            {% if fileViewerAvailable %}
+                <a href="{{ viewerUrl }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                    <i class="fa fa-external-link-alt"></i> 新窗口打开
+                </a>
+            {% elseif previewType == 'office' and officePreviewAvailable %}
                 <a href="{{ previewUrl }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
                     <i class="fa fa-external-link-alt"></i> 新窗口打开
                 </a>
@@ -18,14 +25,14 @@
                     <i class="fa fa-external-link-alt"></i> 新窗口打开
                 </a>
             {% endif %}
-            <a href="{{ downloadUrl }}" class="btn btn-sm btn-primary">
-                <i class="fa fa-download"></i> 下载
-            </a>
         </div>
     </div>
     <div class="card-body p-0">
-        {% if previewType == 'pdf' %}
-            <iframe src="{{ inlineUrl }}#toolbar=1" class="file-preview-frame" title="{{ file.originalName }}"></iframe>
+        {% if fileViewerAvailable %}
+            <iframe src="{{ viewerUrl }}" class="file-preview-frame file-preview-frame--file-viewer" title="{{ file.originalName }}"></iframe>
+            <div class="file-preview-office-hint">File Viewer · PDF / Word / Excel</div>
+        {% elseif previewType == 'pdf' %}
+            <iframe src="{{ inlineUrl }}#toolbar=1&view=FitH" class="file-preview-frame" title="{{ file.originalName }}"></iframe>
         {% elseif previewType == 'image' %}
             <div class="file-preview-image-wrap">
                 <img src="{{ inlineUrl }}" alt="{{ file.originalName }}" class="file-preview-image">
@@ -50,20 +57,16 @@
         {% elseif previewType == 'office' %}
             <div class="file-preview-fallback">
                 <i class="fa fa-file-word fa-3x text-muted mb-3"></i>
-                <p class="mb-2">当前 Office 格式暂不支持在线预览</p>
-                <p class="text-muted small mb-3">{{ file.mimeType ?? '未知类型' }} · {{ file.fileSizeFormatted }}</p>
-                <a href="{{ downloadUrl }}" class="btn btn-primary">
-                    <i class="fa fa-download"></i> 下载文件
-                </a>
+                <p class="mb-2">办公文档预览尚未就绪</p>
+                <p class="text-muted small mb-3">请执行 <code>npm install && npm run build:viewer</code></p>
+                <a href="{{ downloadUrl }}" class="btn btn-primary"><i class="fa fa-download"></i> 下载文件</a>
             </div>
         {% else %}
             <div class="file-preview-fallback">
                 <i class="fa fa-file fa-3x text-muted mb-3"></i>
                 <p class="mb-2">当前文件格式暂不支持在线预览</p>
                 <p class="text-muted small mb-3">{{ file.mimeType ?? '未知类型' }} · {{ file.fileSizeFormatted }}</p>
-                <a href="{{ downloadUrl }}" class="btn btn-primary">
-                    <i class="fa fa-download"></i> 下载文件
-                </a>
+                <a href="{{ downloadUrl }}" class="btn btn-primary"><i class="fa fa-download"></i> 下载文件</a>
             </div>
         {% endif %}
     </div>

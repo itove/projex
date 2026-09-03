@@ -1,0 +1,7 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    {% include 'admin/file/_attachment_action_modals.html.twig' %}
+{% endblock %}

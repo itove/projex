@@ -244,6 +244,47 @@ class ProjectCrudController extends AbstractCrudController
         yield TextField::new('leader', '负责人')
             ->hideOnForm();
 
+        // Participating units (after core params)
+        yield TextField::new('buildingUnit', '建设单位')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('buildingUnitLeader', '建设单位负责人')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('constructionUnit', '施工单位')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('constructionUnitLeader', '施工单位负责人')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('supervisionUnit', '监理单位')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('supervisionUnitLeader', '监理单位负责人')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('auditUnit', '审计单位')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('auditUnitLeader', '审计单位负责人')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->hideOnIndex();
+
         yield TextField::new('registrant', '登记人')
             ->onlyOnDetail();
 

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ file.originalName ?? '文档预览' }}</title>
+    {% for css in entrypointCss %}
+        <link rel="stylesheet" href="{{ css }}">
+    {% endfor %}
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; overflow: hidden; background: #edf1f5; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+        #file-viewer-root { position: relative; width: 100%; height: 100%; }
+        .file-viewer-boot-loading, .file-viewer-boot-error { margin: 2rem; padding: 1rem 1.25rem; border-radius: .5rem; line-height: 1.6; }
+        .file-viewer-boot-loading { color: #084298; background: #cfe2ff; border: 1px solid #b6d4fe; }
+        .file-viewer-boot-error { color: #842029; background: #f8d7da; border: 1px solid #f5c2c7; }
+        .file-viewer-boot-error a { color: #0d6efd; }
+    </style>
+</head>
+<body>
+    <div
+        id="file-viewer-root"
+        data-src="{{ inlineUrl }}"
+        data-filename="{{ file.originalName|e('html_attr') }}"
+        data-extension="{{ extension|e('html_attr') }}"
+        data-download-url="{{ downloadUrl|e('html_attr') }}"
+    ></div>
+    <script type="module" src="{{ entrypointScript }}"></script>
+</body>
+</html>

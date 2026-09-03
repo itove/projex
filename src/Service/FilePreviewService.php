@@ -59,7 +59,7 @@ class FilePreviewService
         return $this->getPreviewType($file) !== self::TYPE_UNSUPPORTED;
     }
 
-    private function getExtension(File $file): string
+    public function getExtension(File $file): string
     {
         $name = $file->getOriginalName() ?? $file->getFileName() ?? '';
 

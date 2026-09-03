@@ -1,0 +1,38 @@
+{# Modal body #}
+{% set previewType = preview_type|default('unsupported') %}
+{% set fileViewerAvailable = file_viewer_available|default(false) %}
+{% set fileViewerBuilt = file_viewer_built|default(false) %}
+{% set officePreviewAvailable = office_preview_available|default(false) %}
+{% set inlineUrl = path('admin_file_inline', {fileId: file.id}) %}
+{% set previewUrl = path('admin_file_preview', {fileId: file.id}) %}
+{% set viewerUrl = path('admin_file_viewer', {fileId: file.id}) %}
+{% set downloadUrl = path('admin_file_download', {fileId: file.id}) %}
+
+<div style="position:absolute;inset:0;width:100%;height:100%;">
+    {% if fileViewerAvailable %}
+        <iframe src="{{ viewerUrl }}" title="{{ file.originalName }}" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#edf1f5;"></iframe>
+    {% elseif previewType == 'pdf' %}
+        <iframe src="{{ inlineUrl }}#toolbar=1&view=FitH" title="{{ file.originalName }}" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#525659;"></iframe>
+    {% elseif previewType == 'image' %}
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1a1a;">
+            <img src="{{ inlineUrl }}" alt="{{ file.originalName }}" style="max-width:100%;max-height:100%;object-fit:contain;">
+        </div>
+    {% elseif previewType == 'text' %}
+        <iframe src="{{ inlineUrl }}" title="{{ file.originalName }}" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;"></iframe>
+    {% elseif previewType == 'video' %}
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#111;padding:1.5rem;">
+            <video src="{{ inlineUrl }}" controls autoplay style="width:100%;max-height:100%;"></video>
+        </div>
+    {% elseif previewType == 'audio' %}
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8f9fa;">
+            <audio src="{{ inlineUrl }}" controls autoplay style="width:min(100%,480px);"></audio>
+        </div>
+    {% elseif previewType == 'office' and officePreviewAvailable %}
+        <iframe src="{{ previewUrl }}" title="{{ file.originalName }}" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;"></iframe>
+    {% else %}
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8f9fa;text-align:center;padding:1.5rem;">
+            <p class="mb-2">{% if (previewType == 'office' or previewType == 'pdf') and not fileViewerBuilt %}请先执行 npm run build:viewer{% else %}暂不支持在线预览{% endif %}</p>
+            <a href="{{ downloadUrl }}" class="btn btn-primary"><i class="fa fa-download"></i> 下载原文件</a>
+        </div>
+    {% endif %}
+</div>

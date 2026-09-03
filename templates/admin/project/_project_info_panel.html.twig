@@ -65,6 +65,30 @@
     <dt class="col-5 text-muted">负责人</dt>
     <dd class="col-7">{{ project.leaderName }}</dd>
 
+    <dt class="col-5 text-muted">建设单位</dt>
+    <dd class="col-7">{{ project.buildingUnit ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">建设单位负责人</dt>
+    <dd class="col-7">{{ project.buildingUnitLeader ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">施工单位</dt>
+    <dd class="col-7">{{ project.constructionUnit ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">施工单位负责人</dt>
+    <dd class="col-7">{{ project.constructionUnitLeader ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">监理单位</dt>
+    <dd class="col-7">{{ project.supervisionUnit ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">监理单位负责人</dt>
+    <dd class="col-7">{{ project.supervisionUnitLeader ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">审计单位</dt>
+    <dd class="col-7">{{ project.auditUnit ?? '—' }}</dd>
+
+    <dt class="col-5 text-muted">审计单位负责人</dt>
+    <dd class="col-7">{{ project.auditUnitLeader ?? '—' }}</dd>
+
     <dt class="col-5 text-muted">资金来源</dt>
     <dd class="col-7">{{ project.fundingSource.label() }}</dd>
 </dl>

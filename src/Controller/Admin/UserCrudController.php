@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\User;
+use App\Controller\Admin\Trait\SystemAdminOnlyCrudTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -19,6 +20,8 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 
 class UserCrudController extends AbstractCrudController
 {
+    use SystemAdminOnlyCrudTrait;
+
     public static function getEntityFqcn(): string
     {
         return User::class;
@@ -56,6 +59,8 @@ class UserCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions->add(Crud::PAGE_INDEX, Action::DETAIL);
+        return $this->restrictActionsToSystemAdmin(
+            $actions->add(Crud::PAGE_INDEX, Action::DETAIL)
+        );
     }
 }

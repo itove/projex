@@ -21,3 +21,7 @@
 
 *.docx
 **.cache
+/node_modules/
+/public/build/file-viewer/
+/public/file-viewer/
+/tmp-viewer-build/

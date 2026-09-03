@@ -5,23 +5,37 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Image;
+use App\Entity\User;
+use App\Service\OrgAccessService;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use Symfony\Component\HttpFoundation\Response;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class ImageCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly OrgAccessService $orgAccessService,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Image::class;
@@ -52,7 +66,15 @@ class ImageCrudController extends AbstractCrudController
         yield AssociationField::new('project', '所属项目')
             ->autocomplete()
             ->setRequired(false)
-            ->setColumns(6);
+            ->setColumns(6)
+            ->setQueryBuilder(function (QueryBuilder $qb): QueryBuilder {
+                $user = $this->getUser();
+                if ($user instanceof User) {
+                    $this->orgAccessService->applyProjectOrgScope($qb, $user, 'entity');
+                }
+
+                return $qb;
+            });
 
         yield AssociationField::new('preliminaryDecision', '所属前期决策')
             ->autocomplete()
@@ -152,5 +174,54 @@ class ImageCrudController extends AbstractCrudController
         return $filters
             ->add(TextFilter::new('category', '分类'))
             ->add(DateTimeFilter::new('createdAt', '上传时间'));
+    }
+
+    public function createIndexQueryBuilder(
+        SearchDto $searchDto,
+        EntityDto $entityDto,
+        FieldCollection $fields,
+        FilterCollection $filters,
+    ): QueryBuilder {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $this->orgAccessService->applyLifecycleAttachmentOrgScope($qb, $user, 'entity', true);
+        }
+
+        return $qb;
+    }
+
+    public function detail(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::detail($context);
+    }
+
+    public function edit(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::edit($context);
+    }
+
+    public function delete(AdminContext $context): KeyValueStore|Response
+    {
+        $this->denyUnlessCanViewAttachment($context->getEntity()->getInstance());
+
+        return parent::delete($context);
+    }
+
+    private function denyUnlessCanViewAttachment(?object $entity): void
+    {
+        if (!$entity instanceof Image) {
+            return;
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof User || !$this->orgAccessService->canViewLifecycleAttachment($user, $entity)) {
+            throw $this->createAccessDeniedException('无权访问该图片。');
+        }
     }
 }

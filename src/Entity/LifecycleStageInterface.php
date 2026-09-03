@@ -18,6 +18,8 @@ use Doctrine\Common\Collections\Collection;
  */
 interface LifecycleStageInterface
 {
+    public function getId(): ?int;
+
     public function getProject(): ?Project;
 
     /**

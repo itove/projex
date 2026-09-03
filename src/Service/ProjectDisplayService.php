@@ -229,6 +229,7 @@ class ProjectDisplayService
                 'attachments' => $this->attachmentComplianceService->buildChecklist($definition, $entity),
                 'attachmentsCompliant' => $this->attachmentComplianceService->isCompliant($definition, $entity),
                 'missingRequiredAttachments' => $this->attachmentComplianceService->countMissingRequired($definition, $entity),
+                'canStart' => $index === 0 || ($stages[$index - 1]['attachmentsCompliant'] ?? false),
             ];
 
             if ($definition->key === 'implementation') {
@@ -239,6 +240,44 @@ class ProjectDisplayService
         }
 
         return $stages;
+    }
+
+    /**
+     * @param class-string $entityClass
+     */
+    public function canStartStage(Project $project, string $entityClass): bool
+    {
+        return $this->previousStageStartBlockReason($project, $entityClass) === null;
+    }
+
+    /**
+     * @param class-string $entityClass
+     */
+    public function previousStageStartBlockReason(Project $project, string $entityClass): ?string
+    {
+        $definition = $this->stageRegistry->findByEntityClass($entityClass);
+        if ($definition === null) {
+            return null;
+        }
+
+        $previous = $this->stageRegistry->previous($definition);
+        if ($previous === null) {
+            return null;
+        }
+
+        $previousEntity = $this->stageRegistry->getEntity($project, $previous);
+        if ($this->attachmentComplianceService->isCompliant($previous, $previousEntity)) {
+            return null;
+        }
+
+        $missing = $this->attachmentComplianceService->countMissingRequired($previous, $previousEntity);
+        $previousName = str_replace('流程', '', $previous->name);
+
+        return sprintf(
+            '请先上传「%s」的全部必传文件（尚缺 %d 项），才能开始登记本阶段。',
+            $previousName,
+            $missing,
+        );
     }
 
     /**
