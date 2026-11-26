@@ -22,6 +22,7 @@ use App\Service\ProjectSpreadsheetImportService;
 use App\Service\ProjectTaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -529,6 +530,7 @@ class ProjectCrudController extends AbstractCrudController
         }
     }
 
+    #[AdminRoute(path: '/{entityId}/submit-for-review', name: 'submit_for_review')]
     public function submitForReview(AdminContext $context): RedirectResponse
     {
         $project = $context->getEntity()->getInstance();
@@ -569,6 +571,7 @@ class ProjectCrudController extends AbstractCrudController
         return $this->redirect($this->adminUrlGenerator->setAction(Action::INDEX)->generateUrl());
     }
 
+    #[AdminRoute(path: '/batch-import', name: 'batch_import')]
     public function batchImport(AdminContext $context): Response
     {
         $this->denyAccessUnlessProjectImporter();
@@ -640,6 +643,7 @@ class ProjectCrudController extends AbstractCrudController
         ]);
     }
 
+    #[AdminRoute(path: '/download-import-template', name: 'download_import_template')]
     public function downloadImportTemplate(AdminContext $context): StreamedResponse
     {
         $this->denyAccessUnlessProjectImporter();

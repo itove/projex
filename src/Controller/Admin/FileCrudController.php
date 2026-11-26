@@ -257,7 +257,7 @@ class FileCrudController extends AbstractCrudController
                 Action::new('download', '下载', 'fa fa-download')
                     ->linkToUrl(fn (File $file) => $this->generateUrl('admin_file_download', ['fileId' => $file->getId()]))
                     ->setCssClass('btn btn-primary')
-                    ->displayAsButton()
+                    ->renderAsButton()
             )
             ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }

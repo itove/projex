@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\PreliminaryDecision;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -115,7 +116,7 @@ class PreliminaryDecisionCrudController extends AbstractLifecycleStageCrudContro
         $reviewAction = Action::new('review', '审核')
             ->linkToCrudAction('reviewStage')
             ->setCssClass('btn btn-primary')
-            ->displayAsButton();
+            ->renderAsButton();
 
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -123,6 +124,7 @@ class PreliminaryDecisionCrudController extends AbstractLifecycleStageCrudContro
             ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }
 
+    #[AdminRoute(path: '/{entityId}/review-stage', name: 'review_stage')]
     public function reviewStage(AdminContext $context): Response
     {
         // TODO: Implement review logic
