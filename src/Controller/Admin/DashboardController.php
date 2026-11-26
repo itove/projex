@@ -2,23 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\CompletionAcceptance;
-use App\Entity\ConstructionImplementation;
-use App\Entity\ConstructionPreparation;
-use App\Entity\File;
-use App\Entity\Image;
-use App\Entity\PlanningDesign;
-use App\Entity\PreliminaryDecision;
-use App\Entity\Project;
-use App\Entity\ProjectApproval;
-use App\Entity\ProjectProgressReport;
-use App\Entity\ProjectTask;
-use App\Entity\ProjectType;
-use App\Entity\ProjectSubtype;
-use App\Entity\SettlementAccounts;
-use App\Entity\Org;
-use App\Entity\Permission;
-use App\Entity\Role;
 use App\Entity\User;
 use App\Service\DashboardData;
 use App\Service\OrgProjectOverviewService;
@@ -99,39 +82,37 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('项目展示主页', 'fa fa-home');
         yield MenuItem::section('项目管理');
         yield MenuItem::linkToRoute('公司项目总览', 'fa fa-sitemap', 'admin_org_project_overview');
-        yield MenuItem::linkToCrud('项目基础信息', 'fa fa-project-diagram', Project::class);
-        yield MenuItem::linkToCrud('项目任务', 'fa fa-tasks', ProjectTask::class);
-        yield MenuItem::linkToCrud('进度报告', 'fa fa-chart-line', ProjectProgressReport::class);
+        yield MenuItem::linkTo(ProjectCrudController::class, '项目基础信息', 'fa fa-project-diagram');
+        yield MenuItem::linkTo(ProjectTaskCrudController::class, '项目任务', 'fa fa-tasks');
+        yield MenuItem::linkTo(ProjectProgressReportCrudController::class, '进度报告', 'fa fa-chart-line');
         yield MenuItem::section('项目生命周期');
-        yield MenuItem::linkToCrud('前期决策流程', 'fa fa-clipboard-check', PreliminaryDecision::class);
-        yield MenuItem::linkToCrud('立项流程', 'fa fa-file-signature', ProjectApproval::class);
-        yield MenuItem::linkToCrud('规划设计流程', 'fa fa-drafting-compass', PlanningDesign::class);
-        yield MenuItem::linkToCrud('施工准备流程', 'fa fa-hard-hat', ConstructionPreparation::class);
-        yield MenuItem::linkToCrud('施工实施流程', 'fa fa-cogs', ConstructionImplementation::class);
-        yield MenuItem::linkToCrud('竣工验收流程', 'fa fa-check-circle', CompletionAcceptance::class);
-        yield MenuItem::linkToCrud('结算流程', 'fa fa-file-invoice-dollar', SettlementAccounts::class);
+        yield MenuItem::linkTo(PreliminaryDecisionCrudController::class, '前期决策流程', 'fa fa-clipboard-check');
+        yield MenuItem::linkTo(ProjectApprovalCrudController::class, '立项流程', 'fa fa-file-signature');
+        yield MenuItem::linkTo(PlanningDesignCrudController::class, '规划设计流程', 'fa fa-drafting-compass');
+        yield MenuItem::linkTo(ConstructionPreparationCrudController::class, '施工准备流程', 'fa fa-hard-hat');
+        yield MenuItem::linkTo(ConstructionImplementationCrudController::class, '施工实施流程', 'fa fa-cogs');
+        yield MenuItem::linkTo(CompletionAcceptanceCrudController::class, '竣工验收流程', 'fa fa-check-circle');
+        yield MenuItem::linkTo(SettlementAccountsCrudController::class, '结算流程', 'fa fa-file-invoice-dollar');
         yield MenuItem::section('基础数据');
-        yield MenuItem::linkToCrud('项目类型', 'fa fa-tags', ProjectType::class);
-        yield MenuItem::linkToCrud('项目子类型', 'fa fa-tag', ProjectSubtype::class);
+        yield MenuItem::linkTo(ProjectTypeCrudController::class, '项目类型', 'fa fa-tags');
+        yield MenuItem::linkTo(ProjectSubtypeCrudController::class, '项目子类型', 'fa fa-tag');
         yield MenuItem::section('文件管理');
-        yield MenuItem::linkToCrud('文件', 'fa fa-file', File::class);
-        yield MenuItem::linkToCrud('图片', 'fa fa-image', Image::class);
+        yield MenuItem::linkTo(FileCrudController::class, '文件', 'fa fa-file');
+        yield MenuItem::linkTo(ImageCrudController::class, '图片', 'fa fa-image');
         yield MenuItem::section('权限管理')->setPermission('ROLE_SYSTEM_ADMIN');
-        yield MenuItem::linkToCrud('组织机构', 'fa fa-building', Org::class)
+        yield MenuItem::linkTo(OrgCrudController::class, '组织机构', 'fa fa-building')
             ->setPermission('ROLE_SYSTEM_ADMIN');
-        yield MenuItem::linkToCrud('用户', 'fa fa-users', User::class)
+        yield MenuItem::linkTo(UserCrudController::class, '用户', 'fa fa-users')
             ->setPermission('ROLE_SYSTEM_ADMIN');
-        yield MenuItem::linkToCrud('角色', 'fa fa-user-tag', Role::class)
+        yield MenuItem::linkTo(RoleCrudController::class, '角色', 'fa fa-user-tag')
             ->setPermission('ROLE_SYSTEM_ADMIN');
-        yield MenuItem::linkToCrud('权限', 'fa fa-key', Permission::class)
+        yield MenuItem::linkTo(PermissionCrudController::class, '权限', 'fa fa-key')
             ->setPermission('ROLE_SYSTEM_ADMIN');
 
-        yield MenuItem::section("系统设置");
-        yield MenuItem::linkToCrud('修改密码', 'fas fa-key', User::class)
-            ->setController(ChpwCrudController::class)
+        yield MenuItem::section('系统设置');
+        yield MenuItem::linkTo(ChpwCrudController::class, '修改密码', 'fas fa-key')
             ->setAction('edit')
-            ->setEntityId($this->getUser()->getId())
-        ;
+            ->setEntityId($this->getUser()->getId());
     }
 
     public function configureCrud(): Crud
