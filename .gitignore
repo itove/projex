@@ -25,3 +25,7 @@
 /public/build/file-viewer/
 /public/file-viewer/
 /tmp-viewer-build/
+
+###> liip/imagine-bundle ###
+/public/media/cache/
+###< liip/imagine-bundle ###
